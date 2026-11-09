@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<!--
+  rreth.html: faqja "Si funksionon".
+  Shpjegon çfarë është TypeFast, formulat e WPM dhe saktësisë me një shembull,
+  si numërohen gabimet, shkurtoret e tastierës dhe teknologjitë e përdorura.
+  Faqja është kryesisht tekst statik; JavaScript përdoret vetëm për temën dhe animacionin e shfaqjes.
+-->
+<!-- lang="sq": faqja është në shqip. data-theme="dark": tema e parazgjedhur. -->
+<html lang="sq" data-theme="dark">
+<head>
+  <!-- Kodimi i shkronjave -->
+  <meta charset="utf-8">
+  <!-- Gjerësia reale e ekranit në tablet -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Titulli i skedës -->
+  <title>Si funksionon: TypeFast</title>
+  <!-- Përshkrimi i faqes -->
+  <meta name="description" content="Si mat TypeFast shpejtësinë dhe saktësinë: formulat, shembulli, shkurtoret dhe teknologjitë.">
+
+  <!-- CSS në rendin e fiksuar -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/animations.css">
+
+  <!-- Kontrolli për file:// (skript i thjeshtë me defer) -->
+  <script src="js/protocol-check.js" defer></script>
+  <!-- Skripti hyrës i kësaj faqeje, si modul ES6 -->
+  <script type="module" src="js/pages/about-page.js"></script>
+</head>
+<body>
+  <!-- Lidhja për të kapërcyer navigimin -->
+  <a class="skip-link" href="#main">Kalo te përmbajtja</a>
+
+  <!-- ========== KOKA E FAQES ========== -->
+  <header class="site-header">
+    <div class="site-header__inner">
+      <!-- Emri i faqes si tekst -->
+      <a class="wordmark" href="index.html">TypeFast</a>
+      <!-- Navigimi kryesor -->
+      <nav class="site-nav" aria-label="Navigimi kryesor">
+        <ul class="site-nav__list">
+          <li><a class="site-nav__link" href="index.html">Testi</a></li>
+          <li><a class="site-nav__link" href="historiku.html">Historiku</a></li>
+          <!-- aria-current="page": kjo është faqja aktuale -->
+          <li><a class="site-nav__link" href="rreth.html" aria-current="page">Si funksionon</a></li>
+        </ul>
+      </nav>
+      <!-- Butoni i temës me aria-label, sepse ka vetëm ikonë -->
+      <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="Kalo në temën e çelët">
+        <!-- Ikona e diellit -->
+        <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+        </svg>
+        <!-- Ikona e hënës -->
+        <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Paralajmërimi për file:// -->
+  <div class="file-warning" id="file-warning" role="alert" hidden>
+    <h2 class="file-warning__title">Kjo faqe duhet hapur me Live Server</h2>
+    <p>Faqja u hap direkt nga dosja (adresa fillon me file://). Në këtë mënyrë shfletuesi bllokon modulet JavaScript, prandaj TypeFast nuk punon si duhet.</p>
+    <ol class="file-warning__steps">
+      <li>Hap dosjen e projektit në VS Code.</li>
+      <li>Instalo shtesën "Live Server" (nga Ritwick Dey), nëse nuk e ke.</li>
+      <li>Kliko me të djathtën mbi index.html dhe zgjidh "Open with Live Server".</li>
+      <li>Faqja hapet te http://127.0.0.1:5500 dhe gjithçka punon.</li>
+    </ol>
+  </div>
+
+  <!-- Përmbajtja kryesore -->
+  <main class="page page--prose" id="main" tabindex="-1">
+    <!-- Koka e faqes -->
+    <div class="page-header">
+      <!-- h1 i vetëm i faqes -->
+      <h1 class="page-header__title">Si funksionon TypeFast</h1>
+      <!-- Fjalia hyrëse -->
+      <p class="page-header__lead">Gjithçka që duhet të dish për mënyrën si matet shpejtësia dhe saktësia, pa sekrete.</p>
+    </div>
+
+    <!-- ========== 1. ÇFARË ËSHTË ========== -->
+    <!-- class="reveal": seksioni shfaqet butë kur hyn në ekran -->
+    <section class="section reveal" aria-labelledby="what-title">
+      <!-- Titulli i seksionit -->
+      <h2 class="section__title" id="what-title">Çfarë është dhe pse ekziston</h2>
+      <!-- Përshkrimi i projektit -->
+      <p>TypeFast është një test i thjeshtë që mat sa shpejt dhe sa saktë shkruan në tastierë. Zgjedh kohën, nivelin dhe gjuhën, pastaj shkruan tekstin që shfaqet. Testi nis vetë me shkronjën e parë dhe mbaron kur mbaron koha.</p>
+      <!-- Arsyeja e ekzistencës -->
+      <p>Shumica e testeve të tilla janë vetëm në anglisht dhe nuk e njohin mirë shqipen. TypeFast ka tekste origjinale në shqip, me ë dhe ç, dhe të lejon të vendosësh nëse e dhe c pranohen në vend të tyre. U ndërtua si projekt final në kurs, vetëm me HTML, CSS dhe JavaScript.</p>
+      <!-- Shënim për privatësinë -->
+      <p>Rezultatet ruhen vetëm në shfletuesin tënd. Nuk ka llogari, server apo dërgim të dhënash.</p>
+    </section>
+
+    <!-- ========== 2. FORMULAT ========== -->
+    <section class="section reveal" aria-labelledby="formula-title">
+      <!-- Titulli -->
+      <h2 class="section__title" id="formula-title">Dy formulat</h2>
+
+      <!-- Formula e shpejtësisë -->
+      <h3 class="subsection__title">Shpejtësia (WPM, fjalë në minutë)</h3>
+      <!-- Shpjegimi i "fjalës standarde" -->
+      <p>Fjalët kanë gjatësi të ndryshme, prandaj në testet e shkrimit një "fjalë" llogaritet gjithmonë si 5 karaktere (hapësirat përfshihen). Numërohen vetëm karakteret që janë të sakta në tekst në fund.</p>
+      <!-- Formula vetë, në një bllok kodi -->
+      <p class="formula"><code>WPM = (karaktere të sakta / 5) / minuta</code></p>
+      <!-- Shënim për rrumbullakimin dhe sekondën e parë -->
+      <p>Në fund, "minuta" është gjithmonë kohëzgjatja e plotë e testit (30 sekonda = 0,5 minuta). Rezultati rrumbullakohet në numër të plotë. Gjatë testit, WPM i drejtpërdrejtë tregon 0 në sekondën e parë, sepse me kaq pak kohë numri del i madh pa kuptim.</p>
+
+      <!-- Formula e saktësisë -->
+      <h3 class="subsection__title">Saktësia</h3>
+      <!-- Shpjegimi -->
+      <p>Saktësia tregon sa nga të gjitha shtypjet e tastit ishin të sakta. Çdo shtypje e gabuar numërohet, edhe nëse më pas e fshin me Backspace.</p>
+      <!-- Formula -->
+      <p class="formula"><code>Saktësia = (shtypje të sakta / të gjitha shtypjet) × 100</code></p>
+      <!-- Rrumbullakimi dhe rasti bosh -->
+      <p>Rezultati rrumbullakohet me një shifër pas presjes. Nëse nuk është shtypur asgjë, saktësia është 0.</p>
+
+      <!-- Shembulli i punuar me numra realë -->
+      <div class="example">
+        <!-- Titulli i shembullit -->
+        <h3 class="example__title">Shembull i llogaritur</h3>
+        <!-- Të dhënat e shembullit -->
+        <p>Një test 30 sekondash. Gjatë testit shtyp gjithsej 160 taste. 10 prej tyre janë gabim. 4 nga këto gabime i fshin me Backspace dhe i shkruan saktë, 6 mbeten gabim në tekst. Në fund, në tekst ka 150 karaktere të sakta.</p>
+        <!-- Llogaritja hap pas hapi, si listë e renditur -->
+        <ol class="example__steps">
+          <li>Minutat: 30 / 60 = 0,5</li>
+          <li>Fjalët standarde: 150 / 5 = 30</li>
+          <li>WPM: 30 / 0,5 = <strong>60</strong></li>
+          <li>Shtypje të sakta: 160 - 10 = 150</li>
+          <li>Saktësia: 150 / 160 = 0,9375, pra 0,9375 × 100 = 93,75, e rrumbullakuar <strong>93,8%</strong></li>
+          <li>Gabime: <strong>10</strong> (të 4 të fshirat numërohen sepse janë shtypur)</li>
+        </ol>
+        <!-- Shënim që ky është shembull, jo statistikë reale -->
+        <p class="example__note">Këta numra janë vetëm shembull për të treguar llogaritjen. Rezultatet e tua reale i gjen te Historiku.</p>
+      </div>
+    </section>
+
+    <!-- ========== 3. GABIMET ========== -->
+    <section class="section reveal" aria-labelledby="errors-title">
+      <!-- Titulli -->
+      <h2 class="section__title" id="errors-title">Si numërohen gabimet</h2>
+      <!-- Lista me rregullat -->
+      <ul class="rule-list">
+        <li>Çdo karakter që shkruan krahasohet me karakterin në të njëjtin vend në tekst.</li>
+        <li>Nëse nuk përputhen, karakteri bëhet i kuq dhe i nënvizuar, që gabimi të dallohet edhe pa ngjyra. Një hapësirë e gabuar merr një shenjë të kuqe.</li>
+        <li>Gabimi numërohet në momentin e shtypjes. Backspace e kthen karakterin në gjendjen e pashkruar, por nuk e fshin gabimin nga numërimi.</li>
+        <li>Backspace nuk numërohet si shtypje.</li>
+        <li>Me çelësin "Prano e për ë dhe c për ç" të ndezur, e pranohet për ë dhe c për ç (edhe shkronjat e mëdha). Me çelësin të fikur, kontrolli është i rreptë.</li>
+        <li>"Karakteret ku gabove më shumë" tregon 5 karakteret e tekstit ku ke shtypur më shumë gabime. Hapësira shfaqet si "Hapësira".</li>
+        <li>Rekordi personal ruhet veçmas për çdo kombinim gjuhe, niveli dhe kohe, sepse një test 15 sekondash në anglisht nuk krahasohet drejt me një 120 sekondash në shqip.</li>
+      </ul>
+    </section>
+
+    <!-- ========== 4. SHKURTORET ========== -->
+    <section class="section reveal" aria-labelledby="keys-title">
+      <!-- Titulli -->
+      <h2 class="section__title" id="keys-title">Shkurtoret e tastierës</h2>
+      <!-- Mbështjellësi i tabelës; tabindex dhe role lejojnë lëvizje me tastierë në ekrane të ngushta -->
+      <div class="table-wrap" tabindex="0" role="region" aria-labelledby="keys-title">
+        <!-- Tabela e shkurtoreve -->
+        <table class="table">
+          <!-- Përshkrimi për lexuesit e ekranit -->
+          <caption class="visually-hidden">Shkurtoret e tastierës në faqen e testit</caption>
+          <thead>
+            <tr>
+              <!-- scope="col": titull kolone -->
+              <th scope="col">Tasti</th>
+              <th scope="col">Çfarë bën</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <!-- scope="row": kjo qelizë është titulli i rreshtit -->
+              <th scope="row"><kbd>Tab</kbd></th>
+              <td>Rifillon testin me tekst të ri. Testi i papërfunduar nuk ruhet.</td>
+            </tr>
+            <tr>
+              <th scope="row"><kbd>Esc</kbd></th>
+              <td>Anulon testin dhe e kthen të njëjtin tekst në fillim. Asgjë nuk ruhet.</td>
+            </tr>
+            <tr>
+              <th scope="row"><kbd>Backspace</kbd></th>
+              <td>Kthehet një karakter mbrapa. Gabimi mbetet i numëruar.</td>
+            </tr>
+            <tr>
+              <th scope="row"><kbd>Shift</kbd> + <kbd>Tab</kbd></th>
+              <td>Del nga fusha e testit, për të lëvizur në faqe me tastierë.</td>
+            </tr>
+            <tr>
+              <th scope="row">Çdo tast</th>
+              <td>Kur teksti është i turbullt (pa fokus), e rikthen fokusin te testi.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Shënim për shigjetat dhe ngjitjen -->
+      <p>Shigjetat dhe ngjitja e tekstit (paste) janë të bllokuara gjatë testit, që rezultati të jetë i ndershëm.</p>
+    </section>
+
+    <!-- ========== 5. TEKNOLOGJITË ========== -->
+    <section class="section reveal" aria-labelledby="tech-title">
+      <!-- Titulli -->
+      <h2 class="section__title" id="tech-title">Teknologjitë e përdorura</h2>
+      <!-- Hyrja -->
+      <p>TypeFast nuk përdor asnjë framework. Gjithçka është shkruar me dorë, në skedarë të ndarë.</p>
+      <!-- Lista e teknologjive; dl: dt është emri, dd është shpjegimi -->
+      <dl class="tech-list">
+        <div class="tech-list__item">
+          <dt>HTML</dt>
+          <dd>Struktura e faqeve me elemente semantike: header, nav, main, section, footer, table dhe dialog.</dd>
+        </div>
+        <div class="tech-list__item">
+          <dt>CSS</dt>
+          <dd>Të gjitha ngjyrat, hapësirat dhe madhësitë janë variabla CSS te variables.css. Dy tema, e errët dhe e çelët.</dd>
+        </div>
+        <div class="tech-list__item">
+          <dt>JavaScript (ES6+)</dt>
+          <dd>Klasa dhe module (import/export). Çdo modul ka një klasë me një përgjegjësi: tekstet, kohëmatësi, statistikat, ruajtja, ndërfaqja, tema, grafiku dhe animacioni.</dd>
+        </div>
+        <div class="tech-list__item">
+          <dt>fetch</dt>
+          <dd>Lexon skedarin data/texts.json me tekstet e testit, vetëm një herë, dhe e mban në kujtesë.</dd>
+        </div>
+        <div class="tech-list__item">
+          <dt>localStorage</dt>
+          <dd>Ruan historikun (deri në 200 testet e fundit), rekordet, cilësimet dhe temën. Të dhënat mbeten në shfletues edhe pasi e mbyll.</dd>
+        </div>
+        <div class="tech-list__item">
+          <dt>performance.now</dt>
+          <dd>Jep kohën me saktësi nën milisekondë. Koha e mbetur llogaritet gjithmonë nga kjo orë, jo duke numëruar hapat e kohëmatësit, që testi të mos vonohet.</dd>
+        </div>
+        <div class="tech-list__item">
+          <dt>IntersectionObserver</dt>
+          <dd>Njofton kur një seksion hyn në ekran, që të shfaqet butë një herë. Nuk përdoret në zonën e testit.</dd>
+        </div>
+        <div class="tech-list__item">
+          <dt>Canvas</dt>
+          <dd>Sipërfaqja ku vizatohet grafiku i përparimit te Historiku.</dd>
+        </div>
+        <div class="tech-list__item">
+          <dt>Chart.js 4</dt>
+          <dd>E vetmja librari e jashtme. Vizaton grafikun mbi Canvas. Skedari ndodhet në projekt, që të punojë pa internet.</dd>
+        </div>
+      </dl>
+    </section>
+  </main>
+
+  <!-- ========== FUNDI I FAQES ========== -->
+  <footer class="site-footer">
+    <p class="site-footer__text">TypeFast, projekt final në kurs, 2026. Punoi: Jon Mjekiqi</p>
+  </footer>
+</body>
+</html>

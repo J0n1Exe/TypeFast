@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<!--
+  historiku.html: faqja e historikut.
+  Tregon rekordet personale, grafikun e përparimit dhe tabelën e plotë të testeve.
+  Të gjitha të dhënat vijnë nga localStorage i shfletuesit (testet reale të përdoruesit).
+-->
+<!-- lang="sq": faqja është në shqip. data-theme="dark": tema e parazgjedhur, JavaScript mund ta ndryshojë. -->
+<html lang="sq" data-theme="dark">
+<head>
+  <!-- Kodimi i shkronjave, që ë dhe ç të shfaqen saktë -->
+  <meta charset="utf-8">
+  <!-- Faqja përdor gjerësinë reale të ekranit në tablet -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Titulli i skedës -->
+  <title>Historiku: TypeFast</title>
+  <!-- Përshkrimi i faqes -->
+  <meta name="description" content="Historiku i testeve, rekordet personale dhe grafiku i përparimit në TypeFast.">
+
+  <!-- CSS në rendin e fiksuar: tokenat, baza, struktura, komponentët, stilet e faqeve, animacionet -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/animations.css">
+
+  <!-- Kontrolli për file:// (skript i thjeshtë, jo modul). defer: ekzekutohet pasi lexohet HTML. -->
+  <script src="js/protocol-check.js" defer></script>
+  <!--
+    Chart.js (versioni UMD) ngarkohet me një skript të zakonshëm PARA modulit.
+    UMD do të thotë që libraria krijon objektin global window.Chart.
+    defer: ruan rendin, pra Chart.js është gati kur ekzekutohet moduli më poshtë.
+    Skedari është lokal (assets/libs), që faqja të punojë edhe pa internet.
+  -->
+  <script src="assets/libs/chart.umd.min.js" defer></script>
+  <!-- Skripti hyrës i kësaj faqeje, si modul ES6 -->
+  <script type="module" src="js/pages/history-page.js"></script>
+</head>
+<body>
+  <!-- Lidhja për të kapërcyer navigimin me tastierë -->
+  <a class="skip-link" href="#main">Kalo te përmbajtja</a>
+
+  <!-- ========== KOKA E FAQES ========== -->
+  <header class="site-header">
+    <!-- Mbështjellësi që e mban kokën në qendër -->
+    <div class="site-header__inner">
+      <!-- Emri i faqes si tekst -->
+      <a class="wordmark" href="index.html">TypeFast</a>
+      <!-- Navigimi kryesor me emër për lexuesit e ekranit -->
+      <nav class="site-nav" aria-label="Navigimi kryesor">
+        <ul class="site-nav__list">
+          <li><a class="site-nav__link" href="index.html">Testi</a></li>
+          <!-- aria-current="page": kjo është faqja aktuale -->
+          <li><a class="site-nav__link" href="historiku.html" aria-current="page">Historiku</a></li>
+          <li><a class="site-nav__link" href="rreth.html">Si funksionon</a></li>
+        </ul>
+      </nav>
+      <!-- Butoni i temës; aria-label jep emrin sepse butoni ka vetëm ikonë -->
+      <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="Kalo në temën e çelët">
+        <!-- Ikona e diellit; aria-hidden sepse është zbukurim; stroke="currentColor" merr ngjyrën e tekstit -->
+        <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+        </svg>
+        <!-- Ikona e hënës -->
+        <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Paralajmërimi për file:// (i fshehur si parazgjedhje; role="alert" e lexon menjëherë kur shfaqet) -->
+  <div class="file-warning" id="file-warning" role="alert" hidden>
+    <h2 class="file-warning__title">Kjo faqe duhet hapur me Live Server</h2>
+    <p>Faqja u hap direkt nga dosja (adresa fillon me file://). Në këtë mënyrë shfletuesi bllokon modulet JavaScript, prandaj historiku nuk mund të shfaqet.</p>
+    <ol class="file-warning__steps">
+      <li>Hap dosjen e projektit në VS Code.</li>
+      <li>Instalo shtesën "Live Server" (nga Ritwick Dey), nëse nuk e ke.</li>
+      <li>Kliko me të djathtën mbi index.html dhe zgjidh "Open with Live Server".</li>
+      <li>Faqja hapet te http://127.0.0.1:5500 dhe gjithçka punon.</li>
+    </ol>
+  </div>
+
+  <!-- Përmbajtja kryesore; tabindex="-1" lejon fokusin nga lidhja "Kalo te përmbajtja" -->
+  <main class="page" id="main" tabindex="-1">
+    <!-- Koka e faqes: titulli kryesor dhe një fjali shpjeguese -->
+    <div class="page-header">
+      <!-- h1 i vetëm i faqes -->
+      <h1 class="page-header__title">Historiku</h1>
+      <!-- Shpjegim i ndershëm se nga vijnë të dhënat -->
+      <p class="page-header__lead">Këtu shfaqen vetëm testet që ke bërë në këtë shfletues. Të dhënat ruhen te pajisja jote dhe nuk dërgohen askund.</p>
+    </div>
+
+    <!--
+      Gjendja bosh: shfaqet kur nuk ka asnjë test të ruajtur.
+      hidden: JavaScript vendos nëse shfaqet kjo apo përmbajtja me të dhëna.
+    -->
+    <section class="empty-state" id="history-empty" aria-labelledby="empty-title" hidden>
+      <!-- Mesazhi kryesor i gjendjes bosh -->
+      <h2 class="empty-state__title" id="empty-title">Ende s'ke bërë asnjë test.</h2>
+      <!-- Shpjegim i shkurtër -->
+      <p class="empty-state__text">Pasi të mbarosh testin e parë, rezultati, rekordi dhe grafiku do të shfaqen këtu.</p>
+      <!-- Lidhja për te testi, me pamje butoni -->
+      <a class="button button--primary" href="index.html">Bëj testin e parë</a>
+    </section>
+
+    <!-- Mbështjellësi i gjithë pjesës me të dhëna; i fshehur derisa JavaScript të gjejë teste -->
+    <div class="history-content" id="history-content" hidden>
+
+      <!-- ========== REKORDET PERSONALE ========== -->
+      <!-- class="reveal": seksioni shfaqet butë kur hyn në ekran (reveal.js) -->
+      <section class="section reveal" aria-labelledby="records-title">
+        <!-- Titulli i seksionit -->
+        <h2 class="section__title" id="records-title">Rekordet personale</h2>
+        <!-- Shpjegimi i asaj që tregon tabela -->
+        <p class="section__lead">Rezultati më i mirë për çdo kombinim gjuhe, niveli dhe kohe.</p>
+        <!--
+          Mbështjellësi i tabelës: lejon lëvizje horizontale në ekrane të ngushta.
+          tabindex="0": mund të fokusohet me tastierë, që të lëvizet me shigjeta.
+          role="region" + aria-labelledby: lexuesi i ekranit e njeh si zonë me emër.
+        -->
+        <div class="table-wrap" tabindex="0" role="region" aria-labelledby="records-title">
+          <!-- Tabela e rekordeve -->
+          <table class="table">
+            <!-- caption: përshkrimi i tabelës për lexuesit e ekranit (i fshehur vizualisht) -->
+            <caption class="visually-hidden">Rekordet personale sipas gjuhës, nivelit dhe kohës</caption>
+            <!-- Koka e tabelës; scope="col" tregon që çdo th është titull kolone -->
+            <thead>
+              <tr>
+                <th scope="col">Gjuha</th>
+                <th scope="col">Niveli</th>
+                <th scope="col">Koha</th>
+                <th scope="col" class="table__num">WPM më i mirë</th>
+                <th scope="col" class="table__num">Saktësia</th>
+                <th scope="col">Data</th>
+              </tr>
+            </thead>
+            <!-- Trupi i tabelës: JavaScript krijon rreshtat këtu -->
+            <tbody id="records-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== GRAFIKU I PËRPARIMIT ========== -->
+      <section class="section reveal" aria-labelledby="chart-title">
+        <!-- Titulli i seksionit -->
+        <h2 class="section__title" id="chart-title">Përparimi</h2>
+        <!-- Shpjegimi i grafikut -->
+        <p class="section__lead">WPM në 30 testet e fundit. Kalo miun mbi një pikë për të parë saktësinë.</p>
+
+        <!-- Filtrat e grafikut; role="group" i bashkon nën një emër -->
+        <div class="chart-filters" role="group" aria-label="Filtrat e grafikut">
+          <!-- Filtri i gjuhës -->
+          <div class="field">
+            <!-- for="filter-lang": klikimi mbi etiketë fokuson listën -->
+            <label class="field__label" for="filter-lang">Gjuha</label>
+            <!-- data-filter: emri i filtrit që lexon JavaScript -->
+            <select class="select" id="filter-lang" data-filter="lang">
+              <option value="all">Të gjitha</option>
+              <option value="sq">Shqip</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+          <!-- Filtri i nivelit -->
+          <div class="field">
+            <label class="field__label" for="filter-level">Niveli</label>
+            <select class="select" id="filter-level" data-filter="level">
+              <option value="all">Të gjitha</option>
+              <option value="easy">E lehtë</option>
+              <option value="medium">Mesatare</option>
+              <option value="hard">E vështirë</option>
+            </select>
+          </div>
+          <!-- Filtri i kohës -->
+          <div class="field">
+            <label class="field__label" for="filter-duration">Koha</label>
+            <select class="select" id="filter-duration" data-filter="duration">
+              <option value="all">Të gjitha</option>
+              <option value="15">15 sekonda</option>
+              <option value="30">30 sekonda</option>
+              <option value="60">60 sekonda</option>
+              <option value="120">120 sekonda</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Mbështjellësi i grafikut me lartësi të fiksuar -->
+        <div class="chart-panel">
+          <!--
+            canvas: sipërfaqja ku Chart.js vizaton grafikun.
+            role="img" + aria-label: lexuesi i ekranit e njeh si figurë me përshkrim.
+            Teksti brenda canvas shfaqet vetëm në shfletues që nuk e mbështesin canvas.
+          -->
+          <canvas id="progress-chart" role="img" aria-label="Grafiku i WPM në testet e fundit">Shfletuesi yt nuk e mbështet vizatimin e grafikut.</canvas>
+          <!-- Mesazhi kur filtrat nuk gjejnë asnjë test -->
+          <p class="chart-panel__empty" id="chart-empty" hidden>Nuk ka teste për këta filtra.</p>
+        </div>
+        <!-- Përmbledhja me tekst e grafikut (sa teste po shfaqen), e përditësuar nga JavaScript -->
+        <p class="chart-summary" id="chart-summary"></p>
+      </section>
+
+      <!-- ========== TABELA E PLOTË E HISTORIKUT ========== -->
+      <section class="section reveal" aria-labelledby="history-title">
+        <!-- Titulli i seksionit -->
+        <h2 class="section__title" id="history-title">Të gjitha testet</h2>
+        <!-- Shpjegimi, me numrin real të testeve (JavaScript e plotëson) -->
+        <p class="section__lead" id="history-count"></p>
+        <!-- Mbështjellësi i lëvizshëm i tabelës -->
+        <div class="table-wrap" tabindex="0" role="region" aria-labelledby="history-title">
+          <table class="table">
+            <!-- Përshkrimi i tabelës për lexuesit e ekranit -->
+            <caption class="visually-hidden">Të gjitha testet, nga më i riu te më i vjetri</caption>
+            <thead>
+              <tr>
+                <th scope="col">Data dhe ora</th>
+                <th scope="col">Gjuha</th>
+                <th scope="col">Niveli</th>
+                <th scope="col">Koha</th>
+                <th scope="col" class="table__num">WPM</th>
+                <th scope="col" class="table__num">Saktësia</th>
+                <th scope="col" class="table__num">Gabime</th>
+              </tr>
+            </thead>
+            <!-- JavaScript krijon këtu një rresht për çdo test -->
+            <tbody id="history-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== FSHIRJA E HISTORIKUT ========== -->
+      <section class="section section--danger reveal" aria-labelledby="clear-title">
+        <!-- Titulli i seksionit -->
+        <h2 class="section__title" id="clear-title">Fshi të dhënat</h2>
+        <!-- Shpjegimi i asaj që fshihet -->
+        <p class="section__lead">Fshin të gjitha testet dhe rekordet nga ky shfletues. Cilësimet dhe tema mbeten.</p>
+        <!-- Butoni hap dritaren e konfirmimit (jo window.confirm) -->
+        <button class="button" id="clear-button" type="button">Fshi historikun</button>
+      </section>
+    </div>
+
+    <!--
+      Dritarja e konfirmimit (elementi vendas <dialog>).
+      JavaScript e hap me showModal(), që bllokon pjesën tjetër të faqes.
+      aria-labelledby / aria-describedby: titulli dhe teksti i dritares lexohen nga lexuesi i ekranit.
+    -->
+    <dialog class="dialog" id="clear-dialog" aria-labelledby="clear-dialog-title" aria-describedby="clear-dialog-text">
+      <!--
+        method="dialog": kur klikohet një buton i formularit, dritarja mbyllet vetë
+        dhe dialog.returnValue merr "value" të butonit të klikuar.
+      -->
+      <form class="dialog__form" method="dialog">
+        <!-- Titulli i dritares -->
+        <h2 class="dialog__title" id="clear-dialog-title">Ta fshij gjithë historikun?</h2>
+        <!-- Pasojat e veprimit, të thëna qartë -->
+        <p class="dialog__text" id="clear-dialog-text">Të gjitha testet dhe rekordet personale do të fshihen përgjithmonë nga ky shfletues. Ky veprim nuk kthehet pas.</p>
+        <!-- Butonat e dritares -->
+        <div class="dialog__actions">
+          <!-- value="cancel": mbyll pa fshirë. autofocus: fokusi vendoset te zgjedhja më e sigurt. -->
+          <button class="button" type="submit" value="cancel" autofocus>Anulo</button>
+          <!-- value="confirm": JavaScript e njeh këtë vlerë dhe fshin historikun -->
+          <button class="button button--primary" type="submit" value="confirm">Po, fshije</button>
+        </div>
+      </form>
+    </dialog>
+  </main>
+
+  <!-- ========== FUNDI I FAQES ========== -->
+  <footer class="site-footer">
+    <p class="site-footer__text">TypeFast, projekt final në kurs, 2026. Punoi: Jon Mjekiqi</p>
+  </footer>
+</body>
+</html>

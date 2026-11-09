@@ -1,0 +1,187 @@
+/*
+  ==========================================================================
+  base.css
+  --------------------------------------------------------------------------
+  Rregullat bazë për të gjithë faqen: pastrimi i stileve të shfletuesit
+  (reset), trupi i faqes, shkronjat, lidhjet dhe stili i fokusit.
+  Këtu nuk ka asnjë komponent specifik, vetëm themelet.
+  ==========================================================================
+*/
+
+/*
+  Çdo element dhe pseudo-elementet e tij (::before, ::after).
+  box-sizing: border-box do të thotë që padding dhe border llogariten
+  BRENDA gjerësisë, kështu që një kuti 100px mbetet 100px.
+*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* gjerësia përfshin padding dhe border */
+}
+
+/*
+  Elementet që shfletuesi i jep hapësira vetë (margin).
+  I fshijmë, që hapësirat t'i vendosim vetë me tokenat --space-*.
+*/
+body,
+h1,
+h2,
+h3,
+p,
+ol,
+ul,
+dl,
+dd,
+figure {
+  margin: 0; /* heq hapësirat e jashtme të parazgjedhura */
+}
+
+/*
+  Atributi hidden. E detyrojmë të fshehë gjithmonë, edhe nëse një klasë
+  tjetër i jep elementit display: flex ose grid.
+*/
+[hidden] {
+  display: none !important; /* !important: hidden fiton mbi çdo rregull tjetër display */
+}
+
+/* Elementi <html>: rregullat që trashëgohen nga e gjithë faqja */
+html {
+  -webkit-text-size-adjust: 100%; /* Safari në iPad nuk i zmadhon shkronjat vetë kur kthehet ekrani */
+  text-size-adjust: 100%; /* e njëjta gjë për shfletuesit e tjerë */
+}
+
+/* Trupi i faqes: sfondi, ngjyra e tekstit dhe shkronja bazë */
+body {
+  min-height: 100vh; /* trupi zë të paktën gjithë lartësinë e ekranit */
+  display: flex; /* vendos kokën, përmbajtjen dhe fundin njëri pas tjetrit */
+  flex-direction: column; /* në kolonë, nga lart poshtë */
+  background-color: var(--bg); /* sfondi i faqes sipas temës */
+  color: var(--text); /* ngjyra e tekstit sipas temës */
+  font-family: var(--font-ui); /* shkronjat e sistemit për ndërfaqen */
+  font-size: var(--fs-body); /* madhësia normale e tekstit */
+  line-height: var(--lh-body); /* lartësia e rreshtit për lexim të rehatshëm */
+  font-weight: var(--fw-normal); /* trashësia normale */
+  -webkit-font-smoothing: antialiased; /* shkronja më të lëmuara në macOS */
+  transition: background-color var(--duration-fast) var(--easing), color var(--duration-fast) var(--easing); /* ndërrimi i temës bëhet butë */
+}
+
+/* Titulli kryesor i faqes */
+h1 {
+  font-size: var(--fs-title); /* madhësia e titujve */
+  line-height: var(--lh-title); /* rresht i ngjeshur për titull */
+  letter-spacing: var(--ls-title); /* shkronjat afrohen pak */
+  font-weight: var(--fw-bold); /* titull i trashë */
+}
+
+/* Titujt e seksioneve */
+h2 {
+  font-size: var(--fs-title); /* e njëjta madhësi si h1, vetëm 5 madhësi lejohen */
+  line-height: var(--lh-title); /* rresht i ngjeshur */
+  letter-spacing: var(--ls-title); /* shkronjat afrohen pak */
+  font-weight: var(--fw-bold); /* i trashë */
+}
+
+/* Nëntitujt: madhësia e tekstit normal, por të trashë */
+h3 {
+  font-size: var(--fs-body); /* madhësia normale */
+  line-height: var(--lh-body); /* rresht normal */
+  font-weight: var(--fw-bold); /* i trashë që të dallohet si titull */
+}
+
+/* Listat: heqim hapësirën e majtë të parazgjedhur, e vendosim vetë */
+ol,
+ul {
+  padding-left: var(--space-3); /* hapësirë në të majtë për numrat ose pikat */
+}
+
+/* Lidhjet e zakonshme brenda tekstit */
+a {
+  color: var(--text); /* lidhja ka ngjyrën e tekstit, jo blu */
+  text-decoration: underline; /* nënvizimi tregon që është lidhje */
+  text-decoration-thickness: var(--border-width); /* vijë e hollë nënvizimi */
+  text-underline-offset: 0.2em; /* nënvizimi pak më poshtë shkronjave */
+}
+
+/* Lidhja kur kalon miun mbi të */
+a:hover {
+  color: var(--text-muted); /* zbehet pak për të treguar që reagon */
+}
+
+/*
+  Fokusi me tastierë (:focus-visible shfaqet vetëm kur lëviz me Tab,
+  jo kur klikon me miun). Përdor ngjyrën e theksit, siç kërkon dizajni.
+*/
+:focus-visible {
+  outline: var(--focus-width) solid var(--accent); /* vijë 2px me ngjyrën e theksit */
+  outline-offset: var(--focus-width); /* vija qëndron 2px larg elementit */
+}
+
+/* Kur fokusi vjen nga miu, nuk tregojmë vijë (vetëm për tastierë) */
+:focus:not(:focus-visible) {
+  outline: none; /* pa vijë për klikimet me miun */
+}
+
+/* Butonat, fushat dhe listat zgjedhëse marrin shkronjat e faqes, jo ato të sistemit */
+button,
+input,
+select,
+textarea {
+  font: inherit; /* trashëgon familjen, madhësinë dhe lartësinë e rreshtit */
+  color: inherit; /* trashëgon ngjyrën e tekstit */
+}
+
+/* Tastet e tastierës në tekst, p.sh. Tab, Esc */
+kbd {
+  font-family: var(--font-mono); /* shkronjë me gjerësi të njëjtë, si në tastierë */
+  font-size: var(--fs-small); /* pak më i vogël se teksti përreth */
+  padding: 0 var(--space-1); /* hapësirë majtas dhe djathtas */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë si një tast */
+  border-radius: var(--radius-sm); /* qoshe të lehta, 4px */
+  background-color: var(--surface); /* sfond pak ndryshe nga faqja */
+}
+
+/* Kodi brenda tekstit, p.sh. formulat */
+code {
+  font-family: var(--font-mono); /* shkronjë me gjerësi të njëjtë */
+}
+
+/* Tekst i theksuar */
+strong {
+  font-weight: var(--fw-bold); /* i trashë */
+}
+
+/*
+  Klasa ndihmëse: fsheh elementin nga syri, por e lë për lexuesit e ekranit.
+  Përdoret p.sh. për h1 e faqes së testit dhe për njoftuesin e rezultatit.
+*/
+.visually-hidden {
+  position: absolute; /* del nga rrjedha e faqes, nuk zë vend */
+  width: 1px; /* gjerësi minimale */
+  height: 1px; /* lartësi minimale */
+  padding: 0; /* pa hapësirë të brendshme */
+  overflow: hidden; /* çdo gjë që del jashtë fshihet */
+  clip: rect(0 0 0 0); /* pret çdo pjesë të dukshme */
+  white-space: nowrap; /* teksti nuk thyhet në rreshta, që lexuesi ta lexojë drejt */
+  border: 0; /* pa kornizë */
+}
+
+/*
+  Lidhja "Kalo te përmbajtja". E fshehur lart jashtë ekranit,
+  shfaqet vetëm kur merr fokus me Tab.
+*/
+.skip-link {
+  position: absolute; /* qëndron mbi faqen, nuk zë vend */
+  top: var(--space-1); /* 8px nga lart */
+  left: var(--space-1); /* 8px nga e majta */
+  padding: var(--space-1) var(--space-2); /* hapësirë brenda lidhjes */
+  background-color: var(--surface); /* sfond që të lexohet mbi çdo gjë */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  transform: translateY(calc(-1 * var(--space-12))); /* e ngre lart jashtë ekranit */
+  z-index: var(--z-input); /* mbi elementet e tjerë */
+}
+
+/* Lidhja "Kalo te përmbajtja" kur merr fokus: zbret në ekran */
+.skip-link:focus {
+  transform: none; /* kthehet në vendin e saj, e dukshme */
+}

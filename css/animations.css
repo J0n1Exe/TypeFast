@@ -1,0 +1,145 @@
+/*
+  ==========================================================================
+  animations.css
+  --------------------------------------------------------------------------
+  Të gjitha animacionet e faqes: pulsimi i kursorit, shfaqja e panelit
+  të rezultatit, kartat njëra pas tjetrës (stagger) dhe shfaqja e
+  seksioneve kur futen në ekran (.reveal).
+  Në fund: rregulli prefers-reduced-motion, që i fik animacionet për
+  përdoruesit që e kanë kërkuar këtë në sistem.
+  Ky skedar ngarkohet i fundit, që rregullat e tij të fitojnë.
+  ==========================================================================
+*/
+
+/* ---------------- KEYFRAMES ---------------- */
+
+/*
+  @keyframes caret-blink: kursori pulson (ndizet dhe fiket).
+  Gjysmën e parë të ciklit është i dukshëm, gjysmën e dytë i padukshëm.
+*/
+@keyframes caret-blink {
+  0%,
+  50% {
+    opacity: 1; /* i dukshëm */
+  }
+  50.01%,
+  100% {
+    opacity: 0; /* i padukshëm */
+  }
+}
+
+/*
+  @keyframes fade-in: elementi shfaqet nga i padukshëm në i dukshëm.
+  Përdoret për panelin e rezultatit.
+*/
+@keyframes fade-in {
+  from {
+    opacity: 0; /* nis i padukshëm */
+  }
+  to {
+    opacity: 1; /* mbaron i dukshëm */
+  }
+}
+
+/*
+  @keyframes rise-in: elementi shfaqet dhe ngjitet pak lart.
+  Përdoret për kartat e rezultatit.
+*/
+@keyframes rise-in {
+  from {
+    opacity: 0; /* nis i padukshëm */
+    transform: translateY(var(--space-1)); /* nis 8px më poshtë */
+  }
+  to {
+    opacity: 1; /* mbaron i dukshëm */
+    transform: none; /* në vendin e vet */
+  }
+}
+
+/* ---------------- KURSORI ---------------- */
+
+/*
+  Kursori pulson VETËM kur përdoruesi nuk po shkruan (klasa caret--idle).
+  JavaScript e heq klasën gjatë shkrimit, që kursori të jetë i plotë.
+*/
+.caret--idle {
+  animation: caret-blink var(--duration-blink) step-end infinite; /* pulsim i pafund, 1 sekondë për cikël */
+}
+
+/* ---------------- PANELI I REZULTATIT ---------------- */
+
+/*
+  Paneli shfaqet butë sa herë që i hiqet atributi hidden.
+  Animacioni rinis vetë, sepse elementi kalon nga display: none në i dukshëm.
+*/
+.results:not([hidden]) {
+  animation: fade-in var(--duration-base) var(--easing) both; /* shfaqje 240ms */
+}
+
+/* Çdo kartë rezultati ngjitet dhe shfaqet */
+.result-card {
+  animation: rise-in var(--duration-base) var(--easing) both; /* both: mban gjendjen e fillimit gjatë vonesës */
+}
+
+/* Karta 2 nis 60ms pas të parës */
+.result-card:nth-child(2) {
+  animation-delay: var(--duration-stagger); /* 60ms */
+}
+
+/* Karta 3 nis 120ms pas të parës */
+.result-card:nth-child(3) {
+  animation-delay: calc(var(--duration-stagger) * 2); /* 2 x 60ms */
+}
+
+/* Karta 4 nis 180ms pas të parës */
+.result-card:nth-child(4) {
+  animation-delay: calc(var(--duration-stagger) * 3); /* 3 x 60ms */
+}
+
+/* ---------------- SHFAQJA GJATË LËVIZJES (scroll reveal) ---------------- */
+
+/*
+  Media query: vetëm kur përdoruesi NUK ka kërkuar lëvizje të reduktuar.
+  Seksionet .reveal nisin të padukshme dhe 16px më poshtë.
+  reveal.js u shton klasën is-visible kur futen në ekran.
+  Kështu, nëse lëvizja është e reduktuar, seksionet janë gjithmonë të dukshme.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  /* Seksioni para se të futet në ekran */
+  .reveal {
+    opacity: 0; /* i padukshëm */
+    transform: translateY(var(--reveal-shift)); /* 16px më poshtë */
+    transition: opacity var(--duration-reveal) var(--easing), transform var(--duration-reveal) var(--easing); /* kalim i butë 480ms */
+  }
+
+  /* Seksioni pasi është futur në ekran */
+  .reveal.is-visible {
+    opacity: 1; /* i dukshëm */
+    transform: none; /* në vendin e vet */
+  }
+}
+
+/* ---------------- LËVIZJA E REDUKTUAR ---------------- */
+
+/*
+  Media query: përdoruesi ka zgjedhur në sistem "zvogëlo lëvizjen".
+  Fikim animacionet dhe kalimet. Kursori nuk pulson dhe nuk rrëshqet.
+*/
+@media (prefers-reduced-motion: reduce) {
+  /* Çdo element dhe pseudo-element */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important; /* animacionet mbarojnë menjëherë */
+    animation-iteration-count: 1 !important; /* asnjë animacion nuk përsëritet */
+    animation-delay: 0ms !important; /* pa vonesë */
+    transition-duration: 1ms !important; /* kalimet bëhen menjëherë */
+    transition-delay: 0ms !important; /* pa vonesë */
+    scroll-behavior: auto !important; /* lëvizja e faqes pa animacion */
+  }
+
+  /* Kursori: pa pulsim, gjithmonë i dukshëm */
+  .caret--idle {
+    animation: none !important; /* asnjë pulsim */
+  }
+}
