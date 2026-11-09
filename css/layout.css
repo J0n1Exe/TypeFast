@@ -1,0 +1,227 @@
+/*
+  ==========================================================================
+  layout.css
+  --------------------------------------------------------------------------
+  Struktura e përbashkët e faqeve: koka (header), navigimi, kontejneri
+  kryesor (main), fundi (footer), paralajmërimi për file:// dhe pikat
+  e ndërprerjes (breakpoints) 1024px dhe 768px.
+  ==========================================================================
+*/
+
+/* ---------------- KOKA E FAQES ---------------- */
+
+/* Koka në krye të çdo faqeje */
+.site-header {
+  border-bottom: var(--border-width) solid var(--border); /* vijë e hollë që e ndan nga përmbajtja */
+}
+
+/* Mbështjellësi i kokës: emri, navigimi dhe butoni i temës në një rresht */
+.site-header__inner {
+  display: flex; /* i vendos elementet në një rresht */
+  align-items: center; /* i qendërzon vertikalisht */
+  gap: var(--space-4); /* 32px mes emrit, navigimit dhe butonit */
+  max-width: var(--container-max); /* nuk zgjerohet më shumë se 1120px */
+  margin: 0 auto; /* qendërzohet horizontalisht në faqe */
+  padding: var(--space-2) var(--space-4); /* hapësirë lart/poshtë 16px, anash 32px */
+}
+
+/* Emri "TypeFast" si tekst (pa logo) */
+.wordmark {
+  font-family: var(--font-mono); /* shkronjë me gjerësi të njëjtë, si te testi */
+  font-size: var(--fs-body); /* madhësia normale */
+  font-weight: var(--fw-bold); /* i trashë që të duket si emër */
+  color: var(--text); /* ngjyra e tekstit */
+  text-decoration: none; /* pa nënvizim */
+}
+
+/* Emri kur kalon miun mbi të */
+.wordmark:hover {
+  color: var(--text); /* nuk ndryshon ngjyrë, mbetet i qëndrueshëm */
+}
+
+/* Navigimi zë hapësirën e mbetur, që butoni i temës të shkojë në fund djathtas */
+.site-nav {
+  flex: 1; /* zgjerohet sa të mundet */
+}
+
+/* Lista e lidhjeve të navigimit */
+.site-nav__list {
+  display: flex; /* lidhjet në një rresht */
+  gap: var(--space-3); /* 24px mes lidhjeve */
+  padding: 0; /* pa hapësirë majtas (lista nuk ka pika) */
+  list-style: none; /* heq pikat e listës */
+}
+
+/* Çdo lidhje e navigimit */
+.site-nav__link {
+  display: inline-flex; /* lejon qendërzimin dhe lartësinë minimale */
+  align-items: center; /* teksti në mes vertikalisht */
+  min-height: var(--space-5); /* 40px lartësi, e lehtë për t'u prekur në tablet */
+  color: var(--text-muted); /* lidhjet joaktive janë të zbehura */
+  text-decoration: none; /* pa nënvizim të zakonshëm */
+  border-bottom: var(--focus-width) solid transparent; /* vend për nënvizimin aktiv, i padukshëm tani */
+  transition: color var(--duration-fast) var(--easing), border-color var(--duration-fast) var(--easing); /* ndryshim i butë */
+}
+
+/* Lidhja kur kalon miun mbi të */
+.site-nav__link:hover {
+  color: var(--text); /* bëhet e qartë */
+}
+
+/*
+  Lidhja e faqes aktuale (aria-current="page").
+  Nënvizimi me ngjyrën e theksit tregon "ku je".
+*/
+.site-nav__link[aria-current="page"] {
+  color: var(--text); /* teksti i qartë */
+  border-bottom-color: var(--accent); /* nënvizim me ngjyrën e theksit */
+}
+
+/* ---------------- PËRMBAJTJA KRYESORE ---------------- */
+
+/* Kontejneri <main> i çdo faqeje */
+.page {
+  flex: 1; /* zë gjithë hapësirën mes kokës dhe fundit, që fundi të qëndrojë poshtë */
+  width: 100%; /* gjithë gjerësinë e disponueshme */
+  max-width: var(--container-max); /* por jo më shumë se 1120px */
+  margin: 0 auto; /* në qendër të faqes */
+  padding: var(--space-8) var(--space-4); /* 64px lart/poshtë, 32px anash */
+}
+
+/* Fokusi te <main> nga lidhja "Kalo te përmbajtja" nuk ka nevojë për vijë */
+.page:focus {
+  outline: none; /* main nuk është element interaktiv, vija do ngatërronte */
+}
+
+/* Faqja e testit: elementet në kolonë me hapësira të mëdha mes tyre */
+.page--test {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* cilësimet, testi dhe rezultati njëri poshtë tjetrit */
+  gap: var(--space-8); /* 64px hapësirë bosh rreth testit, për fokus */
+}
+
+/* Faqja "Si funksionon": tekst i gjatë, prandaj kolona më e ngushtë */
+.page--prose {
+  max-width: calc(var(--prose-max) + 2 * var(--space-4)); /* gjerësia e leximit plus hapësirat anash */
+}
+
+/* ---------------- FUNDI I FAQES ---------------- */
+
+/* Fundi i faqes */
+.site-footer {
+  border-top: var(--border-width) solid var(--border); /* vijë e hollë ndarëse */
+}
+
+/* Teksti i fundit të faqes */
+.site-footer__text {
+  max-width: var(--container-max); /* e njëjta gjerësi si përmbajtja */
+  margin: 0 auto; /* në qendër */
+  padding: var(--space-3) var(--space-4); /* 24px lart/poshtë, 32px anash */
+  color: var(--text-muted); /* i zbehur, nuk tërheq vëmendjen */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm për tekst të vogël */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+}
+
+/* ---------------- PARALAJMËRIMI PËR file:// ---------------- */
+
+/* Kutia e paralajmërimit që shfaqet kur faqja hapet me dyklik */
+.file-warning {
+  max-width: var(--prose-max); /* gjerësi e lexueshme */
+  margin: var(--space-8) auto; /* 64px lart/poshtë, në qendër */
+  padding: var(--space-4); /* 32px hapësirë brenda */
+  background-color: var(--surface); /* sfond karte */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-md); /* qoshe 8px si kartë */
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* titulli, teksti dhe hapat në kolonë */
+  gap: var(--space-2); /* 16px mes tyre */
+}
+
+/* Titulli i paralajmërimit */
+.file-warning__title {
+  font-size: var(--fs-title); /* titull i madh, duhet parë menjëherë */
+}
+
+/* Hapat e numëruar për hapjen me Live Server */
+.file-warning__steps {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* hapat njëri poshtë tjetrit */
+  gap: var(--space-1); /* 8px mes hapave */
+}
+
+/*
+  Kur protocol-check.js gjen file://, i shton <html> klasën is-file-protocol.
+  Atëherë fshehim përmbajtjen që nuk do të punonte.
+*/
+.is-file-protocol .page {
+  display: none; /* përmbajtja fshihet, mbetet vetëm paralajmërimi */
+}
+
+/* ---------------- PIKAT E NDËRPRERJES ---------------- */
+
+/*
+  Media query 1024px: laptopë të vegjël dhe tableta të kthyer anash.
+  Zvogëlojmë pak hapësirat anash.
+*/
+@media (max-width: 1024px) {
+  /* Koka: hapësira anash më e vogël */
+  .site-header__inner {
+    padding: var(--space-2) var(--space-3); /* 16px lart/poshtë, 24px anash */
+  }
+
+  /* Përmbajtja: hapësira më të vogla */
+  .page {
+    padding: var(--space-6) var(--space-3); /* 48px lart/poshtë, 24px anash */
+  }
+
+  /* Fundi: e njëjta hapësirë anash si koka */
+  .site-footer__text {
+    padding: var(--space-3); /* 24px nga të gjitha anët */
+  }
+}
+
+/*
+  Media query 768px: tableta në këmbë.
+  Koka kalon në dy rreshta: emri dhe butoni sipër, navigimi poshtë.
+*/
+@media (max-width: 768px) {
+  /* Koka lejon kalimin në rresht të ri */
+  .site-header__inner {
+    flex-wrap: wrap; /* elementet kalojnë në rresht të ri kur nuk nxë */
+    gap: var(--space-1) var(--space-3); /* 8px mes rreshtave, 24px mes elementeve */
+    padding: var(--space-1) var(--space-2); /* 8px lart/poshtë, 16px anash */
+  }
+
+  /* Navigimi zë gjithë rreshtin e dytë */
+  .site-nav {
+    order: 3; /* shkon i fundit, pas butonit të temës */
+    flex-basis: 100%; /* gjerësia e plotë, pra rresht i ri */
+  }
+
+  /* Butoni i temës shtyhet djathtas në rreshtin e parë */
+  .theme-toggle {
+    margin-left: auto; /* hapësira automatike majtas e shtyn djathtas */
+  }
+
+  /* Përmbajtja: hapësira më të vogla */
+  .page {
+    padding: var(--space-4) var(--space-2); /* 32px lart/poshtë, 16px anash */
+  }
+
+  /* Faqja e testit: më pak hapësirë mes pjesëve */
+  .page--test {
+    gap: var(--space-5); /* 40px */
+  }
+
+  /* Fundi i faqes */
+  .site-footer__text {
+    padding: var(--space-2); /* 16px nga të gjitha anët */
+  }
+
+  /* Paralajmërimi: më pak hapësirë */
+  .file-warning {
+    margin: var(--space-4) var(--space-2); /* 32px lart/poshtë, 16px anash */
+    padding: var(--space-3); /* 24px brenda */
+  }
+}

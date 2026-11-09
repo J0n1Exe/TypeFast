@@ -1,0 +1,471 @@
+/*
+  ==========================================================================
+  test.css
+  --------------------------------------------------------------------------
+  Stilet vetëm për index.html: shiriti i cilësimeve, statistikat e
+  drejtpërdrejta, kutia e tekstit me shkronjat dhe kursorin, fusha e
+  fshehur e shkrimit, mesazhi i fokusit dhe paneli i rezultatit.
+  ==========================================================================
+*/
+
+/* ---------------- SHIRITI I CILËSIMEVE ---------------- */
+
+/* Gjithë shiriti: grupet në rresht, në qendër, kalojnë në rresht të ri kur s'nxënë */
+.settings {
+  display: flex; /* grupet në një rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri kur nuk ka vend */
+  justify-content: center; /* në qendër të faqes */
+  align-items: center; /* në mes vertikalisht */
+  gap: var(--space-2) var(--space-5); /* 16px mes rreshtave, 40px mes grupeve */
+}
+
+/* Një grup: etiketa dhe zgjedhjet e tij */
+.settings__group {
+  display: flex; /* etiketa dhe zgjedhjet në rresht */
+  align-items: center; /* në mes vertikalisht */
+  gap: var(--space-2); /* 16px mes etiketës dhe zgjedhjeve */
+}
+
+/* Etiketa e grupit, p.sh. "KOHA" */
+.settings__label {
+  color: var(--text-muted); /* e zbehur, nuk tërheq vëmendjen */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  text-transform: uppercase; /* shkronja të mëdha */
+}
+
+/* Rreshti i zgjedhjeve brenda një grupi */
+.chip-row {
+  display: flex; /* zgjedhjet në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri nëse s'nxënë */
+  gap: var(--space-1); /* 8px mes zgjedhjeve */
+}
+
+/* ---------------- ZONA E TESTIT ---------------- */
+
+/* Mbështjellësi i statistikave, kutisë dhe udhëzimit */
+.test-area {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* në kolonë */
+  align-items: center; /* gjithçka në qendër horizontalisht */
+  gap: var(--space-4); /* 32px mes pjesëve */
+}
+
+/* ---------------- STATISTIKAT E DREJTPËRDREJTA ---------------- */
+
+/* Rreshti me kohën, WPM dhe saktësinë */
+.live-stats {
+  display: flex; /* tre statistikat në rresht */
+  justify-content: center; /* në qendër */
+  gap: var(--space-8); /* 64px mes tyre */
+}
+
+/* Një statistikë: numri sipër, etiketa poshtë */
+.stat {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* numri mbi etiketën */
+  align-items: center; /* në qendër */
+}
+
+/* Numri i madh i statistikës */
+.stat__value {
+  font-family: var(--font-mono); /* shkronjë me gjerësi të njëjtë */
+  font-size: var(--fs-title); /* numër i madh */
+  line-height: var(--lh-title); /* rresht i ngjeshur */
+  letter-spacing: var(--ls-title); /* shkronjat afrohen pak */
+  font-weight: var(--fw-bold); /* i trashë */
+  font-variant-numeric: tabular-nums; /* shifrat nuk lëvizin kur ndryshojnë */
+}
+
+/* Etiketa e vogël poshtë numrit */
+.stat__label {
+  color: var(--text-muted); /* e zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  text-transform: uppercase; /* shkronja të mëdha */
+}
+
+/* ---------------- KUTIA E TEKSTIT ---------------- */
+
+/*
+  Kutia që tregon saktësisht 3 rreshta tekst.
+  Lartësia = madhësia e shkronjës x lartësia e rreshtit x 3 rreshta.
+  Gjithçka që del poshtë rreshtit të 3-të fshihet (overflow: hidden).
+*/
+.text-box {
+  position: relative; /* fusha e fshehur dhe mesazhet pozicionohen sipas saj */
+  width: 100%; /* zë gjithë gjerësinë e lejuar */
+  max-width: var(--text-max); /* por jo më shumë se rreth 64 shkronja */
+  height: calc(var(--fs-test) * var(--lh-test) * var(--test-lines)); /* saktësisht 3 rreshta */
+  overflow: hidden; /* fsheh rreshtat e tjerë */
+  font-family: var(--font-mono); /* çdo shkronjë ka të njëjtën gjerësi */
+  font-size: var(--fs-test); /* madhësia e tekstit të testit */
+  line-height: var(--lh-test); /* lartësia e rreshtit */
+  cursor: text; /* miu tregon që këtu shkruhet */
+  user-select: none; /* teksti nuk zgjidhet me miun gjatë testit */
+  -webkit-user-select: none; /* e njëjta për Safari */
+}
+
+/*
+  Shiriti që mban fjalët dhe kursorin. JavaScript i jep vetëm numrin
+  --scroll-y; CSS e përdor për ta ngjitur lart me një rresht.
+*/
+.text-track {
+  --scroll-y: 0px; /* vlera fillestare: pa zhvendosje (JavaScript e ndryshon) */
+  position: relative; /* kursori dhe offsetTop e shkronjave maten sipas këtij elementi */
+  transform: translateY(var(--scroll-y)); /* ngjitja lart e rreshtave */
+  transition: transform var(--duration-fast) var(--easing), filter var(--duration-fast) var(--easing); /* ngjitje dhe turbullim i butë */
+}
+
+/* Gjatë rindërtimit të tekstit ose ndryshimit të madhësisë, lëvizja bëhet menjëherë */
+.text-track--instant {
+  transition: none; /* pa animacion */
+}
+
+/* Mbështjellësi i fjalëve: fjalët kalojnë në rresht të ri vetëm mes fjalëve */
+.text-words {
+  display: flex; /* fjalët njëra pas tjetrës */
+  flex-wrap: wrap; /* kur s'nxë, fjala e radhës kalon në rresht të ri */
+}
+
+/* Një fjalë: nuk thyhet kurrë në mes */
+.word {
+  display: flex; /* shkronjat e fjalës në një rresht */
+  flex-shrink: 0; /* fjala nuk ngushtohet, pra nuk thyhet */
+  white-space: nowrap; /* siguri shtesë: pa thyerje brenda fjalës */
+}
+
+/* Një shkronjë e pashkruar (gjendja bazë): gri e zbehur */
+.char {
+  display: inline-block; /* ka lartësi të plotë rreshti, që ta masim saktë */
+  color: var(--text-muted); /* ngjyra e tekstit ende të pashkruar */
+}
+
+/* Shkronjë e shkruar saktë: e gjelbër */
+.char--correct {
+  color: var(--correct); /* ngjyra e statusit "saktë" */
+}
+
+/* Shkronjë e shkruar gabim: e kuqe dhe e nënvizuar (për daltonikët) */
+.char--wrong {
+  color: var(--wrong); /* ngjyra e statusit "gabim" */
+  text-decoration: underline; /* nënvizim, që gabimi të shihet edhe pa ngjyrë */
+  text-decoration-thickness: var(--focus-width); /* vijë 2px, e dukshme */
+  text-underline-offset: 0.15em; /* nënvizimi pak poshtë shkronjës */
+}
+
+/*
+  Hapësirë e shkruar gabim. Hapësira nuk ka shkronjë që të skuqet,
+  prandaj i japim sfond të kuq të zbehur dhe një vijë të kuqe poshtë.
+*/
+.char--space.char--wrong {
+  background-color: var(--wrong-soft); /* sfond i kuq i zbehur */
+  box-shadow: inset 0 calc(-1 * var(--focus-width)) 0 var(--wrong); /* vijë e kuqe 2px në fund, brenda kutisë */
+}
+
+/*
+  Kursori: një vijë vertikale 2px me ngjyrën e theksit.
+  JavaScript i jep --caret-x dhe --caret-y (pozicioni i shkronjës aktuale),
+  CSS e lëviz me transform që lëvizja të jetë e butë.
+*/
+.caret {
+  --caret-x: 0px; /* pozicioni horizontal fillestar */
+  --caret-y: 0px; /* pozicioni vertikal fillestar */
+  position: absolute; /* qëndron mbi tekst, nuk zë vend */
+  top: 0; /* nis nga qoshja lart majtas e shiritit */
+  left: 0; /* nis nga qoshja lart majtas e shiritit */
+  width: var(--caret-width); /* 2px gjerësi */
+  height: 1em; /* sa madhësia e shkronjës */
+  background-color: var(--accent); /* ngjyra e theksit: "ku je" */
+  transform: translate(var(--caret-x), var(--caret-y)); /* e çon te shkronja aktuale */
+  transition: transform var(--duration-caret) var(--easing), opacity var(--duration-fast) var(--easing); /* lëvizje e butë 80ms */
+  pointer-events: none; /* klikimet kalojnë përmes kursorit */
+  z-index: var(--z-base); /* mbi shkronjat */
+}
+
+/* Kursori pa animacion (pas rindërtimit të tekstit ose ndryshimit të madhësisë) */
+.caret--instant {
+  transition: none; /* kërcen menjëherë në vend */
+}
+
+/*
+  Fusha e fshehur e shkrimit. Mbulon gjithë kutinë, por është e padukshme.
+  Kështu prekja në tablet bie direkt mbi të dhe hap tastierën në ekran.
+*/
+.typing-input {
+  position: absolute; /* mbi gjithë kutinë */
+  inset: 0; /* shtrihet nga të katër anët deri në skaj */
+  width: 100%; /* gjithë gjerësia */
+  height: 100%; /* gjithë lartësia */
+  margin: 0; /* pa hapësirë të jashtme */
+  padding: 0; /* pa hapësirë të brendshme */
+  border: 0; /* pa kornizë */
+  opacity: 0; /* plotësisht e padukshme */
+  resize: none; /* pa dorezën e zmadhimit */
+  overflow: hidden; /* pa shirit lëvizës */
+  background-color: transparent; /* pa sfond */
+  color: transparent; /* teksti i saj nuk shihet */
+  caret-color: transparent; /* kursori i saj nuk shihet (kemi kursorin tonë) */
+  font-size: var(--fs-body); /* 16px: Safari në iPad nuk e zmadhon faqen kur fokusohet */
+  cursor: text; /* miu tregon që këtu shkruhet */
+  z-index: var(--z-input); /* sipër gjithçkaje në kuti, që të marrë klikimet */
+}
+
+/* Kur fusha humbet fokusin, teksti turbullohet pak */
+.text-box.is-blurred .text-track {
+  filter: blur(var(--blur-amount)); /* turbullim 4px */
+}
+
+/* Kur fusha humbet fokusin, kursori fshihet */
+.text-box.is-blurred .caret {
+  opacity: 0; /* i padukshëm */
+  animation: none; /* ndalon pulsimin, përndryshe animacioni do ta ndizte sërish kursorin */
+}
+
+/*
+  Mesazhi "Kliko këtu ose shtyp çfarëdo tasti për të vazhduar".
+  Është gjithmonë aty, por i padukshëm derisa kutia të ketë klasën is-blurred.
+  Ky ndryshim (tekst i turbullt + mesazh, ose tekst i qartë + kursor) është
+  treguesi vizual i fokusit për këtë kuti.
+*/
+.focus-overlay {
+  position: absolute; /* mbi tekstin */
+  inset: 0; /* mbulon gjithë kutinë */
+  display: flex; /* lejon qendërzim */
+  align-items: center; /* në mes vertikalisht */
+  justify-content: center; /* në mes horizontalisht */
+  padding: var(--space-2); /* 16px nga skajet */
+  font-family: var(--font-ui); /* shkronjat e ndërfaqes */
+  font-size: var(--fs-body); /* madhësia normale */
+  line-height: var(--lh-body); /* rresht normal */
+  text-align: center; /* teksti në qendër */
+  color: var(--text); /* tekst i qartë */
+  opacity: 0; /* i padukshëm si parazgjedhje */
+  visibility: hidden; /* edhe i fshehur nga lexuesit e ekranit dhe klikimet */
+  pointer-events: none; /* klikimi kalon te fusha e shkrimit poshtë */
+  transition: opacity var(--duration-fast) var(--easing), visibility var(--duration-fast) var(--easing); /* shfaqje e butë */
+  z-index: var(--z-overlay); /* mbi tekstin, nën fushën e shkrimit */
+}
+
+/* Mesazhi shfaqet kur kutia nuk ka fokus */
+.text-box.is-blurred .focus-overlay {
+  opacity: 1; /* i dukshëm */
+  visibility: visible; /* i dukshëm */
+}
+
+/* Mesazhi i ngarkimit ose i gabimit, mbi gjithë kutinë */
+.text-box__status {
+  position: absolute; /* mbi tekstin */
+  inset: 0; /* mbulon gjithë kutinë */
+  display: flex; /* lejon qendërzim */
+  align-items: center; /* në mes vertikalisht */
+  justify-content: center; /* në mes horizontalisht */
+  padding: var(--space-2); /* 16px nga skajet */
+  background-color: var(--bg); /* mbulon tekstin poshtë */
+  color: var(--text-muted); /* i zbehur gjatë ngarkimit */
+  font-family: var(--font-ui); /* shkronjat e ndërfaqes */
+  font-size: var(--fs-body); /* madhësia normale */
+  line-height: var(--lh-body); /* rresht normal */
+  text-align: center; /* në qendër */
+  z-index: var(--z-input); /* mbi fushën e shkrimit, që gabimi të lexohet */
+}
+
+/* Mesazhi i gabimit: tekst i qartë (e kuqja është vetëm për shkronjat e gabuara) */
+.text-box__status--error {
+  color: var(--text); /* ngjyra e tekstit */
+}
+
+/* Udhëzimi "Tab: rifillo testin · Esc: anulo" */
+.hint {
+  color: var(--text-muted); /* i zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  text-align: center; /* në qendër */
+}
+
+/* ---------------- PANELI I REZULTATIT ---------------- */
+
+/* I gjithë paneli */
+.results {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* pjesët në kolonë */
+  gap: var(--space-4); /* 32px mes pjesëve */
+  width: 100%; /* gjithë gjerësia */
+}
+
+/* Koka: titulli dhe njoftimi i rekordit në një rresht */
+.results__header {
+  display: flex; /* në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri nëse s'nxënë */
+  align-items: baseline; /* rreshtohen sipas vijës së shkronjave */
+  gap: var(--space-1) var(--space-3); /* 8px mes rreshtave, 24px mes elementeve */
+}
+
+/* Titulli merr fokus nga JavaScript, por nuk ka nevojë për vijë */
+.results__title:focus {
+  outline: none; /* titulli nuk është interaktiv */
+}
+
+/* Njoftimi "Rekord i ri personal", tekst i thjeshtë */
+.record-notice {
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  text-transform: uppercase; /* shkronja të mëdha */
+  font-weight: var(--fw-bold); /* i trashë që të vihet re */
+}
+
+/* Rreshti "Shqip, Mesatare, 30 sekonda" */
+.results__meta {
+  color: var(--text-muted); /* i zbehur */
+}
+
+/* Rrjeta e kartave: 4 kolona të barabarta */
+.results__grid {
+  display: grid; /* rrjetë */
+  grid-template-columns: repeat(4, minmax(0, 1fr)); /* 4 kolona të barabarta */
+  gap: var(--space-2); /* 16px mes kartave */
+}
+
+/* Një kartë rezultati */
+.result-card {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* etiketa mbi numrin */
+  justify-content: space-between; /* etiketa lart, numri poshtë */
+  gap: var(--space-2); /* 16px mes tyre */
+  padding: var(--space-3); /* 24px brenda */
+  background-color: var(--surface); /* sfond karte */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-md); /* qoshe 8px */
+}
+
+/* Etiketa e kartës, p.sh. "SAKTËSIA" */
+.result-card__label {
+  color: var(--text-muted); /* e zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  text-transform: uppercase; /* shkronja të mëdha */
+}
+
+/* Numri i madh i kartës */
+.result-card__value {
+  font-family: var(--font-mono); /* shkronjë me gjerësi të njëjtë */
+  font-size: var(--fs-display); /* madhësia më e madhe */
+  line-height: var(--lh-display); /* rresht i ngjeshur */
+  letter-spacing: var(--ls-display); /* shkronjat afrohen */
+  font-weight: var(--fw-bold); /* i trashë */
+  font-variant-numeric: tabular-nums; /* shifra me gjerësi të njëjtë */
+  overflow-wrap: anywhere; /* nëse numri është shumë i gjatë, thyhet në vend që të dalë jashtë */
+}
+
+/* Karta "Karaktere të sakta / totale" ka tekst më të gjatë, prandaj numër më të vogël */
+.result-card__value--compact {
+  font-size: var(--fs-title); /* titull në vend të madhësisë display */
+  line-height: var(--lh-title); /* rresht përkatës */
+  letter-spacing: var(--ls-title); /* hapësira përkatëse */
+}
+
+/* Pjesa e karaktereve më të gabuara */
+.missed {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* titulli mbi listën */
+  gap: var(--space-2); /* 16px */
+}
+
+/* Titulli i listës, i vogël me shkronja të mëdha */
+.missed__title {
+  color: var(--text-muted); /* i zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  font-weight: var(--fw-medium); /* pak i trashë */
+  text-transform: uppercase; /* shkronja të mëdha */
+}
+
+/* Lista e karaktereve: në rresht, si zgjedhje të vogla */
+.missed__list {
+  display: flex; /* në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri */
+  gap: var(--space-1); /* 8px */
+  padding: 0; /* pa hapësirë majtas */
+  list-style: none; /* pa numra të listës (renditja shihet nga radha) */
+}
+
+/* Një element i listës: karakteri dhe numri i gabimeve */
+.missed__item {
+  display: inline-flex; /* në rresht */
+  align-items: center; /* në mes vertikalisht */
+  gap: var(--space-2); /* 16px mes karakterit dhe numrit */
+  min-height: var(--space-5); /* 40px */
+  padding: 0 var(--space-2); /* 16px anash */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  background-color: var(--surface); /* sfond karte */
+}
+
+/* Karakteri i gabuar */
+.missed__char {
+  font-family: var(--font-mono); /* shkronjë me gjerësi të njëjtë */
+  font-weight: var(--fw-bold); /* i trashë */
+}
+
+/* Numri i gabimeve për atë karakter */
+.missed__count {
+  color: var(--text-muted); /* i zbehur */
+  font-family: var(--font-mono); /* shkronjë me gjerësi të njëjtë */
+  font-variant-numeric: tabular-nums; /* shifra të barabarta */
+}
+
+/* Mesazhi kur nuk ka gabime, dhe shënimi kur rezultati nuk u ruajt */
+.missed__empty,
+.results__note {
+  color: var(--text-muted); /* i zbehur */
+}
+
+/* Butonat "Provo përsëri" dhe "Shiko historikun" */
+.results__actions {
+  display: flex; /* në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri */
+  gap: var(--space-2); /* 16px */
+}
+
+/* ---------------- PIKAT E NDËRPRERJES ---------------- */
+
+/* 1024px: kartat e rezultatit në 2 kolona */
+@media (max-width: 1024px) {
+  /* Rrjeta me 2 kolona */
+  .results__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 kolona */
+  }
+}
+
+/* 768px: çdo grup cilësimesh në rreshtin e vet */
+@media (max-width: 768px) {
+  /* Shiriti i cilësimeve në kolonë */
+  .settings {
+    flex-direction: column; /* një grup për rresht */
+    align-items: stretch; /* grupet zënë gjithë gjerësinë */
+    gap: var(--space-2); /* 16px mes grupeve */
+  }
+
+  /* Grupi: etiketa sipër, zgjedhjet poshtë */
+  .settings__group {
+    flex-direction: column; /* në kolonë */
+    align-items: flex-start; /* majtas */
+    gap: var(--space-1); /* 8px */
+  }
+
+  /* Statistikat më afër njëra-tjetrës */
+  .live-stats {
+    gap: var(--space-5); /* 40px */
+  }
+
+  /* Kartat e rezultatit me më pak hapësirë brenda */
+  .result-card {
+    padding: var(--space-2); /* 16px */
+  }
+}

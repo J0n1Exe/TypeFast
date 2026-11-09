@@ -1,0 +1,393 @@
+/*
+  ==========================================================================
+  components.css
+  --------------------------------------------------------------------------
+  Pjesët e ripërdorshme të ndërfaqes: butonat, butoni me ikonë,
+  zgjedhjet (chips), çelësi ndezur/fikur, kartat, tabelat, fushat
+  zgjedhëse, dritarja e konfirmimit dhe gjendja bosh.
+  Rregull: butonat NUK përdorin ngjyrën e theksit. Theksi është vetëm
+  për zgjedhjen aktive, lidhjen aktive, kursorin dhe fokusin.
+  ==========================================================================
+*/
+
+/* ---------------- BUTONAT ---------------- */
+
+/* Butoni bazë (edhe lidhjet me pamje butoni, p.sh. "Shiko historikun") */
+.button {
+  display: inline-flex; /* përmbajtja në rresht, lejon qendërzim */
+  align-items: center; /* teksti në mes vertikalisht */
+  justify-content: center; /* teksti në mes horizontalisht */
+  gap: var(--space-1); /* 8px nëse butoni ka ikonë dhe tekst */
+  min-height: var(--space-5); /* 40px, lartësia minimale e kërkuar */
+  padding: 0 var(--space-3); /* 24px hapësirë majtas dhe djathtas */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë, pa hije */
+  border-radius: var(--radius-sm); /* drejtkëndësh me qoshe 4px, jo formë kapsule */
+  background-color: var(--surface); /* sfond karte */
+  color: var(--text); /* ngjyra e tekstit */
+  font-size: var(--fs-body); /* madhësia normale */
+  font-weight: var(--fw-medium); /* pak më i trashë se teksti */
+  text-decoration: none; /* lidhjet me pamje butoni nuk nënvizohen */
+  cursor: pointer; /* dora e miut tregon që klikohet */
+  transition: background-color var(--duration-fast) var(--easing), border-color var(--duration-fast) var(--easing); /* ndryshim i butë në hover */
+}
+
+/* Butoni kur kalon miun mbi të */
+.button:hover {
+  background-color: var(--surface-2); /* sfondi errësohet/çelet pak */
+  border-color: var(--text-muted); /* korniza bëhet më e dukshme */
+  color: var(--text); /* teksti mbetet i qartë (edhe për lidhjet) */
+}
+
+/* Butoni kur shtypet */
+.button:active {
+  transform: translateY(var(--border-width)); /* zbret 1px, si buton i vërtetë */
+}
+
+/*
+  Butoni kryesor: sfond me ngjyrën e tekstit dhe tekst me ngjyrën e sfondit.
+  Kontrasti më i lartë i mundshëm, pa përdorur theksin.
+*/
+.button--primary {
+  background-color: var(--text); /* sfond i kundërt */
+  border-color: var(--text); /* korniza e njëjtë me sfondin */
+  color: var(--on-text); /* teksti me ngjyrën e faqes */
+}
+
+/* Butoni kryesor në hover */
+.button--primary:hover {
+  background-color: var(--text-muted); /* zbehet pak */
+  border-color: var(--text-muted); /* korniza ndjek sfondin */
+  color: var(--on-text); /* teksti mbetet i kundërt */
+}
+
+/* ---------------- BUTONI ME IKONË (tema) ---------------- */
+
+/* Butoni katror vetëm me ikonë */
+.icon-button {
+  display: inline-flex; /* lejon qendërzimin e ikonës */
+  align-items: center; /* ikona në mes vertikalisht */
+  justify-content: center; /* ikona në mes horizontalisht */
+  width: var(--space-5); /* 40px gjerësi */
+  height: var(--space-5); /* 40px lartësi, katror */
+  padding: 0; /* pa hapësirë shtesë */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  background-color: transparent; /* pa sfond */
+  color: var(--text); /* ngjyra e ikonës (stroke="currentColor") */
+  cursor: pointer; /* dora e miut */
+  transition: background-color var(--duration-fast) var(--easing); /* hover i butë */
+}
+
+/* Butoni me ikonë në hover */
+.icon-button:hover {
+  background-color: var(--surface-2); /* sfond i lehtë */
+}
+
+/*
+  Ikonat e temës: në temën e errët shfaqet dielli (kalo te e çelëta),
+  në temën e çelët shfaqet hëna (kalo te e errëta). Kështu ikona ndryshon
+  vetëm me CSS, sipas atributit data-theme te <html>.
+*/
+[data-theme="dark"] .theme-toggle__icon--moon,
+[data-theme="light"] .theme-toggle__icon--sun {
+  display: none; /* fsheh ikonën që nuk i përket temës aktuale */
+}
+
+/* ---------------- ZGJEDHJET (CHIPS) ---------------- */
+
+/* Një zgjedhje te shiriti i cilësimeve, p.sh. "30" ose "Shqip" */
+.chip {
+  display: inline-flex; /* lejon qendërzim */
+  align-items: center; /* teksti në mes vertikalisht */
+  min-height: var(--space-5); /* 40px, e lehtë për t'u prekur */
+  padding: 0 var(--space-2); /* 16px anash */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-sm); /* qoshe 4px, jo kapsulë */
+  background-color: var(--surface); /* sfond karte */
+  color: var(--text-muted); /* zgjedhjet joaktive janë të zbehura */
+  font-family: var(--font-ui); /* shkronjat e ndërfaqes */
+  font-size: var(--fs-body); /* madhësia normale */
+  font-variant-numeric: tabular-nums; /* numrat me gjerësi të njëjtë */
+  cursor: pointer; /* dora e miut */
+  transition: color var(--duration-fast) var(--easing), border-color var(--duration-fast) var(--easing), background-color var(--duration-fast) var(--easing); /* ndryshime të buta */
+}
+
+/* Zgjedhja në hover */
+.chip:hover {
+  color: var(--text); /* teksti bëhet i qartë */
+  background-color: var(--surface-2); /* sfond i lehtë */
+}
+
+/*
+  Zgjedhja aktive (aria-pressed="true"). Ngjyra e theksit tregon
+  "kjo është aktive": korniza bëhet e verdhë. Teksti mbetet me ngjyrën
+  e tekstit, që kontrasti të jetë i lartë në të dyja temat.
+*/
+.chip[aria-pressed="true"] {
+  color: var(--text); /* tekst i qartë */
+  border-color: var(--accent); /* korniza me ngjyrën e theksit */
+  font-weight: var(--fw-medium); /* pak më i trashë */
+}
+
+/* Zgjedhjet e çaktivizuara gjatë testit */
+.chip:disabled {
+  cursor: not-allowed; /* miu tregon që nuk lejohet */
+  opacity: 0.5; /* zbehen për të treguar që janë të bllokuara */
+}
+
+/* Zgjedhja e çaktivizuar në hover: nuk reagon */
+.chip:disabled:hover {
+  color: var(--text-muted); /* mbetet e zbehur */
+  background-color: var(--surface); /* pa ndryshim sfondi */
+}
+
+/* Zgjedhja aktive edhe kur është e çaktivizuar: teksti mbetet i qartë */
+.chip[aria-pressed="true"]:disabled:hover {
+  color: var(--text); /* e njëjta ngjyrë si zgjedhja aktive */
+}
+
+/* ---------------- ÇELËSI NDEZUR/FIKUR (switch) ---------------- */
+
+/* I gjithë butoni i çelësit: vizatimi dhe teksti */
+.switch {
+  display: inline-flex; /* vizatimi dhe teksti në një rresht */
+  align-items: center; /* në mes vertikalisht */
+  gap: var(--space-2); /* 16px mes vizatimit dhe tekstit */
+  min-height: var(--space-5); /* 40px */
+  padding: 0; /* pa hapësirë shtesë */
+  border: 0; /* pa kornizë, korniza është te vizatimi */
+  background-color: transparent; /* pa sfond */
+  color: var(--text-muted); /* teksti i zbehur kur është i fikur */
+  font-size: var(--fs-body); /* madhësia normale */
+  text-align: left; /* teksti majtas nëse kalon në dy rreshta */
+  cursor: pointer; /* dora e miut */
+}
+
+/* Çelësi në hover: teksti bëhet i qartë */
+.switch:hover {
+  color: var(--text); /* tekst i qartë */
+}
+
+/* Vizatimi i çelësit (drejtkëndëshi ku lëviz katrori) */
+.switch__track {
+  display: inline-flex; /* lejon qendërzimin e katrorit */
+  align-items: center; /* katrori në mes vertikalisht */
+  flex-shrink: 0; /* nuk ngushtohet kur teksti është i gjatë */
+  width: var(--space-6); /* 48px gjerësi */
+  height: var(--space-4); /* 32px lartësi */
+  padding: 0 var(--space-1); /* 8px anash, që katrori të mos prekë kornizën */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-sm); /* qoshe 4px, jo formë kapsule */
+  background-color: var(--surface); /* sfond karte */
+  transition: border-color var(--duration-fast) var(--easing); /* ndryshim i butë i kornizës */
+}
+
+/* Katrori që lëviz brenda çelësit */
+.switch__thumb {
+  width: var(--space-2); /* 16px */
+  height: var(--space-2); /* 16px, katror */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  background-color: var(--text-muted); /* gri kur është i fikur */
+  transition: transform var(--duration-fast) var(--easing), background-color var(--duration-fast) var(--easing); /* lëvizje e butë */
+}
+
+/* Çelësi i ndezur (aria-checked="true"): teksti i qartë */
+.switch[aria-checked="true"] {
+  color: var(--text); /* tekst i qartë */
+}
+
+/* Kur çelësi është i ndezur, korniza merr theksin (opsion aktiv) */
+.switch[aria-checked="true"] .switch__track {
+  border-color: var(--accent); /* korniza me ngjyrën e theksit */
+}
+
+/* Katrori lëviz djathtas dhe bëhet me ngjyrën e tekstit */
+.switch[aria-checked="true"] .switch__thumb {
+  transform: translateX(var(--space-2)); /* 16px djathtas */
+  background-color: var(--text); /* ngjyrë e qartë */
+}
+
+/* Çelësi i çaktivizuar gjatë testit */
+.switch:disabled {
+  cursor: not-allowed; /* nuk lejohet */
+  opacity: 0.5; /* i zbehur */
+}
+
+/* ---------------- KARTAT ---------------- */
+
+/* Kartë e përgjithshme me kornizë të hollë */
+.card {
+  padding: var(--space-3); /* 24px brenda */
+  background-color: var(--surface); /* sfond karte */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë në vend të hijes */
+  border-radius: var(--radius-md); /* qoshe 8px, maksimumi */
+}
+
+/* ---------------- TABELAT ---------------- */
+
+/*
+  Mbështjellësi i tabelës. Në ekrane të ngushta tabela lëviz anash
+  brenda tij, pa e zgjeruar gjithë faqen.
+*/
+.table-wrap {
+  overflow-x: auto; /* shirit lëvizës horizontal kur tabela është më e gjerë */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë rreth tabelës */
+  border-radius: var(--radius-md); /* qoshe 8px */
+  background-color: var(--surface); /* sfond karte */
+}
+
+/* Tabela vetë */
+.table {
+  width: 100%; /* zë gjithë gjerësinë */
+  border-collapse: collapse; /* vijat e qelizave bashkohen në një vijë të vetme */
+  font-size: var(--fs-body); /* madhësia normale */
+}
+
+/* Qelizat e kokës dhe të trupit */
+.table th,
+.table td {
+  padding: var(--space-1) var(--space-2); /* 8px lart/poshtë, 16px anash */
+  text-align: left; /* teksti majtas */
+  border-bottom: var(--border-width) solid var(--border); /* vijë e hollë mes rreshtave */
+  white-space: nowrap; /* datat dhe numrat nuk thyhen në dy rreshta */
+}
+
+/* Kokat e kolonave: të vogla, me shkronja të mëdha */
+.table thead th {
+  color: var(--text-muted); /* të zbehura */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  font-weight: var(--fw-medium); /* pak të trasha */
+  text-transform: uppercase; /* shkronja të mëdha */
+}
+
+/* Kokat e rreshtave (p.sh. tasti te shkurtoret): jo të trasha */
+.table tbody th {
+  font-weight: var(--fw-normal); /* trashësi normale */
+}
+
+/* Rreshti i fundit nuk ka vijë poshtë, se korniza e mbështjellësit e mbyll */
+.table tbody tr:last-child th,
+.table tbody tr:last-child td {
+  border-bottom: 0; /* pa vijë */
+}
+
+/* Kolonat me numra: djathtas dhe me shifra me gjerësi të njëjtë */
+.table .table__num {
+  text-align: right; /* numrat rreshtohen djathtas, që të krahasohen lehtë */
+  font-family: var(--font-mono); /* shkronjë me gjerësi të njëjtë */
+  font-variant-numeric: tabular-nums; /* shifrat nuk "kërcejnë" */
+}
+
+/* Kokat e kolonave me numra: rreshtohen djathtas, por mbeten me shkronjat e ndërfaqes */
+.table thead .table__num {
+  font-family: var(--font-ui); /* titulli është tekst, jo numër */
+}
+
+/* Rreshti në hover: ndihmon syrin të ndjekë rreshtin */
+.table tbody tr:hover {
+  background-color: var(--surface-2); /* sfond i lehtë */
+}
+
+/* ---------------- FUSHAT DHE LISTAT ZGJEDHËSE ---------------- */
+
+/* Një fushë: etiketa sipër, kontrolli poshtë */
+.field {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* etiketa mbi listën */
+  gap: var(--space-1); /* 8px mes tyre */
+}
+
+/* Etiketa e fushës */
+.field__label {
+  color: var(--text-muted); /* e zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  text-transform: uppercase; /* shkronja të mëdha */
+}
+
+/* Lista zgjedhëse (select) e filtrave */
+.select {
+  min-height: var(--space-5); /* 40px */
+  padding: 0 var(--space-2); /* 16px anash */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  background-color: var(--surface); /* sfond karte */
+  color: var(--text); /* ngjyra e tekstit */
+  font-size: var(--fs-body); /* madhësia normale */
+  cursor: pointer; /* dora e miut */
+}
+
+/* Lista zgjedhëse në hover */
+.select:hover {
+  border-color: var(--text-muted); /* korniza më e dukshme */
+}
+
+/* ---------------- DRITARJA E KONFIRMIMIT (dialog) ---------------- */
+
+/* Elementi <dialog> */
+.dialog {
+  width: calc(100% - 2 * var(--space-2)); /* gjithë gjerësia minus 16px nga çdo anë */
+  max-width: var(--dialog-max); /* jo më e gjerë se 480px */
+  padding: var(--space-4); /* 32px brenda */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-md); /* qoshe 8px */
+  background-color: var(--surface); /* sfond karte */
+  color: var(--text); /* ngjyra e tekstit (dialog nuk e trashëgon gjithmonë) */
+}
+
+/* Sfondi i errësuar pas dritares */
+.dialog::backdrop {
+  background-color: var(--backdrop); /* errësim gjysmë i tejdukshëm */
+}
+
+/* Formulari brenda dritares */
+.dialog__form {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* titulli, teksti, butonat në kolonë */
+  gap: var(--space-3); /* 24px mes tyre */
+}
+
+/* Titulli i dritares */
+.dialog__title {
+  font-size: var(--fs-title); /* titull */
+}
+
+/* Teksti shpjegues i dritares */
+.dialog__text {
+  color: var(--text-muted); /* i zbehur */
+}
+
+/* Butonat e dritares, djathtas */
+.dialog__actions {
+  display: flex; /* në rresht */
+  justify-content: flex-end; /* shtyhen djathtas */
+  flex-wrap: wrap; /* kalojnë në rresht të ri në ekrane të ngushta */
+  gap: var(--space-2); /* 16px mes butonave */
+}
+
+/* ---------------- GJENDJA BOSH ---------------- */
+
+/* Kutia që tregon "Ende s'ke bërë asnjë test." */
+.empty-state {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* elementet në kolonë */
+  align-items: flex-start; /* butoni nuk zgjerohet në gjithë gjerësinë */
+  gap: var(--space-2); /* 16px mes elementeve */
+  padding: var(--space-6) var(--space-4); /* 48px lart/poshtë, 32px anash */
+  border: var(--border-width) dashed var(--border); /* kornizë me ndërprerje: "këtu do të ketë diçka" */
+  border-radius: var(--radius-md); /* qoshe 8px */
+}
+
+/* Titulli i gjendjes bosh */
+.empty-state__title {
+  font-size: var(--fs-title); /* titull */
+}
+
+/* Teksti i gjendjes bosh */
+.empty-state__text {
+  color: var(--text-muted); /* i zbehur */
+  max-width: var(--prose-max); /* gjerësi e lexueshme */
+}

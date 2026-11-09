@@ -1,0 +1,209 @@
+/*
+  ==========================================================================
+  pages.css
+  --------------------------------------------------------------------------
+  Stilet vetëm për historiku.html dhe rreth.html: koka e faqes,
+  seksionet, grafiku me filtrat, shembulli me formula dhe listat.
+  ==========================================================================
+*/
+
+/* ---------------- KOKA E FAQES ---------------- */
+
+/* Titulli dhe fjalia hyrëse në krye të faqes */
+.page-header {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* titulli mbi fjalinë */
+  gap: var(--space-2); /* 16px */
+  margin-bottom: var(--space-8); /* 64px para seksionit të parë */
+}
+
+/* Titulli kryesor i faqes (h1) */
+.page-header__title {
+  font-size: var(--fs-title); /* madhësia e titujve */
+}
+
+/* Fjalia hyrëse poshtë titullit */
+.page-header__lead {
+  max-width: var(--prose-max); /* gjerësi e lexueshme */
+  color: var(--text-muted); /* e zbehur */
+}
+
+/* ---------------- SEKSIONET ---------------- */
+
+/* Një seksion i faqes */
+.section {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* elementet në kolonë */
+  gap: var(--space-2); /* 16px mes paragrafëve dhe elementeve */
+}
+
+/* Hapësira e madhe mes seksioneve njëri pas tjetrit */
+.section + .section {
+  margin-top: var(--space-12); /* 96px */
+}
+
+/* Titulli i seksionit (h2) */
+.section__title {
+  font-size: var(--fs-title); /* titull */
+}
+
+/* Fjalia shpjeguese poshtë titullit të seksionit */
+.section__lead {
+  max-width: var(--prose-max); /* gjerësi e lexueshme */
+  color: var(--text-muted); /* e zbehur */
+}
+
+/* Seksioni i fshirjes: butoni nuk zgjerohet */
+.section--danger {
+  align-items: flex-start; /* elementet majtas, me gjerësinë e tyre */
+}
+
+/* Nëntitujt brenda një seksioni (h3) */
+.subsection__title {
+  margin-top: var(--space-3); /* 24px mbi nëntitull, që të ndahet nga paragrafi i mëparshëm */
+}
+
+/* Paragrafët brenda seksioneve kanë gjerësi leximi */
+.section p {
+  max-width: var(--prose-max); /* rreth 72 shkronja për rresht */
+}
+
+/* ---------------- GRAFIKU ---------------- */
+
+/* Rreshti me filtrat e grafikut */
+.chart-filters {
+  display: flex; /* filtrat në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri */
+  gap: var(--space-2) var(--space-3); /* 16px mes rreshtave, 24px mes filtrave */
+}
+
+/* Kutia ku vizatohet grafiku */
+.chart-panel {
+  position: relative; /* Chart.js dhe mesazhi bosh pozicionohen sipas saj */
+  height: var(--chart-height); /* 320px lartësi e fiksuar */
+  padding: var(--space-2); /* 16px brenda */
+  background-color: var(--surface); /* sfond karte */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-md); /* qoshe 8px */
+}
+
+/* Mesazhi kur filtrat nuk gjejnë teste, në mes të kutisë */
+.chart-panel__empty {
+  position: absolute; /* mbi sipërfaqen e grafikut */
+  inset: 0; /* mbulon gjithë kutinë */
+  display: flex; /* lejon qendërzim */
+  align-items: center; /* në mes vertikalisht */
+  justify-content: center; /* në mes horizontalisht */
+  color: var(--text-muted); /* i zbehur */
+}
+
+/* Përmbledhja me tekst poshtë grafikut */
+.chart-summary {
+  color: var(--text-muted); /* e zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+}
+
+/* ---------------- FAQJA "SI FUNKSIONON" ---------------- */
+
+/* Formula në një kuti të veçantë */
+.formula {
+  padding: var(--space-2) var(--space-3); /* 16px lart/poshtë, 24px anash */
+  background-color: var(--surface); /* sfond karte */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  font-family: var(--font-mono); /* shkronjë me gjerësi të njëjtë */
+  overflow-x: auto; /* në ekrane të ngushta formula lëviz anash */
+}
+
+/* Kutia e shembullit të llogaritur */
+.example {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* elementet në kolonë */
+  gap: var(--space-2); /* 16px */
+  margin-top: var(--space-3); /* 24px nga teksti sipër */
+  padding: var(--space-3); /* 24px brenda */
+  background-color: var(--surface); /* sfond karte */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-md); /* qoshe 8px */
+}
+
+/* Hapat e llogaritjes */
+.example__steps {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* një hap për rresht */
+  gap: var(--space-1); /* 8px */
+  font-family: var(--font-mono); /* numrat me gjerësi të njëjtë */
+  font-variant-numeric: tabular-nums; /* shifrat të rreshtuara */
+}
+
+/* Shënimi që shembulli nuk është statistikë reale */
+.example__note {
+  color: var(--text-muted); /* i zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+}
+
+/* Lista e rregullave të gabimeve */
+.rule-list {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* një rregull për rresht */
+  gap: var(--space-1); /* 8px */
+  max-width: var(--prose-max); /* gjerësi e lexueshme */
+}
+
+/* Lista e teknologjive: dy kolona (emri, shpjegimi) */
+.tech-list {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* një teknologji për rresht */
+  border-top: var(--border-width) solid var(--border); /* vijë sipër listës */
+}
+
+/* Një rresht i listës së teknologjive */
+.tech-list__item {
+  display: grid; /* rrjetë me dy kolona */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); /* emri 1 pjesë, shpjegimi 3 pjesë */
+  gap: var(--space-3); /* 24px mes kolonave */
+  padding: var(--space-2) 0; /* 16px lart/poshtë */
+  border-bottom: var(--border-width) solid var(--border); /* vijë ndarëse */
+}
+
+/* Emri i teknologjisë */
+.tech-list__item dt {
+  font-family: var(--font-mono); /* shkronjë me gjerësi të njëjtë, si kod */
+  font-weight: var(--fw-bold); /* i trashë */
+  overflow-wrap: anywhere; /* emrat e gjatë si IntersectionObserver thyhen në vend që të hyjnë te kolona tjetër */
+}
+
+/* Shpjegimi i teknologjisë */
+.tech-list__item dd {
+  color: var(--text-muted); /* i zbehur */
+}
+
+/* ---------------- PIKAT E NDËRPRERJES ---------------- */
+
+/* 768px: më pak hapësirë dhe lista e teknologjive në një kolonë */
+@media (max-width: 768px) {
+  /* Koka e faqes */
+  .page-header {
+    margin-bottom: var(--space-6); /* 48px */
+  }
+
+  /* Hapësira mes seksioneve */
+  .section + .section {
+    margin-top: var(--space-8); /* 64px */
+  }
+
+  /* Rreshti i teknologjisë: emri mbi shpjegimin */
+  .tech-list__item {
+    grid-template-columns: minmax(0, 1fr); /* një kolonë */
+    gap: var(--space-1); /* 8px */
+  }
+
+  /* Grafiku: më pak hapësirë brenda */
+  .chart-panel {
+    padding: var(--space-1); /* 8px */
+  }
+}

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<!--
+  index.html: faqja kryesore e TypeFast.
+  Këtu ndodhet testi i shpejtësisë së shkrimit dhe paneli i rezultatit.
+  Kjo faqe nuk ka asnjë rresht CSS apo JavaScript brenda saj:
+  stilet janë te dosja css/ dhe logjika te dosja js/.
+-->
+<!--
+  lang="sq": i thotë shfletuesit dhe lexuesve të ekranit që faqja është në shqip
+  (shqiptimi bëhet saktë dhe kontrolli i drejtshkrimit di gjuhën).
+  data-theme="dark": tema e parazgjedhur. JavaScript (theme.js) e ndryshon
+  në "light" nëse përdoruesi e ka zgjedhur më parë temën e çelët.
+-->
+<html lang="sq" data-theme="dark">
+<head>
+  <!-- charset="utf-8": kodimi i shkronjave, që ë dhe ç të shfaqen saktë -->
+  <meta charset="utf-8">
+  <!-- viewport: në telefon dhe tablet faqja përdor gjerësinë reale të ekranit, pa zvogëlim -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Titulli që shfaqet në skedën (tab) e shfletuesit -->
+  <title>TypeFast: testi i shkrimit</title>
+  <!-- Përshkrim i shkurtër i faqes për motorët e kërkimit -->
+  <meta name="description" content="TypeFast mat shpejtësinë dhe saktësinë e shkrimit në shqip dhe anglisht.">
+
+  <!--
+    Skedarët CSS ngarkohen në një rend të fiksuar. Rendi ka rëndësi:
+    1. variables.css: vlerat (ngjyra, hapësira, shkronja) që përdorin të tjerët
+    2. base.css: rregullat bazë për të gjithë faqen
+    3. layout.css: koka, navigimi, kontejneri, fundi i faqes
+    4. components.css: butonat, kartat, tabelat, çelësat
+    5. test.css: vetëm për këtë faqe (testi dhe rezultati)
+    6. animations.css: e fundit, që animacionet dhe "prefers-reduced-motion" të kenë fjalën e fundit
+  -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/test.css">
+  <link rel="stylesheet" href="css/animations.css">
+
+  <!--
+    protocol-check.js: skript i zakonshëm (jo modul). Kontrollon nëse faqja
+    u hap me dyklik (file://). Në atë rast Chrome bllokon skriptet type="module",
+    prandaj ky kontroll nuk mund të jetë brenda modulit: duhet një skript i thjeshtë.
+    defer: skripti shkarkohet paralelisht dhe ekzekutohet pasi HTML të jetë lexuar i gjithi.
+  -->
+  <script src="js/protocol-check.js" defer></script>
+  <!--
+    type="module": skedari përdor import/export (module ES6).
+    Modulet sillen si "defer" automatikisht, pra presin që HTML të lexohet.
+    Ky është i vetmi skript hyrës i faqes.
+  -->
+  <script type="module" src="js/pages/index-page.js"></script>
+</head>
+<body>
+  <!--
+    Lidhja "kalo te përmbajtja": e padukshme derisa dikush shtyp Tab.
+    Ndihmon përdoruesit e tastierës të kapërcejnë navigimin.
+  -->
+  <a class="skip-link" href="#main">Kalo te përmbajtja</a>
+
+  <!-- ========== KOKA E FAQES (e njëjtë në të tri faqet) ========== -->
+  <header class="site-header">
+    <!-- Mbështjellës që e mban kokën brenda gjerësisë maksimale dhe në qendër -->
+    <div class="site-header__inner">
+      <!-- Emri i faqes si tekst i thjeshtë (pa logo). Klikimi të çon te testi. -->
+      <a class="wordmark" href="index.html">TypeFast</a>
+
+      <!-- Navigimi kryesor. aria-label i jep emër këtij navigimi për lexuesit e ekranit. -->
+      <nav class="site-nav" aria-label="Navigimi kryesor">
+        <!-- Lista e lidhjeve: lexuesi i ekranit njofton "listë me 3 elemente" -->
+        <ul class="site-nav__list">
+          <!-- aria-current="page": tregon që kjo është faqja ku ndodhemi tani; CSS e nënvizon me ngjyrën e theksit -->
+          <li><a class="site-nav__link" href="index.html" aria-current="page">Testi</a></li>
+          <!-- Lidhja për te historiku -->
+          <li><a class="site-nav__link" href="historiku.html">Historiku</a></li>
+          <!-- Lidhja për te faqja shpjeguese -->
+          <li><a class="site-nav__link" href="rreth.html">Si funksionon</a></li>
+        </ul>
+      </nav>
+
+      <!--
+        Butoni i temës. type="button": nuk dërgon asnjë formular.
+        aria-label: butoni ka vetëm ikonë, prandaj emrin e lexon lexuesi i ekranit nga ky atribut.
+        JavaScript e ndryshon tekstin e aria-label sipas temës aktuale.
+      -->
+      <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="Kalo në temën e çelët">
+        <!--
+          Ikona e diellit (shfaqet në temën e errët: "kalo te drita").
+          aria-hidden="true": ikona është zbukurim, lexuesi i ekranit e kapërcen.
+          focusable="false": në disa shfletues të vjetër SVG merr fokus pa arsye; kjo e ndalon.
+          stroke="currentColor": vija e ikonës merr ngjyrën e tekstit të butonit.
+        -->
+        <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false">
+          <!-- Rrethi në mes të diellit -->
+          <circle cx="12" cy="12" r="4"></circle>
+          <!-- Tetë rrezet e diellit -->
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+        </svg>
+        <!-- Ikona e hënës (shfaqet në temën e çelët: "kalo te errësira") -->
+        <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <!-- Forma e gjysmëhënës -->
+          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!--
+    Paralajmërimi për file://. hidden: fshehur si parazgjedhje.
+    protocol-check.js e shfaq vetëm kur faqja hapet me dyklik nga dosja.
+    role="alert": lexuesi i ekranit e lexon menjëherë kur shfaqet.
+  -->
+  <div class="file-warning" id="file-warning" role="alert" hidden>
+    <!-- Titulli i paralajmërimit -->
+    <h2 class="file-warning__title">Kjo faqe duhet hapur me Live Server</h2>
+    <!-- Shpjegimi pse nuk punon -->
+    <p>Faqja u hap direkt nga dosja (adresa fillon me file://). Në këtë mënyrë shfletuesi bllokon modulet JavaScript dhe leximin e tekstit të testit, prandaj TypeFast nuk mund të punojë.</p>
+    <!-- Hapat për ta zgjidhur, në rend -->
+    <ol class="file-warning__steps">
+      <li>Hap dosjen e projektit në VS Code.</li>
+      <li>Instalo shtesën "Live Server" (nga Ritwick Dey), nëse nuk e ke.</li>
+      <li>Kliko me të djathtën mbi index.html dhe zgjidh "Open with Live Server".</li>
+      <li>Faqja hapet te http://127.0.0.1:5500 dhe gjithçka punon.</li>
+    </ol>
+  </div>
+
+  <!--
+    Përmbajtja kryesore e faqes. id="main": objektivi i lidhjes "Kalo te përmbajtja".
+    tabindex="-1": lejon që fokusi të vendoset këtu nga lidhja, pa e futur në radhën e Tab.
+  -->
+  <main class="page page--test" id="main" tabindex="-1">
+    <!--
+      Çdo faqe ka një h1. Këtu e fshehim vizualisht (class="visually-hidden")
+      që testi të mbetet i pastër, por lexuesit e ekranit e lexojnë.
+    -->
+    <h1 class="visually-hidden">Testi i shpejtësisë dhe saktësisë së shkrimit</h1>
+
+    <!-- ========== SHIRITI I CILËSIMEVE ========== -->
+    <!-- aria-label: emri i këtij seksioni për lexuesit e ekranit -->
+    <section class="settings" id="settings" aria-label="Cilësimet e testit">
+
+      <!--
+        Grupi "Koha". role="group" + aria-labelledby: lexuesi i ekranit
+        thotë "Koha, grup" dhe pastaj butonat brenda tij.
+      -->
+      <div class="settings__group" role="group" aria-labelledby="label-duration">
+        <!-- Etiketa e grupit; id-ja lidhet me aria-labelledby më lart -->
+        <span class="settings__label" id="label-duration">Koha</span>
+        <!-- Rreshti me zgjedhjet (chips) -->
+        <div class="chip-row">
+          <!--
+            Çdo zgjedhje është një buton.
+            data-setting: cilin cilësim ndryshon (duration = kohëzgjatja).
+            data-value: vlera që merr cilësimi kur klikohet.
+            aria-pressed: "true" për zgjedhjen aktive, "false" për të tjerat; JavaScript e përditëson.
+            Teksti "sekonda" është i fshehur vizualisht, por lexohet nga lexuesi i ekranit.
+          -->
+          <button class="chip" type="button" data-setting="duration" data-value="15" aria-pressed="false">15<span class="visually-hidden"> sekonda</span></button>
+          <button class="chip" type="button" data-setting="duration" data-value="30" aria-pressed="true">30<span class="visually-hidden"> sekonda</span></button>
+          <button class="chip" type="button" data-setting="duration" data-value="60" aria-pressed="false">60<span class="visually-hidden"> sekonda</span></button>
+          <button class="chip" type="button" data-setting="duration" data-value="120" aria-pressed="false">120<span class="visually-hidden"> sekonda</span></button>
+        </div>
+      </div>
+
+      <!-- Grupi "Niveli": sa i vështirë është teksti -->
+      <div class="settings__group" role="group" aria-labelledby="label-level">
+        <!-- Etiketa e grupit -->
+        <span class="settings__label" id="label-level">Niveli</span>
+        <!-- Zgjedhjet e nivelit; data-value përputhet me çelësat te data/texts.json -->
+        <div class="chip-row">
+          <button class="chip" type="button" data-setting="level" data-value="easy" aria-pressed="false">E lehtë</button>
+          <button class="chip" type="button" data-setting="level" data-value="medium" aria-pressed="true">Mesatare</button>
+          <button class="chip" type="button" data-setting="level" data-value="hard" aria-pressed="false">E vështirë</button>
+        </div>
+      </div>
+
+      <!-- Grupi "Gjuha": gjuha e tekstit të testit -->
+      <div class="settings__group" role="group" aria-labelledby="label-lang">
+        <!-- Etiketa e grupit -->
+        <span class="settings__label" id="label-lang">Gjuha</span>
+        <!-- Zgjedhjet e gjuhës; "sq" dhe "en" janë kodet e gjuhëve -->
+        <div class="chip-row">
+          <button class="chip" type="button" data-setting="lang" data-value="sq" aria-pressed="true">Shqip</button>
+          <!-- lang="en": lexuesi i ekranit e shqipton fjalën "English" në anglisht -->
+          <button class="chip" type="button" data-setting="lang" data-value="en" aria-pressed="false" lang="en">English</button>
+        </div>
+      </div>
+
+      <!-- Grupi i çelësit për shkronjat ë dhe ç -->
+      <div class="settings__group settings__group--switch">
+        <!--
+          role="switch": ky buton sillet si çelës ndezur/fikur.
+          aria-checked: "false" = i fikur (kontroll i rreptë), "true" = i ndezur (pranon e për ë).
+          data-setting="lenient": emri i cilësimit që ndryshon.
+        -->
+        <button class="switch" id="lenient-toggle" type="button" role="switch" aria-checked="false" data-setting="lenient">
+          <!-- Vizatimi i çelësit; aria-hidden sepse kuptimi jepet nga aria-checked -->
+          <span class="switch__track" aria-hidden="true">
+            <!-- Rrethi (këtu katror me qoshe të buta) që lëviz majtas/djathtas -->
+            <span class="switch__thumb"></span>
+          </span>
+          <!-- Teksti i dukshëm i çelësit, që shërben edhe si emër i butonit -->
+          <span class="switch__label">Prano e për ë dhe c për ç</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ========== ZONA E TESTIT ========== -->
+    <!-- aria-label: emri i zonës për lexuesit e ekranit -->
+    <section class="test-area" id="test-area" aria-label="Testi">
+
+      <!--
+        Statistikat e drejtpërdrejta. NUK kanë aria-live, sepse ndryshojnë
+        10 herë në sekondë dhe lexuesi i ekranit do të fliste pa ndalim.
+      -->
+      <div class="live-stats">
+        <!-- Koha e mbetur -->
+        <div class="stat">
+          <!-- Numri; JavaScript e përditëson. Para nisjes tregon kohën e plotë. -->
+          <span class="stat__value" id="stat-time">30</span>
+          <!-- Etiketa poshtë numrit -->
+          <span class="stat__label">sekonda</span>
+        </div>
+        <!-- Shpejtësia e drejtpërdrejtë -->
+        <div class="stat">
+          <!-- WPM (fjalë në minutë); 0 gjatë sekondës së parë -->
+          <span class="stat__value" id="stat-wpm">0</span>
+          <!-- Etiketa -->
+          <span class="stat__label">fjalë/min</span>
+        </div>
+        <!-- Saktësia e drejtpërdrejtë -->
+        <div class="stat">
+          <!-- Përqindja e saktësisë -->
+          <span class="stat__value" id="stat-accuracy">0</span>
+          <!-- Etiketa -->
+          <span class="stat__label">% saktësi</span>
+        </div>
+      </div>
+
+      <!--
+        Kutia e tekstit. Klikimi këtu vendos fokusin te fusha e fshehur e shkrimit.
+        Brenda saj është teksti, kursori, fusha e fshehur dhe mesazhi i fokusit.
+      -->
+      <div class="text-box" id="text-box">
+        <!--
+          "Shiriti" që mban fjalët dhe kursorin. Kur kursori arrin rreshtin e 3-të,
+          ky shirit ngjitet lart me një rresht (translateY), që rreshti aktual të jetë në mes.
+        -->
+        <div class="text-track" id="text-track">
+          <!-- Këtu JavaScript vendos <span class="word"> dhe <span class="char"> për çdo shkronjë -->
+          <div class="text-words" id="text-words"></div>
+          <!-- Kursori; aria-hidden sepse është vetëm vizual -->
+          <span class="caret caret--idle" id="caret" aria-hidden="true"></span>
+        </div>
+
+        <!--
+          Fusha e fshehur ku shkruan përdoruesi. Është e padukshme (opacity 0),
+          por mbulon gjithë kutinë, që prekja në tablet të hapë tastierën në ekran.
+          autocomplete="off": shfletuesi nuk sugjeron fjalë të shkruara më parë.
+          autocorrect="off": Safari nuk i korrigjon fjalët automatikisht.
+          autocapitalize="off": tastiera e tabletit nuk e bën shkronjën e parë të madhe.
+          spellcheck="false": pa vija të kuqe drejtshkrimi dhe pa korrigjim.
+          aria-label: emri i fushës për lexuesit e ekranit.
+          aria-describedby: lexon edhe udhëzimin e shkurtër poshtë kutisë.
+          rows="1": fusha ka vetëm një rresht; madhësia reale vendoset nga CSS.
+        -->
+        <textarea class="typing-input" id="typing-input" rows="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Shkruaj tekstin e testit këtu" aria-describedby="test-hint"></textarea>
+
+        <!--
+          Mesazhi që del kur fusha humbet fokusin. aria-hidden="true" sepse
+          lexuesi i ekranit e kupton fokusin vetë; ky mesazh është për syrin.
+        -->
+        <p class="focus-overlay" id="focus-overlay" aria-hidden="true">Kliko këtu ose shtyp çfarëdo tasti për të vazhduar</p>
+
+        <!--
+          Mesazhi i ngarkimit ose i gabimit (p.sh. kur data/texts.json nuk lexohet).
+          role="status": lexuesi i ekranit e njofton me qetësi kur ndryshon.
+        -->
+        <p class="text-box__status" id="text-status" role="status" hidden></p>
+      </div>
+
+      <!-- Udhëzimi i shkurtër. Pika e mesme (&middot;) ndan dy shkurtoret. -->
+      <p class="hint" id="test-hint"><kbd>Tab</kbd>: rifillo testin &middot; <kbd>Esc</kbd>: anulo</p>
+    </section>
+
+    <!--
+      ========== PANELI I REZULTATIT ==========
+      hidden: i fshehur derisa të mbarojë testi. Kur shfaqet, zë vendin e zonës së testit.
+      aria-labelledby: emri i seksionit merret nga titulli i tij.
+    -->
+    <section class="results" id="results" aria-labelledby="results-title" hidden>
+      <!-- Koka e panelit: titulli dhe njoftimi i rekordit -->
+      <div class="results__header">
+        <!-- tabindex="-1": lejon që JavaScript ta fokusojë titullin pa e futur në radhën e Tab -->
+        <h2 class="results__title" id="results-title" tabindex="-1">Rezultati yt</h2>
+        <!-- Njoftimi i rekordit: shfaqet vetëm nëse ky test theu rekordin për këtë kombinim -->
+        <p class="record-notice" id="record-notice" hidden>Rekord i ri personal</p>
+      </div>
+
+      <!-- Kombinimi i testit (gjuha, niveli, koha), që të dihet me çfarë krahasohet -->
+      <p class="results__meta" id="results-meta"></p>
+
+      <!-- Kartat e mëdha me numrat. dl = listë përkufizimesh: dt është etiketa, dd është vlera -->
+      <dl class="results__grid">
+        <!-- Karta 1: shpejtësia -->
+        <div class="result-card">
+          <dt class="result-card__label">WPM</dt>
+          <dd class="result-card__value" id="result-wpm">0</dd>
+        </div>
+        <!-- Karta 2: saktësia në përqindje -->
+        <div class="result-card">
+          <dt class="result-card__label">Saktësia</dt>
+          <dd class="result-card__value" id="result-accuracy">0</dd>
+        </div>
+        <!-- Karta 3: numri i shtypjeve të gabuara -->
+        <div class="result-card">
+          <dt class="result-card__label">Gabime</dt>
+          <dd class="result-card__value" id="result-errors">0</dd>
+        </div>
+        <!-- Karta 4: shkronja të sakta nga totali i shtypjeve -->
+        <div class="result-card">
+          <dt class="result-card__label">Karaktere të sakta / totale</dt>
+          <!-- --compact: ky tekst është më i gjatë, prandaj përdor madhësinë e titullit -->
+          <dd class="result-card__value result-card__value--compact" id="result-chars">0 / 0</dd>
+        </div>
+      </dl>
+
+      <!-- Lista e 5 shkronjave ku u gabua më shumë -->
+      <div class="missed">
+        <!-- Titulli i listës -->
+        <h3 class="missed__title">Karakteret ku gabove më shumë</h3>
+        <!--
+          ol = listë e renditur: e para është shkronja me më shumë gabime.
+          role="list": Safari e humb kuptimin "listë" kur CSS heq numrat (list-style: none); ky atribut e rikthen.
+        -->
+        <ol class="missed__list" id="missed-list" role="list"></ol>
+        <!-- Mesazhi kur nuk ka asnjë gabim -->
+        <p class="missed__empty" id="missed-empty" hidden>Nuk pate asnjë gabim në këtë test.</p>
+      </div>
+
+      <!-- Paralajmërim i ndershëm nëse rezultati nuk u ruajt (p.sh. localStorage i bllokuar) -->
+      <p class="results__note" id="save-note" hidden>Rezultati nuk u ruajt, sepse shfletuesi nuk lejon ruajtjen e të dhënave në këtë faqe.</p>
+
+      <!-- Butonat e veprimit pas testit -->
+      <div class="results__actions">
+        <!-- Nis një test të ri me tekst të ri -->
+        <button class="button button--primary" id="retry-button" type="button">Provo përsëri</button>
+        <!-- Lidhje drejt historikut, me pamje butoni -->
+        <a class="button" href="historiku.html">Shiko historikun</a>
+      </div>
+    </section>
+
+    <!--
+      Njoftuesi i rezultatit për lexuesit e ekranit. aria-live="polite":
+      kur JavaScript vendos tekst këtu, lexuesi e lexon pasi të mbarojë atë që po thotë.
+      Është jashtë panelit të fshehur, që të jetë gjithmonë "i gjallë".
+    -->
+    <p class="visually-hidden" id="results-announcer" aria-live="polite"></p>
+  </main>
+
+  <!-- ========== FUNDI I FAQES (i njëjtë në të tri faqet) ========== -->
+  <footer class="site-footer">
+    <!-- Teksti i vetëm i fundit të faqes, pa lidhje të rreme -->
+    <p class="site-footer__text">TypeFast, projekt final në kurs, 2026. Punoi: Jon Mjekiqi</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,138 @@
+/*
+  ==========================================================================
+  variables.css
+  --------------------------------------------------------------------------
+  Ky skedar mban TË GJITHA vlerat e dizajnit (design tokens) të faqes:
+  ngjyrat për të dyja temat, hapësirat, madhësitë e shkronjave, rrezet e
+  qosheve, kohëzgjatjet e animacioneve dhe disa përmasa të faqes.
+  Asnjë skedar tjetër CSS nuk shkruan ngjyra apo madhësi "me dorë":
+  të gjithë i lexojnë këto vlera me var(--emri).
+  Kështu, nëse duam të ndryshojmë një ngjyrë, e ndryshojmë vetëm këtu.
+  ==========================================================================
+*/
+
+/*
+  :root është elementi <html>. Vlerat këtu janë tema e ERRËT, sepse ajo
+  është tema e parazgjedhur (default) e faqes.
+*/
+:root {
+  /* ---------------- Ngjyrat: tema e errët ---------------- */
+  --bg: #121212; /* ngjyra e sfondit të faqes, baza mbi të cilën qëndron gjithçka */
+  --surface: #1A1A1A; /* sfondi i kartave dhe paneleve, pak më i çelët se faqja */
+  --surface-2: #222222; /* sfondi kur kalon miun mbi diçka (hover) dhe i fushave */
+  --border: #2C2C2C; /* ngjyra e vijave të holla rreth kartave, tabelave dhe butonave */
+  --text: #E6E6E6; /* ngjyra kryesore e tekstit */
+  --text-muted: #8A8A8A; /* teksti dytësor, etiketat dhe shkronjat ende të pashkruara */
+  --correct: #6FCF97; /* ngjyrë statusi: shkronjë e shkruar saktë (vetëm për këtë punë) */
+  --wrong: #EB5757; /* ngjyrë statusi: shkronjë e shkruar gabim (vetëm për këtë punë) */
+  --accent: #F2C14E; /* e vetmja ngjyrë theksi: tregon "ku je / çfarë është aktive" */
+  --wrong-soft: color-mix(in srgb, var(--wrong) 25%, transparent); /* e kuqja e zbehur, për sfondin e një hapësire të gabuar */
+  --backdrop: rgba(0, 0, 0, 0.6); /* errësimi pas dritares së konfirmimit (dialog) */
+  --on-text: var(--bg); /* ngjyra e tekstit mbi një sfond me ngjyrën --text (butoni kryesor) */
+  color-scheme: dark; /* i thotë shfletuesit që kontrollet e tij (scrollbar, select) të jenë të errëta */
+
+  /* ---------------- Shkronjat (familjet) ---------------- */
+  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* shkronjat e sistemit për ndërfaqen, punojnë pa internet */
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, "Courier New", monospace; /* shkronja me gjerësi të njëjtë për tekstin e testit dhe numrat */
+
+  /* ---------------- Madhësitë e shkronjave: vetëm 5 ---------------- */
+  /* Rregulli: shkronjat e mëdha kanë rreshta të ngjeshur, të voglat kanë rreshta më të lirshëm. */
+  --fs-display: 64px; /* numrat e mëdhenj të rezultatit */
+  --lh-display: 1.0; /* lartësia e rreshtit për numrat e mëdhenj: e ngjeshur */
+  --ls-display: -0.02em; /* shkronjat e mëdha afrohen pak me njëra-tjetrën */
+
+  --fs-title: 32px; /* titujt e faqeve dhe të seksioneve */
+  --lh-title: 1.15; /* rresht pak i ngjeshur për titujt */
+  --ls-title: -0.01em; /* titujt afrohen shumë pak */
+
+  --fs-test: 24px; /* teksti që shkruan përdoruesi në test */
+  --lh-test: 1.6; /* rresht i lirshëm që shkronjat të mos ngjiten vertikalisht */
+
+  --fs-body: 16px; /* teksti normal dhe butonat */
+  --lh-body: 1.6; /* rresht i lirshëm për lexim të rehatshëm */
+
+  --fs-small: 13px; /* etiketat, shënimet, kokat e tabelave (me shkronja të mëdha) */
+  --lh-small: 1.7; /* teksti i vogël ka nevojë për më shumë ajër mes rreshtave */
+  --ls-small: 0.04em; /* shkronjat e vogla largohen pak që të lexohen më lehtë */
+
+  /* ---------------- Trashësia e shkronjave ---------------- */
+  --fw-normal: 400; /* trashësia normale */
+  --fw-medium: 500; /* pak më e trashë, për etiketat aktive */
+  --fw-bold: 600; /* e trashë, për titujt dhe numrat */
+
+  /* ---------------- Hapësirat: vetëm shumëfisha të 8px ---------------- */
+  --space-1: 8px; /* hapësira më e vogël */
+  --space-2: 16px; /* 2 x 8 */
+  --space-3: 24px; /* 3 x 8 */
+  --space-4: 32px; /* 4 x 8 */
+  --space-5: 40px; /* 5 x 8, edhe lartësia minimale e butonave */
+  --space-6: 48px; /* 6 x 8 */
+  --space-8: 64px; /* 8 x 8 */
+  --space-12: 96px; /* 12 x 8, hapësira më e madhe, mes seksioneve të mëdha */
+
+  /* ---------------- Qoshet (border-radius) ---------------- */
+  --radius-sm: 4px; /* butonat, fushat dhe zgjedhjet (chips) */
+  --radius-md: 8px; /* kartat, maksimumi i lejuar */
+
+  /* ---------------- Vijat ---------------- */
+  --border-width: 1px; /* trashësia e çdo vije kufitare */
+  --caret-width: 2px; /* gjerësia e kursorit të testit */
+  --focus-width: 2px; /* trashësia e vijës së fokusit (kur lëviz me tastierë) */
+
+  /* ---------------- Kohëzgjatjet e lëvizjeve ---------------- */
+  --duration-caret: 80ms; /* sa shpejt rrëshqet kursori te shkronja tjetër */
+  --duration-fast: 150ms; /* ndryshimet e vogla: hover, ngjyra, lëvizja e rreshtave */
+  --duration-base: 240ms; /* shfaqja e panelit të rezultatit */
+  --duration-reveal: 480ms; /* shfaqja e seksioneve kur futen në ekran */
+  --duration-stagger: 60ms; /* vonesa mes kartave të rezultatit, njëra pas tjetrës */
+  --duration-blink: 1000ms; /* një cikël i plotë i pulsimit të kursorit */
+  --easing: cubic-bezier(0.2, 0, 0, 1); /* kurba e lëvizjes: nis shpejt dhe ndalon butë */
+
+  /* ---------------- Përmasa të faqes ---------------- */
+  --container-max: 1120px; /* gjerësia maksimale e përmbajtjes (140 x 8) */
+  --text-max: 64ch; /* gjerësia maksimale e kutisë së tekstit: rreth 64 shkronja */
+  --prose-max: 72ch; /* gjerësia maksimale e paragrafëve të gjatë, që të lexohen lehtë */
+  --chart-height: 320px; /* lartësia e grafikut (40 x 8) */
+  --dialog-max: 480px; /* gjerësia maksimale e dritares së konfirmimit (60 x 8) */
+  --blur-amount: 4px; /* sa turbullohet teksti kur testi humbet fokusin */
+  --reveal-shift: var(--space-2); /* sa lart lëviz një seksion kur shfaqet (16px) */
+  --test-lines: 3; /* sa rreshta teksti shfaqen njëherësh në test */
+
+  /* ---------------- Shtresat (z-index) ---------------- */
+  --z-base: 1; /* shtresa normale mbi sfond */
+  --z-overlay: 2; /* mesazhi "Kliko këtu..." mbi tekst */
+  --z-input: 3; /* fusha e fshehur e shkrimit, sipër gjithçkaje në kuti */
+}
+
+/*
+  Tema e ÇELËT. Aktivizohet kur <html> ka data-theme="light".
+  Ndryshojmë vetëm ngjyrat; hapësirat dhe shkronjat mbeten të njëjta.
+*/
+:root[data-theme="light"] {
+  --bg: #F5F5F2; /* sfondi i faqes: e bardhë e ngrohtë */
+  --surface: #FFFFFF; /* kartat dhe panelet: e bardhë e pastër */
+  --surface-2: #ECECE8; /* hover dhe fushat */
+  --border: #DADAD5; /* vijat e holla */
+  --text: #1A1A1A; /* teksti kryesor */
+  --text-muted: #6B6B6B; /* teksti dytësor dhe shkronjat e pashkruara */
+  --correct: #237A4B; /* e gjelbër më e errët se #2E8B57, që të arrijë kontrastin WCAG AA (4.86:1) */
+  --wrong: #C0392B; /* e kuqe e errët për gabimet */
+  --accent: #A67A0A; /* pak më e errët se #B7860B, që vija e fokusit të arrijë 3:1 mbi sfond */
+  --backdrop: rgba(0, 0, 0, 0.4); /* errësim më i lehtë në temën e çelët */
+  color-scheme: light; /* kontrollet e shfletuesit bëhen të çelëta */
+}
+
+/*
+  Media query: kur ekrani është 768px ose më i ngushtë (tableta në këmbë).
+  Të njëjtat 5 tokena marrin vlera më të vogla, kështu që nuk shtojmë
+  madhësi të reja. Shënim: var() nuk lejohet brenda vetë media query,
+  prandaj 768px shkruhet këtu me dorë.
+*/
+@media (max-width: 768px) {
+  /* Elementi <html>: vetëm tre tokena marrin vlerë të re në ekrane të ngushta */
+  :root {
+    --fs-display: 48px; /* numrat e rezultatit zvogëlohen */
+    --fs-title: 24px; /* titujt zvogëlohen */
+    --fs-test: 20px; /* teksti i testit zvogëlohet që të nxërë më shumë fjalë në rresht */
+  }
+}
