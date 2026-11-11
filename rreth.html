@@ -157,7 +157,32 @@
       </ul>
     </section>
 
-    <!-- ========== 4. SHKURTORET ========== -->
+    <!-- ========== 4. TASTET E DOBËTA ========== -->
+    <section class="section reveal" aria-labelledby="weak-title">
+      <!-- Titulli -->
+      <h2 class="section__title" id="weak-title">Tastet e dobëta dhe praktika</h2>
+      <!-- Si mblidhen të dhënat -->
+      <p>Pas çdo testi të mbaruar, TypeFast numëron për çdo tast sa herë doli në tekst dhe sa herë u gabua. Numrat mblidhen nga të gjitha testet dhe ruhen në shfletues. "Ë" dhe "ë" llogariten si i njëjti tast, sepse në tastierë ndryshon vetëm Shift. Testet e anuluara me Esc ose Tab nuk numërohen.</p>
+      <!-- Pse shkalla dhe jo numri -->
+      <p>Tastet renditen sipas shkallës së gabimit, jo sipas numrit të gabimeve. Shkronjat e shpeshta, si e, a ose hapësira, do të kishin gjithmonë më shumë gabime vetëm sepse dalin më shpesh. Shkalla tregon sa shpesh gabon një tast në raport me sa herë e ke shkruar.</p>
+      <!-- Formula -->
+      <p class="formula"><code>Shkalla e gabimit = gabime në tast / herë që doli tasti</code></p>
+      <!-- Kufijtë -->
+      <p>Një tast renditet vetëm pasi të ketë dalë të paktën 5 herë dhe të jetë gabuar të paktën 2 herë. Pa këtë kufi, një tast që doli 1 herë dhe u gabua 1 herë do të kishte 100% dhe do të dilte i pari nga fati i keq.</p>
+      <!-- Si ndërtohet teksti i praktikës, hap pas hapi -->
+      <h3 class="subsection__title">Si ndërtohet teksti i praktikës</h3>
+      <ol class="rule-list">
+        <li>Merren 5 tastet më të dobëta (pa hapësirën, që del në çdo tekst gjithsesi).</li>
+        <li>Për çdo tast gjenden fjalët e gjuhës së zgjedhur që e përmbajnë, nga të tre nivelet. Fjalët e fjalive mbajnë shenjat dhe numrat, që të praktikohen edhe presja, kllapat ose shifrat.</li>
+        <li>Fjalët renditen sipas dendësisë: sa pjesë e shkronjave të tyre janë taste të dobëta. Mbahen 30 më të dendurat për çdo tast.</li>
+        <li>Teksti krijohet duke zgjedhur me short një tast (tasti me shkallë më të lartë zgjidhet më shpesh) dhe një fjalë të tij, pa e përsëritur fjalën rresht.</li>
+        <li>Nëse një tast nuk gjendet në asnjë fjalë të gjuhës (p.sh. ë në anglisht), ai kapërcehet. Nëse asnjë tast nuk gjendet, faqja e thotë qartë dhe mbetet te testi normal.</li>
+      </ol>
+      <!-- Si ruhen testet e praktikës -->
+      <p>Testet e praktikës ruhen në historik me nivelin "Praktikë", por nuk hyjnë te rekordet personale, sepse teksti i tyre nuk krahasohet drejt me nivelet e zakonshme.</p>
+    </section>
+
+    <!-- ========== 5. SHKURTORET ========== -->
     <section class="section reveal" aria-labelledby="keys-title">
       <!-- Titulli -->
       <h2 class="section__title" id="keys-title">Shkurtoret e tastierës</h2>
@@ -203,7 +228,7 @@
       <p>Shigjetat dhe ngjitja e tekstit (paste) janë të bllokuara gjatë testit, që rezultati të jetë i ndershëm.</p>
     </section>
 
-    <!-- ========== 5. TEKNOLOGJITË ========== -->
+    <!-- ========== 6. TEKNOLOGJITË ========== -->
     <section class="section reveal" aria-labelledby="tech-title">
       <!-- Titulli -->
       <h2 class="section__title" id="tech-title">Teknologjitë e përdorura</h2>
@@ -229,7 +254,7 @@
         </div>
         <div class="tech-list__item">
           <dt>localStorage</dt>
-          <dd>Ruan historikun (deri në 200 testet e fundit), rekordet, cilësimet dhe temën. Të dhënat mbeten në shfletues edhe pasi e mbyll.</dd>
+          <dd>Ruan historikun (deri në 200 testet e fundit), rekordet, gabimet për çdo tast, cilësimet dhe temën. Të dhënat mbeten në shfletues edhe pasi e mbyll.</dd>
         </div>
         <div class="tech-list__item">
           <dt>performance.now</dt>

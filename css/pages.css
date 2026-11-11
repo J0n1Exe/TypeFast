@@ -58,6 +58,11 @@
   align-items: flex-start; /* elementet majtas, me gjerësinë e tyre */
 }
 
+/* Butonat dhe lidhjet me pamje butoni brenda një seksioni nuk zgjerohen në gjithë gjerësinë */
+.section > .button {
+  align-self: flex-start; /* zë vetëm gjerësinë e tekstit, majtas */
+}
+
 /* Nëntitujt brenda një seksioni (h3) */
 .subsection__title {
   margin-top: var(--space-3); /* 24px mbi nëntitull, që të ndahet nga paragrafi i mëparshëm */

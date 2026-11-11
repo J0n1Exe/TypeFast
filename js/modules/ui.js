@@ -6,7 +6,8 @@
  * si <span class="word"> me <span class="char"> brenda, ngjyros shkronjat
  * (e pashkruar, e saktë, e gabuar), lëviz kursorin, ngjit rreshtat lart,
  * përditëson statistikat e drejtpërdrejta, tregon mesazhin e fokusit,
- * shiritin e cilësimeve dhe panelin e rezultatit.
+ * shiritin e cilësimeve, butonin dhe shiritin e praktikës së tasteve të
+ * dobëta dhe panelin e rezultatit.
  * Kjo klasë NUK vendos asgjë për logjikën e testit: vetëm shfaq atë që
  * i thotë app.js. Kështu logjika dhe pamja janë të ndara.
  *
@@ -16,7 +17,7 @@
  */
 
 // Importojmë mesazhet, listat për emrat shqip dhe funksionin që i gjen
-import { MESSAGES, LEVELS, LANGUAGES, findLabel } from "../config.js";
+import { MESSAGES, LEVEL_LABELS, LANGUAGES, findLabel } from "../config.js";
 // Importojmë Stats vetëm për funksionin e formatimit të saktësisë
 import { Stats } from "./stats.js";
 
@@ -42,9 +43,14 @@ export class TestUI {
     this.settings = byId("settings"); // shiriti i cilësimeve
     this.chips = Array.from(document.querySelectorAll(".chip[data-setting]")); // të gjitha zgjedhjet si varg
     this.lenientToggle = byId("lenient-toggle"); // çelësi i ë/ç
+    this.practiceToggle = byId("practice-toggle"); // butoni "Praktiko tastet e dobëta"
+    this.practiceHint = byId("practice-hint"); // shënimi poshtë butonit të praktikës
+    this.practiceAvailable = false; // a ka të dhëna të mjaftueshme për praktikë (vendoset nga app.js)
 
     // ---- Zona e testit ----
     this.testArea = byId("test-area"); // statistikat, kutia dhe udhëzimi
+    this.practiceBanner = byId("practice-banner"); // shiriti "Praktikë për tastet"
+    this.practiceKeys = byId("practice-keys"); // vendi ku shfaqen tastet e praktikës
     this.statTime = byId("stat-time"); // numri i sekondave
     this.statWpm = byId("stat-wpm"); // WPM i drejtpërdrejtë
     this.statAccuracy = byId("stat-accuracy"); // saktësia e drejtpërdrejtë
@@ -67,6 +73,7 @@ export class TestUI {
     this.missedEmpty = byId("missed-empty"); // mesazhi "asnjë gabim"
     this.saveNote = byId("save-note"); // shënimi kur ruajtja dështon
     this.retryButton = byId("retry-button"); // butoni "Provo përsëri"
+    this.resultsPractice = byId("results-practice"); // butoni i praktikës te rezultati
     this.announcer = byId("results-announcer"); // njoftuesi për lexuesit e ekranit
 
     // ---- Gjendja e brendshme e vizatimit ----
@@ -351,21 +358,25 @@ export class TestUI {
 
   /**
    * Shënon zgjedhjet aktive sipas cilësimeve.
+   * Në praktikë asnjë nivel nuk shënohet si aktiv, sepse teksti nuk vjen nga një nivel.
    * @param {{duration: number, level: string, lang: string, lenient: boolean}} settings - cilësimet
+   * @param {boolean} [practiceActive=false] - true kur praktika e tasteve të dobëta është aktive
    * @returns {void}
    */
-  applySettings(settings) {
+  applySettings(settings, practiceActive = false) {
     // Kalojmë çdo zgjedhje
     this.chips.forEach((chip) => {
       // data-setting tregon cilin cilësim përfaqëson, p.sh. "duration"
       const name = chip.dataset.setting;
-      // Krahasojmë si tekst, sepse data-value është gjithmonë tekst ("30")
-      const isActive = chip.dataset.value === String(settings[name]);
+      // Në praktikë, zgjedhjet e nivelit nuk janë aktive; përndryshe krahasojmë si tekst ("30")
+      const isActive = !(practiceActive && name === "level") && chip.dataset.value === String(settings[name]);
       // aria-pressed="true" për aktiven; CSS e ngjyros me theksin
       chip.setAttribute("aria-pressed", String(isActive));
     });
     // Çelësi i ë/ç: aria-checked "true" ose "false"
     this.lenientToggle.setAttribute("aria-checked", String(settings.lenient));
+    // Butoni i praktikës është "i shtypur" kur praktika është aktive
+    this.practiceToggle.setAttribute("aria-pressed", String(practiceActive));
   }
 
   /**
@@ -381,6 +392,52 @@ export class TestUI {
     });
     // Edhe çelësi
     this.lenientToggle.disabled = disabled;
+    // Butoni i praktikës: i bllokuar gjatë testit OSE kur s'ka ende të dhëna
+    this.practiceToggle.disabled = disabled || !this.practiceAvailable;
+  }
+
+  // ---------------- PRAKTIKA ----------------
+
+  /**
+   * A mund të niset praktika? Përditëson butonin, shënimin dhe butonin te rezultati.
+   * @param {boolean} available - true kur ka të paktën një tast të dobët
+   * @param {string} hint - teksti i shënimit (tastet ose shpjegimi)
+   * @returns {void}
+   */
+  setPracticeAvailability(available, hint) {
+    // Ruajmë gjendjen, që setSettingsDisabled ta respektojë
+    this.practiceAvailable = available;
+    // Teksti i shënimit
+    this.practiceHint.textContent = hint;
+    // Pa të dhëna butoni s'klikohet
+    this.practiceToggle.disabled = !available;
+    // Butoni te rezultati shfaqet vetëm kur praktika është e mundur
+    this.resultsPractice.hidden = !available;
+  }
+
+  /**
+   * Shfaq shiritin e praktikës me tastet, ose e fsheh.
+   * @param {string[]|null} keys - tastet që po praktikohen; null = fshihe
+   * @returns {void}
+   */
+  showPracticeBanner(keys) {
+    // Pa taste: shiriti fshihet
+    this.practiceBanner.hidden = !keys;
+    // Fshijmë tastet e vjetra
+    this.practiceKeys.textContent = "";
+    // Nëse s'ka taste, kemi mbaruar
+    if (!keys) {
+      return; // asgjë për të shfaqur
+    }
+    // Një <kbd> për çdo tast, që të duket si tast i tastierës
+    keys.forEach((key) => {
+      // Krijojmë elementin
+      const kbd = document.createElement("kbd");
+      // Tasti si tekst i thjeshtë
+      kbd.textContent = key;
+      // E shtojmë te shiriti
+      this.practiceKeys.append(kbd);
+    });
   }
 
   // ---------------- MESAZHET E KUTISË ----------------
@@ -454,7 +511,7 @@ export class TestUI {
     // Të sakta / totale
     this.resultChars.textContent = `${result.correctChars} / ${result.totalChars}`;
     // Rreshti me kombinimin, p.sh. "Shqip, Mesatare, 30 sekonda"
-    this.resultsMeta.textContent = `${findLabel(LANGUAGES, result.lang)}, ${findLabel(LEVELS, result.level)}, ${result.duration} sekonda`;
+    this.resultsMeta.textContent = `${findLabel(LANGUAGES, result.lang)}, ${findLabel(LEVEL_LABELS, result.level)}, ${result.duration} sekonda`;
     // Njoftimi i rekordit shfaqet vetëm për rekord të ri
     this.recordNotice.hidden = !isRecord;
     // Shënimi i ruajtjes shfaqet vetëm kur ruajtja dështoi

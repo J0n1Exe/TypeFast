@@ -19,7 +19,7 @@
  */
 
 // Sa pika shfaqen dhe mesazhet
-import { CHART_MAX_POINTS, MESSAGES, LEVELS, LANGUAGES, findLabel } from "../config.js";
+import { CHART_MAX_POINTS, MESSAGES, LEVEL_LABELS, LANGUAGES, findLabel } from "../config.js";
 // Formatimi i saktësisë me presje
 import { Stats } from "./stats.js";
 
@@ -268,7 +268,7 @@ export class ProgressChart {
                 // Dy rreshta: saktësia dhe gjuha/niveli/koha
                 return [
                   `Saktësia: ${Stats.formatAccuracy(entry.accuracy)}%`, // rreshti i saktësisë, me presje dhjetore
-                  `${findLabel(LANGUAGES, entry.lang)}, ${findLabel(LEVELS, entry.level)}, ${entry.duration} s`, // rreshti me gjuhën, nivelin dhe kohën
+                  `${findLabel(LANGUAGES, entry.lang)}, ${findLabel(LEVEL_LABELS, entry.level)}, ${entry.duration} s`, // rreshti me gjuhën, nivelin dhe kohën
                 ];
               },
             },

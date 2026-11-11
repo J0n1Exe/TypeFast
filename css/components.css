@@ -280,6 +280,11 @@
   font-variant-numeric: tabular-nums; /* shifrat nuk "kërcejnë" */
 }
 
+/* Qeliza me tekst të gjatë (p.sh. mesazh kur tabela është bosh): lejohet të kalojë në disa rreshta */
+.table .table__wrap {
+  white-space: normal; /* teksti thyhet në rreshta, nuk e zgjeron tabelën */
+}
+
 /* Kokat e kolonave me numra: rreshtohen djathtas, por mbeten me shkronjat e ndërfaqes */
 .table thead .table__num {
   font-family: var(--font-ui); /* titulli është tekst, jo numër */

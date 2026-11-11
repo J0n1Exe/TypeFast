@@ -14,6 +14,9 @@
  * - correctCharsInPlace: karakteret që janë të sakta në tekst tani.
  * - WPM = (correctCharsInPlace / 5) / minuta
  * - Saktësia = (shtypje të sakta / totalKeystrokes) x 100
+ * - Statistikat e tasteve: për çdo tast, sa herë doli dhe sa herë u gabua.
+ * - Shkalla e gabimit të një tasti = gabime / herë që doli. Tastet renditen
+ *   sipas saj, jo sipas numrit bruto të gabimeve (shiko rankWeakKeys).
  *
  * Çfarë eksporton: klasën Stats.
  * Kush e përdor: app.js (gjatë testit) dhe js/pages/history-page.js
@@ -218,6 +221,64 @@ export class Stats {
       .slice(0, limit)
       // Çdo çift bëhet objekt i lexueshëm
       .map(([char, count]) => ({ char, count }));
+  }
+
+  /**
+   * Statistikat e tasteve të këtij testi, nga lista e shtypjeve.
+   * Tasti është karakteri që DUHEJ shkruar, me shkronjë të vogël: "Ë" dhe "ë"
+   * janë i njëjti tast në tastierë, ndryshon vetëm Shift.
+   * Çdo shtypje numërohet, edhe ato që më pas u fshinë me Backspace.
+   * @returns {Object<string, {attempts: number, errors: number}>} tasti -> numrat
+   */
+  getKeyStats() {
+    // Objekti ku mbledhim numrat
+    const result = {};
+    // Kalojmë çdo shtypje të regjistruar
+    this.keystrokes.forEach(({ expected, correct }) => {
+      // Tasti fizik: shkronja e vogël e karakterit të pritur
+      const key = expected.toLowerCase();
+      // Nëse tasti s'ka ende numra, i krijojmë me zero
+      if (!result[key]) {
+        // Vlerat fillestare
+        result[key] = { attempts: 0, errors: 0 };
+      }
+      // Tasti doli edhe një herë
+      result[key].attempts += 1;
+      // Nëse shtypja ishte gabim, rritet edhe numri i gabimeve
+      if (!correct) {
+        // Një gabim më shumë për këtë tast
+        result[key].errors += 1;
+      }
+    });
+    // Kthejmë objektin
+    return result;
+  }
+
+  /**
+   * RENDITJA E TASTEVE TË DOBËTA (e pastër).
+   * Pse sipas shkallës së gabimit dhe jo sipas numrit të gabimeve:
+   * shkronjat e shpeshta (e, a, hapësira) do të kishin gjithmonë më shumë gabime
+   * vetëm sepse dalin më shpesh. Shkalla (gabime / herë që doli) tregon ku
+   * gabon më shpesh në raport me sa e ke shkruar tastin.
+   * @param {Object<string, {attempts: number, errors: number}>} keyStats - numrat e ruajtur për çdo tast
+   * @param {object} options - kufijtë
+   * @param {number} options.minAttempts - sa herë duhet të ketë dalë tasti të paktën
+   * @param {number} options.minErrors - sa herë duhet të jetë gabuar të paktën
+   * @param {number} options.limit - sa taste të kthehen
+   * @param {boolean} [options.excludeSpace=false] - true = hapësira nuk renditet (praktika s'mund ta synojë veçmas)
+   * @returns {{key: string, attempts: number, errors: number, rate: number}[]} tastet, i dobëti i pari
+   */
+  static rankWeakKeys(keyStats, { minAttempts, minErrors, limit, excludeSpace = false }) {
+    // Object.entries kthen çifte [tasti, numrat]
+    return Object.entries(keyStats)
+      // Heqim hapësirën kur kërkohet dhe tastet me shumë pak të dhëna
+      .filter(([key, value]) => !(excludeSpace && key === " ") && value.attempts >= minAttempts && value.errors >= minErrors)
+      // Çdo çift bëhet objekt me shkallën e gabimit (nga 0 deri në 1)
+      .map(([key, value]) => ({ key, attempts: value.attempts, errors: value.errors, rate: value.errors / value.attempts }))
+      // Renditje: shkalla më e lartë e para; me shkallë të barabartë, ai me më shumë gabime
+      .sort((a, b) => b.rate - a.rate || b.errors - a.errors)
+      // Mbajmë vetëm të parët
+      .slice(0, limit);
   }
 
   /**

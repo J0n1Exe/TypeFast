@@ -7,10 +7,14 @@
  *   - TextGenerator (texts.js): jep tekstin
  *   - Timer (timer.js): mat kohën
  *   - Stats (stats.js): numëron shtypjet dhe llogarit rezultatin
- *   - StorageService (storage.js): ruan rezultatin, rekordin dhe cilësimet
+ *   - StorageService (storage.js): ruan rezultatin, rekordin, statistikat e tasteve dhe cilësimet
  *   - TestUI (ui.js): shfaq gjithçka në faqe
  * Dëgjon tastierën dhe fushën e fshehur të shkrimit, vendos kur nis,
  * kur anulohet dhe kur mbaron testi.
+ *
+ * Praktika e tasteve të dobëta (this.practiceMode = true): teksti nuk vjen
+ * nga një nivel, por ndërtohet nga fjalët ku dalin tastet ku përdoruesi
+ * gabon më shumë. Tastet llogariten nga numrat e të gjitha testeve të mbaruara.
  *
  * Gjendjet e testit (this.state):
  *   "loading"  - tekstet po lexohen
@@ -32,6 +36,12 @@ import {
   APPEND_CHUNK_CHARS, // sa karaktere shtohen çdo herë
   CARET_IDLE_MS, // pas sa ms kursori pulson sërish
   MESSAGES, // mesazhet në shqip
+  PRACTICE_LEVEL, // "niveli" me të cilin ruhen testet e praktikës
+  WEAK_KEY_LIMIT, // sa taste të dobëta praktikohen njëherësh
+  WEAK_KEY_MIN_ATTEMPTS, // sa herë duhet të ketë dalë një tast që të renditet
+  WEAK_KEY_MIN_ERRORS, // sa herë duhet të jetë gabuar një tast që të renditet
+  LANGUAGES, // gjuhët, për emrin shqip të gjuhës te mesazhet
+  findLabel, // gjen emrin shqip nga id-ja
 } from "./config.js"; // skedari nga vijnë të gjitha
 // Gjeneratori i tekstit
 import { TextGenerator } from "./modules/texts.js";
@@ -95,13 +105,19 @@ export class TypingTest {
     this.idleTimeoutId = null;
     // Id e requestAnimationFrame për ndryshimin e madhësisë, që të mos rillogarisim shumë herë
     this.resizeFrameId = null;
+    // A është aktive praktika e tasteve të dobëta
+    this.practiceMode = false;
+    // Tastet e dobëta (me shkallën e gabimit) që po përdor praktika aktuale
+    this.practiceWeakKeys = [];
   }
 
   /**
    * Nis gjithçka: shfaq cilësimet, lidh ngjarjet, lexon tekstet dhe përgatit testin e parë.
+   * @param {object} [options] - opsionet
+   * @param {boolean} [options.startInPractice=false] - true kur faqja hapet nga lidhja "Praktiko" te historiku
    * @returns {Promise<void>}
    */
-  async init() {
+  async init({ startInPractice = false } = {}) {
     // Zgjedhjet aktive sipas cilësimeve të ruajtura
     this.ui.applySettings(this.settings);
     // Dëgjuesit e ngjarjeve
@@ -122,6 +138,10 @@ export class TypingTest {
     }
     // Fshehim mesazhin e ngarkimit
     this.ui.hideStatus();
+    // A ka të dhëna për praktikë? Përditëson butonin dhe shënimin
+    this.refreshPracticeAvailability();
+    // Nëse u kërkua praktika dhe ajo është e mundur, testi i parë është praktikë
+    this.practiceMode = startInPractice && this.ui.practiceAvailable;
     // Krijojmë testin e parë
     this.newTest();
     // Vendosim fokusin, që përdoruesi të shkruajë menjëherë
@@ -160,6 +180,9 @@ export class TypingTest {
     // Butoni "Provo përsëri"
     this.ui.retryButton.addEventListener("click", () => this.restart());
 
+    // Butoni "Praktiko tastet e dobëta" te paneli i rezultatit
+    this.ui.resultsPractice.addEventListener("click", () => this.startPractice());
+
     // Tasti kur fokusi s'është askund (te body): "shtyp çfarëdo tasti për të vazhduar"
     document.addEventListener("keydown", (event) => this.handleGlobalKeydown(event));
 
@@ -184,8 +207,36 @@ export class TypingTest {
     this.index = 0;
     // Gjatësia që mjafton për dikë me 150 WPM: 150 fjalë x 5 karaktere x minutat
     const minChars = Math.ceil(TEXT_TARGET_WPM * CHARS_PER_WORD * (this.settings.duration / 60));
-    // Gjenerojmë tekstin sipas gjuhës dhe nivelit
-    const text = this.texts.generate(this.settings.lang, this.settings.level, minChars);
+    // Teksti i testit; në praktikë mund të mbetet bosh nëse tastet s'gjenden në këtë gjuhë
+    let text = "";
+    // Në praktikë, teksti ndërtohet nga tastet e dobëta
+    if (this.practiceMode) {
+      // Tastet e dobëta, të rillogaritura nga të gjitha testet deri tani
+      this.practiceWeakKeys = this.getWeakKeys();
+      // Gjenerojmë tekstin e praktikës
+      const practice = this.texts.generatePractice(this.settings.lang, this.practiceWeakKeys, minChars);
+      // Nëse u gjet të paktën një tast në këtë gjuhë, përdorim tekstin e praktikës
+      if (practice.keys.length > 0) {
+        // Teksti i praktikës
+        text = practice.text;
+        // Mbajmë vetëm tastet që u përdorën vërtet (për shiritin dhe për shtesat e tekstit)
+        this.practiceWeakKeys = this.practiceWeakKeys.filter((item) => practice.keys.includes(item.key));
+      } else {
+        // Asnjë tast i dobët s'gjendet në këtë gjuhë: kthehemi te testi normal
+        this.practiceMode = false;
+        // Shpjegojmë pse, në shënimin poshtë butonit (butoni mbetet aktiv për gjuhën tjetër)
+        this.ui.setPracticeAvailability(true, MESSAGES.practiceNoMatch(this.weakKeysLabel(), findLabel(LANGUAGES, this.settings.lang)));
+      }
+    }
+    // Testi normal (ose praktika që s'u realizua): tekst sipas gjuhës dhe nivelit
+    if (!this.practiceMode) {
+      // Gjenerojmë tekstin sipas gjuhës dhe nivelit
+      text = this.texts.generate(this.settings.lang, this.settings.level, minChars);
+    }
+    // Zgjedhjet aktive (në praktikë asnjë nivel nuk shënohet)
+    this.ui.applySettings(this.settings, this.practiceMode);
+    // Shiriti i praktikës: tastet që po praktikohen, ose i fshehur
+    this.ui.showPracticeBanner(this.practiceMode ? this.practiceWeakKeys.map((item) => item.key) : null);
     // Array.from ndan tekstin në karaktere të plota (ë është një karakter)
     this.chars = Array.from(text);
     // Shfaqim zonën e testit PARA vizatimit, që matjet e pozicionit të jenë të sakta
@@ -283,7 +334,7 @@ export class TypingTest {
     // Rezultati: cilësimet plus numrat nga Stats (WPM me kohëzgjatjen e plotë)
     const result = {
       lang: this.settings.lang, // gjuha
-      level: this.settings.level, // niveli
+      level: this.practiceMode ? PRACTICE_LEVEL.id : this.settings.level, // niveli, ose "practice" për praktikën
       duration: this.settings.duration, // kohëzgjatja
       ...this.stats.getSummary(this.settings.duration), // spread: shton wpm, accuracy, errors, ...
     };
@@ -296,6 +347,10 @@ export class TypingTest {
       // Ruajmë rekordin e ri
       this.storage.updateRecord(entry);
     }
+    // Shtojmë numrat e tasteve të këtij testi te totali i të gjitha testeve
+    this.storage.addKeyStats(this.stats.getKeyStats());
+    // Tastet e dobëta mund të kenë ndryshuar: përditësojmë butonin e praktikës
+    this.refreshPracticeAvailability();
     // Shfaqim panelin e rezultatit
     this.ui.showResults(entry, { isRecord, saved });
     // Cilësimet lejohen sërish
@@ -447,8 +502,10 @@ export class TypingTest {
     if (remaining >= APPEND_THRESHOLD_CHARS) {
       return; // ndalojmë këtu, pjesa tjetër e funksionit nuk ekzekutohet
     }
-    // Gjenerojmë një pjesë të re (të paktën 200 karaktere)
-    const more = this.texts.generate(this.settings.lang, this.settings.level, APPEND_CHUNK_CHARS);
+    // Gjenerojmë një pjesë të re (të paktën 200 karaktere): nga tastet e dobëta në praktikë, nga niveli përndryshe
+    const more = this.practiceMode
+      ? this.texts.generatePractice(this.settings.lang, this.practiceWeakKeys, APPEND_CHUNK_CHARS).text // në praktikë: vetëm teksti nga tastet e dobëta
+      : this.texts.generate(this.settings.lang, this.settings.level, APPEND_CHUNK_CHARS); // normalisht: tekst sipas nivelit
     // Shtojmë hapësirën ndarëse dhe karakteret e reja te vargu
     this.chars.push(" ", ...Array.from(more));
     // E shtojmë edhe në faqe (UI vendos vetë hapësirën)
@@ -561,6 +618,19 @@ export class TypingTest {
    * @returns {void}
    */
   handleSettingsClick(event) {
+    // Butoni i praktikës trajtohet veçmas, sepse nuk është cilësim i ruajtur
+    const practiceButton = event.target.closest("#practice-toggle");
+    // Nëse u klikua butoni i praktikës
+    if (practiceButton) {
+      // I çaktivizuar (pa të dhëna ose gjatë testit): s'bëjmë asgjë
+      if (practiceButton.disabled) {
+        return; // butoni i bllokuar nuk bën asgjë
+      }
+      // Ndezim ose fikim praktikën
+      this.togglePractice(event.detail > 0);
+      // Dalim, s'është cilësim tjetër
+      return;
+    }
     // closest gjen butonin e klikuar edhe nëse klikimi ra mbi një <span> brenda tij
     const button = event.target.closest("[data-setting]");
     // Klikim jashtë butonave ose buton i çaktivizuar
@@ -598,19 +668,31 @@ export class TypingTest {
     if (this.state === "running") {
       return; // ndalojmë këtu, pjesa tjetër e funksionit nuk ekzekutohet
     }
-    // Nëse vlera është e njëjtë, s'ka nevojë për test të ri
-    if (this.settings[name] === value) {
+    // Në praktikë, klikimi i çdo niveli (edhe atij që ishte zgjedhur) të kthen te testi normal
+    const leavingPractice = name === "level" && this.practiceMode;
+    // Nëse vlera është e njëjtë dhe nuk po dalim nga praktika, s'ka nevojë për test të ri
+    if (!leavingPractice && this.settings[name] === value) {
       return; // ndalojmë këtu, pjesa tjetër e funksionit nuk ekzekutohet
+    }
+    // Zgjedhja e një niveli mbyll praktikën
+    if (leavingPractice) {
+      // Kthehemi te testi normal
+      this.practiceMode = false;
     }
     // Objekt i ri me vlerën e ndryshuar (spread kopjon të tjerat)
     this.settings = { ...this.settings, [name]: value };
     // Ruajmë në localStorage
     this.storage.saveSettings(this.settings);
     // Shënojmë zgjedhjen aktive
-    this.ui.applySettings(this.settings);
+    this.ui.applySettings(this.settings, this.practiceMode);
     // Pa tekste s'mund të krijojmë test
     if (this.state === "loading" || this.state === "error") {
       return; // ndalojmë këtu, pjesa tjetër e funksionit nuk ekzekutohet
+    }
+    // Me gjuhë të re, shënimi i praktikës rifillon nga e para (mund të kishte mesazhin e gjuhës tjetër)
+    if (name === "lang") {
+      // Rifreskojmë butonin dhe shënimin e praktikës
+      this.refreshPracticeAvailability();
     }
     // Test i ri me tekst të ri
     this.newTest();
@@ -619,6 +701,91 @@ export class TypingTest {
       // Fokusi te fusha
       this.ui.focusInput();
     }
+  }
+
+  // ---------------- PRAKTIKA E TASTEVE TË DOBËTA ----------------
+
+  /**
+   * Tastet më të dobëta nga numrat e të gjitha testeve, të renditura sipas shkallës së gabimit.
+   * Hapësira përjashtohet: ajo del në çdo tekst, nuk mund të synohet me fjalë të veçanta.
+   * @returns {{key: string, attempts: number, errors: number, rate: number}[]} deri në 5 taste
+   */
+  getWeakKeys() {
+    // Renditja e pastër te Stats, me kufijtë nga config.js
+    return Stats.rankWeakKeys(this.storage.getKeyStats(), {
+      minAttempts: WEAK_KEY_MIN_ATTEMPTS, // të paktën 5 herë
+      minErrors: WEAK_KEY_MIN_ERRORS, // të paktën 2 gabime
+      limit: WEAK_KEY_LIMIT, // 5 më të dobëtat
+      excludeSpace: true, // pa hapësirën
+    });
+  }
+
+  /**
+   * Tastet e dobëta si tekst për mesazhet, p.sh. "j · ë · q".
+   * Ndarësi është pika e mesme dhe jo presja, sepse edhe presja mund të jetë tast i dobët.
+   * @returns {string} lista e ndarë me pikë të mesme
+   */
+  weakKeysLabel() {
+    // Marrim vetëm tastet dhe i bashkojmë me " · "
+    return this.getWeakKeys().map((item) => item.key).join(" \u00B7 ");
+  }
+
+  /**
+   * Përditëson butonin e praktikës: aktiv me listën e tasteve, ose i çaktivizuar me shpjegim.
+   * @returns {void}
+   */
+  refreshPracticeAvailability() {
+    // Tastet e dobëta tani
+    const weakKeys = this.getWeakKeys();
+    // Pa asnjë tast të dobët, praktika s'ka çfarë të praktikojë
+    if (weakKeys.length === 0) {
+      // Butoni i çaktivizuar me shpjegimin e ndershëm
+      this.ui.setPracticeAvailability(false, MESSAGES.practiceNoData);
+      // Dalim
+      return;
+    }
+    // Butoni aktiv dhe shënimi me tastet reale
+    this.ui.setPracticeAvailability(true, MESSAGES.practiceHint(this.weakKeysLabel()));
+  }
+
+  /**
+   * Ndez ose fik praktikën nga butoni te shiriti i cilësimeve.
+   * @param {boolean} viaPointer - true nëse u klikua me miun/prekje
+   * @returns {void}
+   */
+  togglePractice(viaPointer) {
+    // Gjatë testit ose pa tekste s'ndryshojmë asgjë
+    if (this.state === "running" || this.state === "loading" || this.state === "error") {
+      return; // ndalojmë këtu, pjesa tjetër e funksionit nuk ekzekutohet
+    }
+    // Rifreskojmë shënimin (mund të ketë mbetur mesazhi i një gjuhe tjetër)
+    this.refreshPracticeAvailability();
+    // Ndërrojmë modalitetin
+    this.practiceMode = !this.practiceMode;
+    // Test i ri me tekstin e duhur
+    this.newTest();
+    // Me miun: fokusi te testi. Me tastierë: fokusi mbetet te butoni.
+    if (viaPointer) {
+      // Fokusi te fusha
+      this.ui.focusInput();
+    }
+  }
+
+  /**
+   * Nis praktikën nga butoni te paneli i rezultatit.
+   * @returns {void}
+   */
+  startPractice() {
+    // Pa të dhëna ose gjatë testit, s'bëjmë asgjë
+    if (!this.ui.practiceAvailable || this.state === "running") {
+      return; // ndalojmë këtu, pjesa tjetër e funksionit nuk ekzekutohet
+    }
+    // Ndezim praktikën
+    this.practiceMode = true;
+    // Test i ri me tekstin e praktikës
+    this.newTest();
+    // Fokusi te fusha, që të shkruash menjëherë
+    this.ui.focusInput();
   }
 
   // ---------------- KOHA DHE STATISTIKAT ----------------

@@ -42,6 +42,57 @@
   gap: var(--space-1); /* 8px mes zgjedhjeve */
 }
 
+/* Grupi i praktikës: butoni dhe shënimi kalojnë në dy rreshta nëse s'nxënë */
+.settings__group--practice {
+  flex-wrap: wrap; /* shënimi kalon poshtë butonit kur s'ka vend */
+}
+
+/* Shënimi poshtë butonit të praktikës (tastet më të dobëta ose pse s'punon ende) */
+.settings__hint {
+  max-width: var(--prose-max); /* nuk zgjatet pa fund në ekrane të gjera */
+  color: var(--text-muted); /* i zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+}
+
+/* ---------------- SHIRITI I PRAKTIKËS ---------------- */
+
+/* Kutia mbi statistikat që tregon cilat taste po praktikohen */
+.practice-banner {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* titulli mbi shpjegimin */
+  align-items: center; /* në qendër */
+  gap: var(--space-1); /* 8px mes tyre */
+  max-width: var(--text-max); /* e njëjta gjerësi si kutia e tekstit */
+  text-align: center; /* tekst në qendër */
+}
+
+/* Rreshti "Praktikë për tastet: j ë q" */
+.practice-banner__title {
+  display: flex; /* teksti dhe tastet në një rresht */
+  flex-wrap: wrap; /* tastet kalojnë në rresht të ri nëse s'nxënë */
+  justify-content: center; /* në qendër */
+  align-items: center; /* në mes vertikalisht */
+  gap: var(--space-1); /* 8px mes tekstit dhe tasteve */
+  font-weight: var(--fw-medium); /* pak i trashë */
+}
+
+/* Mbështjellësi i tasteve: secili tast është një <kbd> */
+.practice-banner__keys {
+  display: inline-flex; /* tastet në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri */
+  gap: var(--space-1); /* 8px mes tasteve */
+}
+
+/* Shpjegimi i shkurtër poshtë tasteve */
+.practice-banner__text {
+  color: var(--text-muted); /* i zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+}
+
 /* ---------------- ZONA E TESTIT ---------------- */
 
 /* Mbështjellësi i statistikave, kutisë dhe udhëzimit */
