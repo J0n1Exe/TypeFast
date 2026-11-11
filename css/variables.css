@@ -87,12 +87,14 @@
   --duration-stagger: 60ms; /* vonesa mes kartave të rezultatit, njëra pas tjetrës */
   --duration-blink: 1000ms; /* një cikël i plotë i pulsimit të kursorit */
   --easing: cubic-bezier(0.2, 0, 0, 1); /* kurba e lëvizjes: nis shpejt dhe ndalon butë */
+  --easing-out: cubic-bezier(0, 0, 0.2, 1); /* kurba e kursorit: shpejtësia më e madhe është në fillim. Çdo shtypje e rinis lëvizjen, prandaj me një kurbë që niset ngadalë kursori do të mbetej mbrapa kur shkruan shpejt */
 
   /* ---------------- Përmasa të faqes ---------------- */
   --container-max: 1120px; /* gjerësia maksimale e përmbajtjes (140 x 8) */
   --text-max: 64ch; /* gjerësia maksimale e kutisë së tekstit: rreth 64 shkronja */
   --prose-max: 72ch; /* gjerësia maksimale e paragrafëve të gjatë, që të lexohen lehtë */
   --chart-height: 320px; /* lartësia e grafikut (40 x 8) */
+  --graph-height: 240px; /* lartësia e grafikut të shpejtësisë te rezultati (30 x 8) */
   --dialog-max: 480px; /* gjerësia maksimale e dritares së konfirmimit (60 x 8) */
   --blur-amount: 4px; /* sa turbullohet teksti kur testi humbet fokusin */
   --reveal-shift: var(--space-2); /* sa lart lëviz një seksion kur shfaqet (16px) */

@@ -231,9 +231,33 @@
   height: 1em; /* sa madhësia e shkronjës */
   background-color: var(--accent); /* ngjyra e theksit: "ku je" */
   transform: translate(var(--caret-x), var(--caret-y)); /* e çon te shkronja aktuale */
-  transition: transform var(--duration-caret) var(--easing), opacity var(--duration-fast) var(--easing); /* lëvizje e butë 80ms */
+  transition: transform var(--duration-caret) var(--easing-out), opacity var(--duration-fast) var(--easing); /* lëvizje e butë 80ms, që niset menjëherë */
   pointer-events: none; /* klikimet kalojnë përmes kursorit */
   z-index: var(--z-base); /* mbi shkronjat */
+}
+
+/*
+  Kursori gri i garës me rekordin. E njëjta formë si kursori, por me ngjyrë
+  të zbehur: ngjyra e theksit i takon vetëm kursorit tënd ("ku je ti").
+*/
+.ghost-caret {
+  --ghost-x: 0px; /* pozicioni horizontal (JavaScript e ndryshon) */
+  --ghost-y: 0px; /* pozicioni vertikal (JavaScript e ndryshon) */
+  position: absolute; /* mbi tekst, nuk zë vend */
+  top: 0; /* nis nga qoshja lart majtas e shiritit */
+  left: 0; /* nis nga qoshja lart majtas e shiritit */
+  width: var(--caret-width); /* 2px, si kursori */
+  height: 1em; /* sa madhësia e shkronjës */
+  background-color: var(--text-muted); /* gri, jo theks */
+  transform: translate(var(--ghost-x), var(--ghost-y)); /* e çon te shkronja e vet */
+  transition: transform var(--duration-caret) linear; /* rrëshqet butë mes shkronjave */
+  pointer-events: none; /* klikimet kalojnë përmes tij */
+  z-index: var(--z-base); /* mbi shkronjat */
+}
+
+/* Kur testi s'ka fokus, edhe kursori gri fshihet bashkë me tekstin e turbullt */
+.text-box.is-blurred .ghost-caret {
+  opacity: 0; /* i padukshëm */
 }
 
 /* Kursori pa animacion (pas rindërtimit të tekstit ose ndryshimit të madhësisë) */
@@ -420,6 +444,79 @@
   letter-spacing: var(--ls-title); /* hapësira përkatëse */
 }
 
+/* ---------------- GRAFIKU I SHPEJTËSISË ---------------- */
+
+/* Mbështjellësi i titullit, grafikut, legjendës dhe përmbledhjes */
+.speed {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* pjesët në kolonë */
+  gap: var(--space-2); /* 16px mes tyre */
+}
+
+/* Kutia me lartësi të fiksuar ku vizatohet grafiku */
+.speed__panel {
+  height: var(--graph-height); /* 240px */
+  padding: var(--space-1); /* 8px brenda */
+  background-color: var(--surface); /* sfond karte */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-md); /* qoshe 8px */
+}
+
+/* Canvas-i mbush gjithë kutinë; JavaScript lexon këto përmasa për vizatimin */
+.speed__canvas {
+  display: block; /* heq hapësirën e vogël që kanë elementet inline poshtë */
+  width: 100%; /* gjithë gjerësia e kutisë */
+  height: 100%; /* gjithë lartësia e kutisë */
+}
+
+/* Legjenda: tre shpjegimet në rresht */
+.speed__legend {
+  display: flex; /* në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri */
+  gap: var(--space-1) var(--space-3); /* 8px mes rreshtave, 24px mes elementeve */
+  padding: 0; /* pa hapësirë majtas */
+  list-style: none; /* pa pika liste */
+  color: var(--text-muted); /* e zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+}
+
+/* Një element i legjendës: mostra e vijës dhe teksti */
+.speed__legend-item {
+  display: inline-flex; /* në rresht */
+  align-items: center; /* në mes vertikalisht */
+  gap: var(--space-1); /* 8px mes mostrës dhe tekstit */
+}
+
+/* Mostra e vogël që tregon si duket vija në grafik */
+.speed__swatch {
+  display: inline-block; /* që të ketë gjerësi */
+  width: var(--space-3); /* 24px e gjatë */
+}
+
+/* Mostra e vijës së WPM: vijë e plotë me ngjyrën e tekstit */
+.speed__swatch--wpm {
+  border-top: var(--focus-width) solid var(--text); /* vijë 2px e plotë */
+}
+
+/* Mostra e shpejtësisë së çastit: vijë me ndërprerje, gri */
+.speed__swatch--raw {
+  border-top: var(--focus-width) dashed var(--text-muted); /* vijë 2px me ndërprerje */
+}
+
+/* Mostra e gabimeve: katror i vogël i kuq (ngjyra e statusit "gabim") */
+.speed__swatch--error {
+  width: var(--space-1); /* 8px */
+  height: var(--space-1); /* 8px, katror */
+  background-color: var(--wrong); /* e kuqe */
+}
+
+/* Fjalia me qëndrueshmërinë dhe shpejtësinë më të lartë */
+.speed__summary {
+  color: var(--text-muted); /* e zbehur */
+}
+
 /* Pjesa e karaktereve më të gabuara */
 .missed {
   display: flex; /* rregullim fleksibël */
@@ -427,8 +524,9 @@
   gap: var(--space-2); /* 16px */
 }
 
-/* Titulli i listës, i vogël me shkronja të mëdha */
-.missed__title {
+/* Titujt e vegjël brenda rezultatit (lista e gabimeve dhe grafiku), me shkronja të mëdha */
+.missed__title,
+.results__subtitle {
   color: var(--text-muted); /* i zbehur */
   font-size: var(--fs-small); /* tekst i vogël */
   line-height: var(--lh-small); /* rresht i lirshëm */

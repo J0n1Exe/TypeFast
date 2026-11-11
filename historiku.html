@@ -108,6 +108,39 @@
     <!-- Mbështjellësi i gjithë pjesës me të dhëna; i fshehur derisa JavaScript të gjejë teste -->
     <div class="history-content" id="history-content" hidden>
 
+      <!-- ========== PËRMBLEDHJA ========== -->
+      <section class="section reveal" aria-labelledby="summary-title">
+        <!-- Titulli i seksionit -->
+        <h2 class="section__title" id="summary-title">Përmbledhja</h2>
+        <!-- Katër karta me numra nga të gjitha testet. dl: dt është etiketa, dd janë vlera dhe shënimi. -->
+        <dl class="summary-grid">
+          <!-- Karta 1: sa teste dhe sa karaktere -->
+          <div class="summary-card">
+            <dt class="summary-card__label">Teste gjithsej</dt>
+            <dd class="summary-card__value" id="summary-tests">0</dd>
+            <dd class="summary-card__note" id="summary-chars"></dd>
+          </div>
+          <!-- Karta 2: koha e shkrimit -->
+          <div class="summary-card">
+            <dt class="summary-card__label">Koha e shkrimit</dt>
+            <dd class="summary-card__value" id="summary-time">0 s</dd>
+            <dd class="summary-card__note">Shuma e kohëzgjatjeve të testeve të mbaruara.</dd>
+          </div>
+          <!-- Karta 3: ditë rresht me të paktën një test -->
+          <div class="summary-card">
+            <dt class="summary-card__label">Ditë rresht</dt>
+            <dd class="summary-card__value" id="summary-streak">0 ditë</dd>
+            <dd class="summary-card__note" id="summary-longest"></dd>
+          </div>
+          <!-- Karta 4: përparimi në WPM -->
+          <div class="summary-card">
+            <dt class="summary-card__label">Përparimi</dt>
+            <dd class="summary-card__value" id="summary-progress">0 WPM</dd>
+            <dd class="summary-card__note" id="summary-progress-note"></dd>
+          </div>
+        </dl>
+      </section>
+
       <!-- ========== REKORDET PERSONALE ========== -->
       <!-- class="reveal": seksioni shfaqet butë kur hyn në ekran (reveal.js) -->
       <section class="section reveal" aria-labelledby="records-title">
@@ -170,6 +203,45 @@
           ta nisë menjëherë në modalitetin e praktikës. hidden derisa të ketë taste të dobëta.
         -->
         <a class="button" id="keys-practice" href="index.html#praktike" hidden>Praktiko tastet e dobëta</a>
+      </section>
+
+      <!-- ========== HARTA E TASTIERËS ========== -->
+      <section class="section reveal" aria-labelledby="heat-title">
+        <!-- Titulli i seksionit -->
+        <h2 class="section__title" id="heat-title">Harta e tastierës</h2>
+        <!-- Shpjegimi i ngjyrave -->
+        <p class="section__lead">Çdo tast ngjyroset sipas shkallës së gabimit në të gjitha testet: sa më e kuqe, aq më shpesh gabon aty. Tastet me vijë të ndërprerë kanë dalë më pak se 5 herë, prandaj s'kanë ende ngjyrë.</p>
+        <!--
+          Zgjedhja e tastierës. role="group" + aria-label i bashkon dy butonat nën një emër.
+          data-layout: cila tastierë vizatohet. aria-pressed: JavaScript shënon atë aktive.
+        -->
+        <div class="layout-switch" role="group" aria-label="Lloji i tastierës">
+          <button class="chip" type="button" data-layout="sq" aria-pressed="true">Shqipe (QWERTZ)</button>
+          <button class="chip" type="button" data-layout="us" aria-pressed="false">Amerikane (QWERTY)</button>
+        </div>
+        <!--
+          Tastiera: JavaScript (heatmap.js) krijon këtu rreshtat dhe tastet.
+          role="group" + aria-label: lexuesi i ekranit e di që tastet brenda i përkasin hartës.
+        -->
+        <div class="keyboard" id="keyboard" role="group" aria-label="Shkalla e gabimit për çdo tast"></div>
+        <!-- Shenjat që s'janë në tastierën e zgjedhur; hidden kur s'ka asnjë -->
+        <div class="keyboard-other" id="keyboard-other-wrap" hidden>
+          <!-- Titulli i vogël -->
+          <h3 class="subsection__title">Shenja të tjera</h3>
+          <!-- Shpjegimi -->
+          <p>Karakteret që shkruhen me Shift (si pikëpyetja ose kllapat) ose që s'janë në këtë tastierë.</p>
+          <!-- JavaScript vendos këtu një tast për çdo shenjë -->
+          <div class="keyboard__row keyboard__row--left" id="keyboard-other" role="group" aria-label="Shenja të tjera"></div>
+        </div>
+        <!-- Legjenda e ngjyrave. role="list" sepse CSS heq pikat e listës. -->
+        <ul class="heat-legend" role="list">
+          <li class="heat-legend__item"><span class="heat-legend__swatch heat-none" aria-hidden="true"></span>pak të dhëna</li>
+          <li class="heat-legend__item"><span class="heat-legend__swatch heat-0" aria-hidden="true"></span>0%</li>
+          <li class="heat-legend__item"><span class="heat-legend__swatch heat-1" aria-hidden="true"></span>nën 2%</li>
+          <li class="heat-legend__item"><span class="heat-legend__swatch heat-2" aria-hidden="true"></span>2 deri 5%</li>
+          <li class="heat-legend__item"><span class="heat-legend__swatch heat-3" aria-hidden="true"></span>5 deri 10%</li>
+          <li class="heat-legend__item"><span class="heat-legend__swatch heat-4" aria-hidden="true"></span>10% e lart</li>
+        </ul>
       </section>
 
       <!-- ========== GRAFIKU I PËRPARIMIT ========== -->

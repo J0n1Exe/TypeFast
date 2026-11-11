@@ -182,7 +182,58 @@
       <p>Testet e praktikës ruhen në historik me nivelin "Praktikë", por nuk hyjnë te rekordet personale, sepse teksti i tyre nuk krahasohet drejt me nivelet e zakonshme.</p>
     </section>
 
-    <!-- ========== 5. SHKURTORET ========== -->
+    <!-- ========== 5. GARA ME REKORDIN ========== -->
+    <section class="section reveal" aria-labelledby="ghost-title">
+      <!-- Titulli -->
+      <h2 class="section__title" id="ghost-title">Gara me rekordin</h2>
+      <!-- Çfarë është -->
+      <p>Me çelësin "Garë me rekordin" të ndezur, në tekst shfaqet një kursor i dytë gri. Ai tregon ku do të ishte tani dikush që shkruan pa asnjë gabim me shpejtësinë e rekordit tënd për atë gjuhë, nivel dhe kohë. Nëse je para tij, po e thyen rekordin.</p>
+      <!-- Formula: WPM e kthyer mbrapsht -->
+      <p class="formula"><code>Karakteret e rekordit = WPM e rekordit × 5 × minuta të kaluara</code></p>
+      <!-- Shembull -->
+      <p>Shembull: me rekord 60 WPM, pas 10 sekondash kursori gri është te karakteri 60 × 5 × (10 / 60) = 50. Numri "ndaj rekordit" tregon karakteret e tua të sakta minus këtë numër: +12 do të thotë 12 karaktere para, -5 do të thotë 5 mbrapa.</p>
+      <!-- Si lëviz -->
+      <p>Pozicioni llogaritet para çdo vizatimi të ekranit me requestAnimationFrame (rreth 60 herë në sekondë), gjithmonë nga ora e saktë performance.now. Gara nuk punon në praktikë dhe as kur ende s'ka rekord për kombinimin e zgjedhur.</p>
+    </section>
+
+    <!-- ========== 6. GRAFIKU I SHPEJTËSISË ========== -->
+    <section class="section reveal" aria-labelledby="speed-title">
+      <!-- Titulli -->
+      <h2 class="section__title" id="speed-title">Grafiku i shpejtësisë dhe qëndrueshmëria</h2>
+      <!-- Çfarë tregon grafiku -->
+      <p>Sa herë mbushet një sekondë e testit, ruhet një mostër. Pas testit, nga mostrat vizatohet grafiku te rezultati:</p>
+      <!-- Tre gjërat e grafikut -->
+      <ul class="rule-list">
+        <li>Vija e plotë është WPM mesatar nga fillimi deri në atë sekondë (formula e zakonshme e WPM).</li>
+        <li>Vija me ndërprerje është shpejtësia e çastit: vetëm shtypjet e asaj sekonde, pra (shtypje / 5) × 60. Dhjetë shtypje në një sekondë japin 120.</li>
+        <li>X-i i kuq shënon sekondat ku pati të paktën një gabim.</li>
+      </ul>
+      <!-- Formula e qëndrueshmërisë -->
+      <h3 class="subsection__title">Qëndrueshmëria</h3>
+      <p>Qëndrueshmëria tregon sa e njëtrajtshme ishte shpejtësia e çastit. Llogaritet me koeficientin e variacionit: sa i madh është devijimi standard në raport me mesataren.</p>
+      <p class="formula"><code>Qëndrueshmëria = (1 - devijimi standard / mesatarja) × 100</code></p>
+      <!-- Shembull me numra -->
+      <p>Shembull: katër sekonda me shpejtësi 40, 80, 40, 80. Mesatarja është 60. Çdo vlerë është 20 larg mesatares, pra devijimi standard është 20. Qëndrueshmëria: (1 - 20 / 60) × 100 = 66,7, e rrumbullakuar 67%. Po të ishin të katra 60, do të dilte 100%.</p>
+      <!-- Si vizatohet -->
+      <p>Grafiku vizatohet direkt me Canvas, pa librari: çdo sekondë kthehet në koordinatë x dhe çdo shpejtësi në koordinatë y, pastaj pikat lidhen me vija.</p>
+    </section>
+
+    <!-- ========== 7. PËRMBLEDHJA DHE HARTA ========== -->
+    <section class="section reveal" aria-labelledby="overview-title">
+      <!-- Titulli -->
+      <h2 class="section__title" id="overview-title">Përmbledhja dhe harta e tastierës</h2>
+      <!-- Përmbledhja -->
+      <p>Te Historiku, katër karta përmbledhin të gjitha testet e ruajtura:</p>
+      <ul class="rule-list">
+        <li>Koha e shkrimit është shuma e kohëzgjatjeve të testeve të mbaruara.</li>
+        <li>Ditë rresht numëron ditët njëra pas tjetrës me të paktën një test. Nëse sot s'ke bërë ende test, por dje po, seria vazhdon, sepse dita s'ka mbaruar.</li>
+        <li>Përparimi krahason mesataren e 10 testeve të fundit me 10 të parat e ruajtura (pa praktikën). Me më pak se 20 teste, krahasohen gjysmat.</li>
+      </ul>
+      <!-- Harta -->
+      <p>Harta e tastierës vizaton çdo tast dhe e ngjyros sipas shkallës së gabimit: pa ngjyrë për 0%, pastaj gjithnjë e më e kuqe nën 2%, 2 deri 5%, 5 deri 10% dhe 10% e lart. Tastet që kanë dalë më pak se 5 herë mbeten pa ngjyrë, me vijë të ndërprerë. Mund të zgjedhësh tastierën shqipe (QWERTZ) ose amerikane (QWERTY).</p>
+    </section>
+
+    <!-- ========== 8. SHKURTORET ========== -->
     <section class="section reveal" aria-labelledby="keys-title">
       <!-- Titulli -->
       <h2 class="section__title" id="keys-title">Shkurtoret e tastierës</h2>
@@ -228,7 +279,7 @@
       <p>Shigjetat dhe ngjitja e tekstit (paste) janë të bllokuara gjatë testit, që rezultati të jetë i ndershëm.</p>
     </section>
 
-    <!-- ========== 6. TEKNOLOGJITË ========== -->
+    <!-- ========== 9. TEKNOLOGJITË ========== -->
     <section class="section reveal" aria-labelledby="tech-title">
       <!-- Titulli -->
       <h2 class="section__title" id="tech-title">Teknologjitë e përdorura</h2>
@@ -266,7 +317,11 @@
         </div>
         <div class="tech-list__item">
           <dt>Canvas</dt>
-          <dd>Sipërfaqja ku vizatohet grafiku i përparimit te Historiku.</dd>
+          <dd>Sipërfaqja ku vizatohen grafikët. Grafiku i shpejtësisë te rezultati vizatohet direkt me Canvas 2D (vija, tekst, shkallëzim për ekrane të dendura); grafiku i përparimit te Historiku vizatohet nga Chart.js.</dd>
+        </div>
+        <div class="tech-list__item">
+          <dt>requestAnimationFrame</dt>
+          <dd>Thërret një funksion para çdo vizatimi të ekranit. Lëviz kursorin gri të garës dhe kufizon rivizatimet kur ndryshon madhësia e dritares.</dd>
         </div>
         <div class="tech-list__item">
           <dt>Chart.js 4</dt>

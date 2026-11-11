@@ -4,7 +4,9 @@
  * ---------------------------------------------------------------------------
  * Çfarë bën: skripti hyrës i historiku.html. Vendos temën, pastaj lexon
  * historikun dhe rekordet nga localStorage dhe plotëson:
+ *   - kartat e përmbledhjes (teste, kohë, ditë rresht, përparim)
  *   - tabelën e rekordeve personale
+ *   - hartën e tastierës me ngjyra sipas gabimeve
  *   - tabelën e tasteve të dobëta (me lidhjen për praktikë)
  *   - grafikun e përparimit me filtra (ProgressChart)
  *   - tabelën e plotë të testeve
@@ -28,6 +30,10 @@ import { ProgressChart } from "../modules/chart.js";
 import { ScrollReveal } from "../modules/reveal.js";
 // Formatimi i saktësisë
 import { Stats } from "../modules/stats.js";
+// Llogaritjet e përmbledhjes (koha totale, ditët rresht, përparimi)
+import { HistorySummary } from "../modules/summary.js";
+// Harta e tastierës
+import { KeyboardHeatmap } from "../modules/heatmap.js";
 // Listat dhe mesazhet
 import {
   LANGUAGES, // gjuhët
@@ -198,6 +204,45 @@ function renderHistory(body, history) {
 }
 
 /**
+ * Plotëson katër kartat e përmbledhjes me numrat e llogaritur nga historiku real.
+ * @param {object[]} history - testet, më i riu i pari
+ * @returns {void}
+ */
+function renderSummary(history) {
+  // Të gjitha llogaritjet bëhen te HistorySummary (funksione të pastra)
+  const summary = HistorySummary.compute(history);
+  // Karta 1: numri i testeve
+  document.getElementById("summary-tests").textContent = String(summary.tests);
+  // Karta 1, shënimi: të gjitha shtypjet
+  document.getElementById("summary-chars").textContent = MESSAGES.summaryChars(summary.totalChars);
+  // Karta 2: koha e shkrimit, si "12 min 30 s"
+  document.getElementById("summary-time").textContent = HistorySummary.formatDuration(summary.totalSeconds);
+  // Karta 3: seria aktuale e ditëve
+  document.getElementById("summary-streak").textContent = MESSAGES.days(summary.streak.current);
+  // Karta 3, shënimi: seria më e gjatë
+  document.getElementById("summary-longest").textContent = MESSAGES.summaryLongest(summary.streak.longest);
+  // Elementi i numrit të kartës 4
+  const progressValue = document.getElementById("summary-progress");
+  // Elementi i shënimit të kartës 4
+  const progressNote = document.getElementById("summary-progress-note");
+  // Pa të dhëna të mjaftueshme për krahasim
+  if (!summary.progress) {
+    // Vizë e thjeshtë në vend të një numri të shpikur
+    progressValue.textContent = "-";
+    // Shpjegimi i ndershëm
+    progressNote.textContent = MESSAGES.summaryNoProgress;
+    // Dalim
+    return;
+  }
+  // Diferenca e dy mesatareve
+  const { delta, count, lastAvg, firstAvg } = summary.progress;
+  // Numrat pozitivë marrin "+" përpara; negativët e kanë vetë "-"
+  progressValue.textContent = `${delta > 0 ? "+" : ""}${delta} WPM`;
+  // Shënimi tregon saktësisht çfarë u krahasua
+  progressNote.textContent = MESSAGES.summaryProgress(count, lastAvg, firstAvg);
+}
+
+/**
  * Plotëson tabelën e tasteve të dobëta dhe shfaq lidhjen e praktikës kur ka taste.
  * @param {HTMLTableSectionElement} body - <tbody>
  * @param {HTMLAnchorElement} practiceLink - lidhja "Praktiko tastet e dobëta"
@@ -262,6 +307,7 @@ function initHistoryPage() {
     historyCount: document.getElementById("history-count"), // fjalia me numrin e testeve
     filters: Array.from(document.querySelectorAll("[data-filter]")), // tre listat e filtrave
     clearButton: document.getElementById("clear-button"), // butoni "Fshi historikun"
+    layoutButtons: Array.from(document.querySelectorAll("[data-layout]")), // dy butonat e tastierës
     dialog: document.getElementById("clear-dialog"), // dritarja e konfirmimit
   };
   // Grafiku
@@ -270,6 +316,29 @@ function initHistoryPage() {
     emptyEl: document.getElementById("chart-empty"), // mesazhi bosh
     summaryEl: document.getElementById("chart-summary"), // përmbledhja
   });
+
+  // Harta e tastierës
+  const heatmap = new KeyboardHeatmap({
+    keyboardEl: document.getElementById("keyboard"), // rreshtat e tastierës
+    otherEl: document.getElementById("keyboard-other"), // shenjat e tjera
+    otherWrapEl: document.getElementById("keyboard-other-wrap"), // mbështjellësi i tyre
+  });
+  // Tastiera e zgjedhur herën e fundit (ose shqipja si parazgjedhje)
+  let layout = storage.getLayout();
+
+  /**
+   * Vizaton hartën me tastierën e zgjedhur dhe shënon butonin aktiv.
+   * @returns {void}
+   */
+  function renderHeatmap() {
+    // Vizatojmë tastet me numrat e ruajtur
+    heatmap.render(storage.getKeyStats(), layout);
+    // Kalojmë dy butonat
+    elements.layoutButtons.forEach((button) => {
+      // aria-pressed="true" vetëm për tastierën aktive (CSS e shënon me theksin)
+      button.setAttribute("aria-pressed", String(button.dataset.layout === layout));
+    });
+  }
 
   /**
    * Lexon të dhënat dhe rivizaton gjithë faqen.
@@ -291,8 +360,12 @@ function initHistoryPage() {
       // Dalim
       return;
     }
+    // Kartat e përmbledhjes
+    renderSummary(history);
     // Tabela e rekordeve
     renderRecords(elements.recordsBody, storage.getRecords());
+    // Harta e tastierës
+    renderHeatmap();
     // Tabela e tasteve të dobëta
     renderWeakKeys(elements.keysBody, elements.keysPractice, storage.getKeyStats());
     // Tabela e historikut
@@ -305,6 +378,19 @@ function initHistoryPage() {
 
   // Vizatimi i parë
   render();
+
+  // Butonat e tastierës: klikimi ndërron tastierën e hartës
+  elements.layoutButtons.forEach((button) => {
+    // Dëgjojmë klikimin e secilit buton
+    button.addEventListener("click", () => {
+      // Tastiera e re nga atributi data-layout
+      layout = button.dataset.layout;
+      // E ruajmë, që të mbahet mend herën tjetër
+      storage.saveLayout(layout);
+      // Rivizatojmë hartën
+      renderHeatmap();
+    });
+  });
 
   // Çdo filtër: kur ndryshon vlera, ndryshon grafiku
   elements.filters.forEach((select) => {

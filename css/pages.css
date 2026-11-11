@@ -73,6 +73,192 @@
   max-width: var(--prose-max); /* rreth 72 shkronja për rresht */
 }
 
+/* ---------------- PËRMBLEDHJA ---------------- */
+
+/* Rrjeta e katër kartave të përmbledhjes */
+.summary-grid {
+  display: grid; /* rrjetë */
+  grid-template-columns: repeat(4, minmax(0, 1fr)); /* 4 kolona të barabarta */
+  gap: var(--space-2); /* 16px mes kartave */
+}
+
+/* Një kartë e përmbledhjes: etiketa, numri dhe shënimi */
+.summary-card {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* pjesët në kolonë */
+  gap: var(--space-1); /* 8px mes tyre */
+  padding: var(--space-3); /* 24px brenda */
+  background-color: var(--surface); /* sfond karte */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-md); /* qoshe 8px */
+}
+
+/* Etiketa e kartës, p.sh. "DITË RRESHT" */
+.summary-card__label {
+  color: var(--text-muted); /* e zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  text-transform: uppercase; /* shkronja të mëdha */
+}
+
+/* Numri kryesor i kartës */
+.summary-card__value {
+  font-family: var(--font-mono); /* shkronjë me gjerësi të njëjtë */
+  font-size: var(--fs-title); /* numër i madh */
+  line-height: var(--lh-title); /* rresht i ngjeshur */
+  letter-spacing: var(--ls-title); /* shkronjat afrohen pak */
+  font-weight: var(--fw-bold); /* i trashë */
+  font-variant-numeric: tabular-nums; /* shifra me gjerësi të njëjtë */
+}
+
+/* Shënimi i vogël poshtë numrit */
+.summary-card__note {
+  color: var(--text-muted); /* i zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+}
+
+/* ---------------- HARTA E TASTIERËS ---------------- */
+
+/* Dy butonat për zgjedhjen e tastierës */
+.layout-switch {
+  display: flex; /* në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri */
+  gap: var(--space-1); /* 8px mes butonave */
+}
+
+/* E gjithë tastiera: rreshtat njëri poshtë tjetrit */
+.keyboard {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* rreshtat në kolonë */
+  gap: var(--space-1); /* 8px mes rreshtave */
+  overflow-x: auto; /* në ekrane shumë të ngushta tastiera lëviz anash */
+}
+
+/* Një rresht tastesh, në qendër si në tastierë të vërtetë */
+.keyboard__row {
+  display: flex; /* tastet në rresht */
+  justify-content: center; /* në qendër; rreshtat më të shkurtër dalin të zhvendosur */
+  gap: var(--space-1); /* 8px mes tasteve */
+}
+
+/* Rreshti i shenjave të tjera: majtas dhe me kalim në rresht të ri */
+.keyboard__row--left {
+  justify-content: flex-start; /* majtas */
+  flex-wrap: wrap; /* kalojnë në rresht të ri */
+}
+
+/* Mbështjellësi i shenjave të tjera */
+.keyboard-other {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* titulli, shpjegimi dhe tastet në kolonë */
+  gap: var(--space-1); /* 8px mes tyre */
+}
+
+/* Një tast: shkronja sipër, përqindja poshtë */
+.key {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* shkronja mbi përqindjen */
+  align-items: center; /* në qendër horizontalisht */
+  justify-content: center; /* në qendër vertikalisht */
+  flex: 0 0 var(--space-6); /* gjerësi e fiksuar 48px, nuk zgjerohet dhe nuk ngushtohet */
+  min-height: var(--space-6); /* 48px lartësi, katror */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  color: var(--text); /* tekst i qartë mbi çdo ngjyrë sfondi */
+}
+
+/* Tasti i hapësirës: gjashtë herë më i gjerë */
+.key--wide {
+  flex-basis: calc(var(--space-6) * 6); /* 288px */
+}
+
+/* Shkronja e tastit */
+.key__label {
+  font-family: var(--font-mono); /* shkronjë me gjerësi të njëjtë */
+  font-weight: var(--fw-bold); /* e trashë */
+}
+
+/* Përqindja e gabimit poshtë shkronjës */
+.key__rate {
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  font-variant-numeric: tabular-nums; /* shifra me gjerësi të njëjtë */
+}
+
+/*
+  Shkallët e ngjyrës. Përdoren nga tastet dhe nga legjenda.
+  color-mix përzien të kuqen e statusit "gabim" me sfondin e kartës:
+  sa më e lartë përqindja, aq më e kuqe. Maksimumi është 60%, që teksti
+  të ruajë kontrastin WCAG AA në të dyja temat.
+*/
+
+/* Pak të dhëna: pa ngjyrë, vijë e ndërprerë, tekst i zbehur */
+.heat-none {
+  border-style: dashed; /* vijë me ndërprerje: "ende pa të dhëna" */
+  color: var(--text-muted); /* tekst i zbehur */
+}
+
+/* Shkalla 0: asnjë gabim, sfond i zakonshëm karte */
+.heat-0 {
+  background-color: var(--surface); /* pa të kuqe */
+}
+
+/* Shkalla 1: nën 2% gabime */
+.heat-1 {
+  background-color: color-mix(in srgb, var(--wrong) 15%, var(--surface)); /* 15% e kuqe */
+}
+
+/* Shkalla 2: 2 deri 5% gabime */
+.heat-2 {
+  background-color: color-mix(in srgb, var(--wrong) 30%, var(--surface)); /* 30% e kuqe */
+}
+
+/* Shkalla 3: 5 deri 10% gabime */
+.heat-3 {
+  background-color: color-mix(in srgb, var(--wrong) 45%, var(--surface)); /* 45% e kuqe */
+}
+
+/* Shkalla 4: 10% e lart */
+.heat-4 {
+  background-color: color-mix(in srgb, var(--wrong) 60%, var(--surface)); /* 60% e kuqe, më e forta */
+}
+
+/* Legjenda e ngjyrave */
+.heat-legend {
+  display: flex; /* në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri */
+  gap: var(--space-1) var(--space-3); /* 8px mes rreshtave, 24px mes elementeve */
+  padding: 0; /* pa hapësirë majtas */
+  list-style: none; /* pa pika liste */
+  color: var(--text-muted); /* e zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+}
+
+/* Një element i legjendës: katrori i ngjyrës dhe teksti */
+.heat-legend__item {
+  display: inline-flex; /* në rresht */
+  align-items: center; /* në mes vertikalisht */
+  gap: var(--space-1); /* 8px mes katrorit dhe tekstit */
+}
+
+/* Katrori i vogël i ngjyrës te legjenda */
+.heat-legend__swatch {
+  width: var(--space-3); /* 24px */
+  height: var(--space-2); /* 16px */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë, si tastet */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+}
+
+/* Katrori "pak të dhëna" te legjenda mban vijën e ndërprerë (rregulli më lart do ta bënte të plotë) */
+.heat-legend__swatch.heat-none {
+  border-style: dashed; /* vijë me ndërprerje, si tastet pa të dhëna */
+}
+
 /* ---------------- GRAFIKU ---------------- */
 
 /* Rreshti me filtrat e grafikut */
@@ -189,8 +375,21 @@
 
 /* ---------------- PIKAT E NDËRPRERJES ---------------- */
 
+/* 1024px: kartat e përmbledhjes në 2 kolona */
+@media (max-width: 1024px) {
+  /* Rrjeta me 2 kolona */
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 kolona */
+  }
+}
+
 /* 768px: më pak hapësirë dhe lista e teknologjive në një kolonë */
 @media (max-width: 768px) {
+  /* Kartat e përmbledhjes me më pak hapësirë brenda */
+  .summary-card {
+    padding: var(--space-2); /* 16px */
+  }
+
   /* Koka e faqes */
   .page-header {
     margin-bottom: var(--space-6); /* 48px */

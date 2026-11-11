@@ -16,6 +16,13 @@
  * nga një nivel, por ndërtohet nga fjalët ku dalin tastet ku përdoruesi
  * gabon më shumë. Tastet llogariten nga numrat e të gjitha testeve të mbaruara.
  *
+ * Gara me rekordin (cilësimi "ghost"): një kursor gri lëviz me shpejtësinë e
+ * rekordit për kombinimin e zgjedhur. Pozicioni i tij llogaritet në çdo kornizë
+ * (requestAnimationFrame) nga koha e kaluar: karaktere = WPM x 5 x minuta.
+ *
+ * Mostrat e shpejtësisë: sa herë mbushet një sekondë e plotë, Stats merr një
+ * mostër. Prej tyre vizatohet grafiku te rezultati.
+ *
  * Gjendjet e testit (this.state):
  *   "loading"  - tekstet po lexohen
  *   "error"    - tekstet nuk u lexuan
@@ -51,6 +58,8 @@ import { Timer } from "./modules/timer.js";
 import { Stats } from "./modules/stats.js";
 // Ndërfaqja
 import { TestUI } from "./modules/ui.js";
+// Vetëm për funksionin statik recordKey (çelësi i rekordit për një kombinim)
+import { StorageService } from "./modules/storage.js";
 
 /**
  * Tastet që bllokohen gjatë testit, që përdoruesi të mos lëvizë kursorin e fshehur.
@@ -109,6 +118,12 @@ export class TypingTest {
     this.practiceMode = false;
     // Tastet e dobëta (me shkallën e gabimit) që po përdor praktika aktuale
     this.practiceWeakKeys = [];
+    // Rekordi (WPM) kundër të cilit garon kursori gri; null = gara s'është aktive
+    this.ghostWpm = null;
+    // Id e requestAnimationFrame të garës, që ta ndalojmë ciklin
+    this.ghostFrameId = null;
+    // Sa sekonda të plota kanë marrë mostër deri tani në këtë test
+    this.sampledSeconds = 0;
   }
 
   /**
@@ -251,6 +266,10 @@ export class TypingTest {
     this.ui.setSettingsDisabled(false);
     // Fshijmë njoftimin e vjetër, që i njëjti rezultat të lexohet sërish herën tjetër
     this.ui.announce("");
+    // Asnjë sekondë s'ka marrë ende mostër
+    this.sampledSeconds = 0;
+    // Përgatisim garën me rekordin (kursori gri në fillim, ose i fshehur)
+    this.setupGhost();
     // Gati për shkrim
     this.state = "ready";
   }
@@ -266,6 +285,11 @@ export class TypingTest {
     this.ui.setSettingsDisabled(true);
     // Nisim kohëmatësin me kohëzgjatjen e zgjedhur
     this.timer.start(this.settings.duration);
+    // Nëse gara është aktive, kursori gri nis të lëvizë
+    if (this.ghostWpm !== null) {
+      // Korniza e parë e ciklit të garës
+      this.runGhostFrame();
+    }
   }
 
   /**
@@ -304,6 +328,10 @@ export class TypingTest {
     this.ui.resetChars();
     // Kursori dhe teksti në fillim, pa animacion
     this.ui.refreshLayout(0);
+    // Mostrat nisin nga e para
+    this.sampledSeconds = 0;
+    // Kursori gri ndalon dhe kthehet në fillim
+    this.setupGhost();
     // Kursori pulson
     this.ui.setCaretTyping(false);
     // Numrat fillestarë
@@ -329,6 +357,8 @@ export class TypingTest {
     this.timer.stop();
     // Ndalojmë kohëmatësin e pulsimit
     clearTimeout(this.idleTimeoutId);
+    // Ndalojmë ciklin e garës (kursori gri s'lëviz më)
+    cancelAnimationFrame(this.ghostFrameId);
     // Bllokojmë fushën e shkrimit
     this.ui.setInputLocked(true);
     // Rezultati: cilësimet plus numrat nga Stats (WPM me kohëzgjatjen e plotë)
@@ -352,7 +382,7 @@ export class TypingTest {
     // Tastet e dobëta mund të kenë ndryshuar: përditësojmë butonin e praktikës
     this.refreshPracticeAvailability();
     // Shfaqim panelin e rezultatit
-    this.ui.showResults(entry, { isRecord, saved });
+    this.ui.showResults(entry, { isRecord, saved, speed: this.stats.getSpeedData() });
     // Cilësimet lejohen sërish
     this.ui.setSettingsDisabled(false);
     // Njoftojmë lexuesin e ekranit
@@ -648,6 +678,9 @@ export class TypingTest {
     } else if (name === "lenient") { // çelësi ë/ç: vlera e re është e kundërta e asaj aktuale
       // Çelësi ndërron vlerën aktuale
       value = !this.settings.lenient;
+    } else if (name === "ghost") { // çelësi i garës: edhe ky ndërron vlerën aktuale
+      // E kundërta e vlerës aktuale
+      value = !this.settings.ghost;
     } else {
       // Niveli dhe gjuha janë tekst
       value = button.dataset.value;
@@ -788,6 +821,77 @@ export class TypingTest {
     this.ui.focusInput();
   }
 
+  // ---------------- GARA ME REKORDIN ----------------
+
+  /**
+   * Përgatit garën për testin e ri: gjen rekordin e kombinimit, vendos nëse gara
+   * është aktive, shfaq shënimin e duhur dhe e çon kursorin gri në fillim.
+   * Gara është aktive vetëm kur: çelësi është i ndezur, s'jemi në praktikë dhe ekziston një rekord.
+   * @returns {void}
+   */
+  setupGhost() {
+    // Ndalojmë ciklin e mëparshëm nëse po ecte
+    cancelAnimationFrame(this.ghostFrameId);
+    // Rekordi i ruajtur për këtë gjuhë, nivel dhe kohë (undefined nëse s'ka)
+    const record = this.storage.getRecords()[StorageService.recordKey(this.settings.lang, this.settings.level, this.settings.duration)];
+    // Shënimi poshtë çelësit, sipas rastit
+    let hint;
+    // Në praktikë s'ka rekord për të garuar
+    if (this.practiceMode) {
+      // Shpjegojmë pse
+      hint = MESSAGES.ghostPractice;
+    } else if (!record) { // pa rekord për këtë kombinim
+      // Shpjegojmë që duhet një test i mbaruar
+      hint = MESSAGES.ghostNoRecord;
+    } else {
+      // Tregojmë rekordin real
+      hint = MESSAGES.ghostHint(record.wpm);
+    }
+    // Gara është aktive vetëm kur plotësohen të tri kushtet
+    const active = this.settings.ghost && !this.practiceMode && Boolean(record);
+    // Ruajmë shpejtësinë e rekordit, ose null kur gara s'është aktive
+    this.ghostWpm = active ? record.wpm : null;
+    // Shfaqim ose fshehim kursorin gri dhe statistikën, me shënimin
+    this.ui.setGhost(active, hint);
+    // Kursori gri te shkronja e parë
+    this.ui.updateGhost(0);
+    // Diferenca fillestare është 0
+    this.ui.updateGhostLead(0);
+  }
+
+  /**
+   * Sa karaktere do të kishte shkruar tani dikush që shkruan pa gabime me shpejtësinë e rekordit.
+   * Është formula e WPM e kthyer mbrapsht: karaktere = WPM x 5 x minuta.
+   * @returns {number} numri i karaktereve (0 kur gara s'është aktive)
+   */
+  getGhostChars() {
+    // Pa garë, kursori gri s'ka pozicion
+    if (this.ghostWpm === null) {
+      return 0; // gara s'është aktive
+    }
+    // Minutat e kaluara nga ora e saktë e kohëmatësit
+    const minutes = this.timer.getElapsedSeconds() / 60;
+    // Math.floor: vetëm karaktere të plota
+    return Math.floor(this.ghostWpm * CHARS_PER_WORD * minutes);
+  }
+
+  /**
+   * Një kornizë e garës: lëviz kursorin gri, përditëson diferencën dhe kërkon kornizën tjetër.
+   * requestAnimationFrame e thërret këtë para çdo vizatimi të ekranit (rreth 60 herë në sekondë),
+   * prandaj lëvizja është e butë dhe ndalon vetë kur skeda s'është e dukshme.
+   * @returns {void}
+   */
+  runGhostFrame() {
+    // Ku është rekordi tani
+    const ghostChars = this.getGhostChars();
+    // Lëvizim kursorin gri
+    this.ui.updateGhost(ghostChars);
+    // Diferenca: karakteret e tua të sakta minus ato të rekordit
+    this.ui.updateGhostLead(this.stats.correctCharsInPlace - ghostChars);
+    // Kërkojmë kornizën tjetër dhe ruajmë id-në, që ta ndalojmë te finish() ose cancel()
+    this.ghostFrameId = requestAnimationFrame(() => this.runGhostFrame());
+  }
+
   // ---------------- KOHA DHE STATISTIKAT ----------------
 
   /**
@@ -799,6 +903,16 @@ export class TypingTest {
   handleTick(remaining, elapsed) {
     // Përditësojmë numrat
     this.updateLiveStats(remaining, elapsed);
+    // Sa sekonda të plota kanë kaluar (p.sh. 7.3 -> 7)
+    const wholeSeconds = Math.floor(elapsed);
+    // Marrim një mostër për çdo sekondë të re. while (jo if): nëse skeda ishte në sfond
+    // dhe kaluan disa sekonda pa tik, i marrim të gjitha që të mos mungojë asnjë.
+    while (this.sampledSeconds < wholeSeconds) {
+      // Sekonda e radhës
+      this.sampledSeconds += 1;
+      // Stats ruan WPM, shpejtësinë e çastit dhe gabimet e kësaj sekonde
+      this.stats.takeSample(this.sampledSeconds);
+    }
   }
 
   /**
@@ -829,6 +943,8 @@ export class TypingTest {
       if (this.state === "ready" || this.state === "running") {
         // Rimatim dhe vendosim kursorin
         this.ui.refreshLayout(this.index);
+        // Edhe kursori gri duhet rivendosur, sepse shkronjat kanë ndërruar vend
+        this.ui.updateGhost(this.getGhostChars());
       }
     });
   }
