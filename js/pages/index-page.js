@@ -33,6 +33,7 @@ themeManager.bindToggle(document.getElementById("theme-toggle"));
 if (window.location.protocol !== "file:") {
   // Krijojmë testin
   const typingTest = new TypingTest(storage);
-  // E nisim (lexon tekstet dhe përgatit testin e parë)
-  typingTest.init();
+  // E nisim (lexon tekstet dhe përgatit testin e parë).
+  // Lidhja "Praktiko" te historiku hap index.html#praktike: atëherë testi i parë është praktikë.
+  typingTest.init({ startInPractice: window.location.hash === "#praktike" });
 }

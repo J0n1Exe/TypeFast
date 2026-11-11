@@ -6,7 +6,7 @@
  * Çdo lexim dhe shkrim është brenda try/catch: nëse kujtesa është plot,
  * e bllokuar (p.sh. modaliteti privat në disa shfletues) ose të dhënat janë
  * të prishura, faqja vazhdon të punojë pa u rrëzuar.
- * Ruan historikun, rekordet, cilësimet dhe temën.
+ * Ruan historikun, rekordet, statistikat e tasteve, cilësimet dhe temën.
  *
  * Çfarë eksporton: klasën StorageService.
  * Kush e përdor: app.js, theme.js dhe faqet te js/pages/.
@@ -23,6 +23,7 @@ import {
   LANGUAGES, // gjuhët e lejuara
   THEMES, // temat e lejuara
   DEFAULT_THEME, // tema e parazgjedhur
+  PRACTICE_LEVEL, // "niveli" i testeve të praktikës, që nuk hyjnë te rekordet
 } from "../config.js"; // skedari nga vijnë të gjitha
 
 /**
@@ -174,7 +175,7 @@ export class StorageService {
   }
 
   /**
-   * Fshin gjithë historikun dhe rekordet (rekordet vijnë nga historiku).
+   * Fshin gjithë historikun, rekordet dhe statistikat e tasteve (të gjitha vijnë nga testet).
    * @returns {void}
    */
   clearHistory() {
@@ -182,6 +183,54 @@ export class StorageService {
     this.remove(STORAGE_KEYS.HISTORY);
     // Fshijmë rekordet
     this.remove(STORAGE_KEYS.RECORDS);
+    // Fshijmë numrat e tasteve
+    this.remove(STORAGE_KEYS.KEYS);
+  }
+
+  // ---------------- STATISTIKAT E TASTEVE ----------------
+
+  /**
+   * Lexon numrat e të gjitha testeve për çdo tast. Hedh poshtë vlerat e prishura.
+   * @returns {Object<string, {attempts: number, errors: number}>} tasti -> numrat
+   */
+  getKeyStats() {
+    // Lexojmë objektin; rezerva është objekt bosh
+    const saved = this.readJSON(STORAGE_KEYS.KEYS, {});
+    // Objekti i pastër që do kthejmë
+    const clean = {};
+    // Nëse s'është objekt i zakonshëm, kthejmë objektin bosh
+    if (!saved || typeof saved !== "object" || Array.isArray(saved)) {
+      return clean; // kthejmë objektin bosh dhe dalim
+    }
+    // Kalojmë çdo tast të ruajtur
+    Object.entries(saved).forEach(([key, value]) => {
+      // Pranojmë vetëm një karakter të vetëm me numra të vlefshëm (Array.from numëron ë si 1 karakter)
+      if (Array.from(key).length === 1 && Number.isInteger(value?.attempts) && Number.isInteger(value?.errors)) {
+        // E kopjojmë te objekti i pastër
+        clean[key] = { attempts: value.attempts, errors: value.errors };
+      }
+    });
+    // Kthejmë numrat e kontrolluar
+    return clean;
+  }
+
+  /**
+   * Shton numrat e një testi te totali i ruajtur.
+   * @param {Object<string, {attempts: number, errors: number}>} testKeyStats - numrat e testit (nga Stats.getKeyStats)
+   * @returns {boolean} true nëse u ruajtën
+   */
+  addKeyStats(testKeyStats) {
+    // Totali deri tani
+    const totals = this.getKeyStats();
+    // Kalojmë çdo tast të testit
+    Object.entries(testKeyStats).forEach(([key, value]) => {
+      // Totali ekzistues i tastit, ose zero
+      const current = totals[key] || { attempts: 0, errors: 0 };
+      // Mbledhim numrat e vjetër me të rinjtë
+      totals[key] = { attempts: current.attempts + value.attempts, errors: current.errors + value.errors };
+    });
+    // Ruajmë totalin e ri
+    return this.writeJSON(STORAGE_KEYS.KEYS, totals);
   }
 
   // ---------------- REKORDET ----------------
@@ -216,6 +265,10 @@ export class StorageService {
    * @returns {boolean} true nëse e kalon rekordin ekzistues (ose s'ka rekord)
    */
   isNewRecord(result) {
+    // Testet e praktikës nuk hyjnë te rekordet (teksti i tyre s'krahasohet me nivelet)
+    if (result.level === PRACTICE_LEVEL.id) {
+      return false; // praktika nuk është kurrë rekord
+    }
     // 0 WPM nuk është arritje
     if (result.wpm <= 0) {
       return false; // kthejmë këtë vlerë dhe dalim nga funksioni

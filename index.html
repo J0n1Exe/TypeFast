@@ -204,11 +204,38 @@
           <span class="switch__label">Prano e për ë dhe c për ç</span>
         </button>
       </div>
+
+      <!--
+        Grupi i praktikës së tasteve të dobëta. Butoni nis (ose ndal) një test ku teksti
+        ndërtohet nga tastet ku gabon më shumë, të numëruara në të gjitha testet.
+      -->
+      <div class="settings__group settings__group--practice">
+        <!--
+          class="chip": i njëjti stil si zgjedhjet e tjera, sepse edhe ky është një "modalitet" që zgjidhet.
+          aria-pressed: "true" kur praktika është aktive (korniza merr ngjyrën e theksit).
+          aria-describedby: lexuesi i ekranit lexon edhe shënimin poshtë butonit (cilat taste, ose pse është i çaktivizuar).
+          disabled: i çaktivizuar si parazgjedhje; JavaScript e aktivizon kur ka të dhëna të mjaftueshme.
+        -->
+        <button class="chip" id="practice-toggle" type="button" aria-pressed="false" aria-describedby="practice-hint" disabled>Praktiko tastet e dobëta</button>
+        <!-- Shënimi: tastet më të dobëta reale, ose shpjegimi pse butoni s'punon ende -->
+        <p class="settings__hint" id="practice-hint">Ende s'ka të dhëna të mjaftueshme. Mbaro një test dhe do të shohim ku gabon.</p>
+      </div>
     </section>
 
     <!-- ========== ZONA E TESTIT ========== -->
     <!-- aria-label: emri i zonës për lexuesit e ekranit -->
     <section class="test-area" id="test-area" aria-label="Testi">
+
+      <!--
+        Shiriti i praktikës: shfaqet vetëm kur praktika është aktive (hidden si parazgjedhje).
+        Tregon cilat taste po praktikohen dhe si kthehesh te testi normal.
+      -->
+      <div class="practice-banner" id="practice-banner" hidden>
+        <!-- Rreshti me tastet; JavaScript vendos një <kbd> për çdo tast te span-i -->
+        <p class="practice-banner__title">Praktikë për tastet: <span class="practice-banner__keys" id="practice-keys"></span></p>
+        <!-- Shpjegimi i shkurtër -->
+        <p class="practice-banner__text">Teksti ndërtohet nga fjalët ku këto taste dalin më shumë. Niveli nuk përdoret. Për t'u kthyer, kliko sërish "Praktiko tastet e dobëta" ose zgjidh një nivel.</p>
+      </div>
 
       <!--
         Statistikat e drejtpërdrejta. NUK kanë aria-live, sepse ndryshojnë
@@ -346,6 +373,8 @@
       <div class="results__actions">
         <!-- Nis një test të ri me tekst të ri -->
         <button class="button button--primary" id="retry-button" type="button">Provo përsëri</button>
+        <!-- Nis praktikën e tasteve të dobëta; hidden derisa të ketë të dhëna të mjaftueshme -->
+        <button class="button" id="results-practice" type="button" hidden>Praktiko tastet e dobëta</button>
         <!-- Lidhje drejt historikut, me pamje butoni -->
         <a class="button" href="historiku.html">Shiko historikun</a>
       </div>

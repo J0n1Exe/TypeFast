@@ -5,6 +5,7 @@
  * Çfarë bën: skripti hyrës i historiku.html. Vendos temën, pastaj lexon
  * historikun dhe rekordet nga localStorage dhe plotëson:
  *   - tabelën e rekordeve personale
+ *   - tabelën e tasteve të dobëta (me lidhjen për praktikë)
  *   - grafikun e përparimit me filtra (ProgressChart)
  *   - tabelën e plotë të testeve
  *   - butonin "Fshi historikun" me dritaren <dialog>
@@ -28,7 +29,17 @@ import { ScrollReveal } from "../modules/reveal.js";
 // Formatimi i saktësisë
 import { Stats } from "../modules/stats.js";
 // Listat dhe mesazhet
-import { LANGUAGES, LEVELS, DURATIONS, MESSAGES, findLabel } from "../config.js";
+import {
+  LANGUAGES, // gjuhët
+  LEVELS, // nivelet, për renditjen e rekordeve
+  LEVEL_LABELS, // emrat e niveleve, përfshirë "Praktikë"
+  DURATIONS, // kohëzgjatjet, për renditjen e rekordeve
+  MESSAGES, // mesazhet në shqip
+  WEAK_KEY_TABLE_LIMIT, // sa taste shfaq tabela
+  WEAK_KEY_MIN_ATTEMPTS, // sa herë duhet të ketë dalë një tast
+  WEAK_KEY_MIN_ERRORS, // sa herë duhet të jetë gabuar një tast
+  findLabel, // gjen emrin shqip nga id-ja
+} from "../config.js"; // skedari nga vijnë të gjitha
 
 // Shërbimi i ruajtjes për gjithë faqen
 const storage = new StorageService();
@@ -149,7 +160,7 @@ function renderRecords(body, records) {
     // Krijojmë rreshtin me 6 qeliza
     body.append(createRow([
       { text: findLabel(LANGUAGES, record.lang) }, // gjuha
-      { text: findLabel(LEVELS, record.level) }, // niveli
+      { text: findLabel(LEVEL_LABELS, record.level) }, // niveli
       { text: `${record.duration} s` }, // koha
       { text: String(record.wpm), numeric: true }, // WPM
       { text: `${Stats.formatAccuracy(record.accuracy)}%`, numeric: true }, // saktësia
@@ -175,7 +186,7 @@ function renderHistory(body, history) {
     fragment.append(createRow([
       { text: formatDateTime(entry.dateISO) }, // data dhe ora
       { text: findLabel(LANGUAGES, entry.lang) }, // gjuha
-      { text: findLabel(LEVELS, entry.level) }, // niveli
+      { text: findLabel(LEVEL_LABELS, entry.level) }, // niveli
       { text: `${entry.duration} s` }, // koha
       { text: String(entry.wpm), numeric: true }, // WPM
       { text: `${Stats.formatAccuracy(entry.accuracy)}%`, numeric: true }, // saktësia
@@ -184,6 +195,55 @@ function renderHistory(body, history) {
   });
   // Shtojmë të gjitha rreshtat
   body.append(fragment);
+}
+
+/**
+ * Plotëson tabelën e tasteve të dobëta dhe shfaq lidhjen e praktikës kur ka taste.
+ * @param {HTMLTableSectionElement} body - <tbody>
+ * @param {HTMLAnchorElement} practiceLink - lidhja "Praktiko tastet e dobëta"
+ * @param {Object<string, {attempts: number, errors: number}>} keyStats - numrat e ruajtur
+ * @returns {void}
+ */
+function renderWeakKeys(body, practiceLink, keyStats) {
+  // Fshijmë rreshtat e vjetër
+  body.textContent = "";
+  // 10 tastet me shkallën më të lartë të gabimit (hapësira përfshihet këtu, se është informacion i vlefshëm)
+  const ranked = Stats.rankWeakKeys(keyStats, {
+    minAttempts: WEAK_KEY_MIN_ATTEMPTS, // të paktën 5 herë
+    minErrors: WEAK_KEY_MIN_ERRORS, // të paktën 2 gabime
+    limit: WEAK_KEY_TABLE_LIMIT, // 10 rreshta
+  });
+  // Praktika ka kuptim vetëm kur ka të paktën një tast që nuk është hapësira
+  practiceLink.hidden = !ranked.some((item) => item.key !== " ");
+  // Pa asnjë tast të dobët: një rresht me shpjegim
+  if (ranked.length === 0) {
+    // Rreshti
+    const row = document.createElement("tr");
+    // Një qelizë e vetme
+    const cell = document.createElement("td");
+    // colSpan = 4: zë të 4 kolonat
+    cell.colSpan = 4;
+    // Mesazhi i ndershëm
+    cell.textContent = MESSAGES.noWeakKeys;
+    // Klasa që lejon mesazhin e gjatë të kalojë në disa rreshta (tabela ka nowrap si parazgjedhje)
+    cell.className = "table__wrap";
+    // Qeliza te rreshti
+    row.append(cell);
+    // Rreshti te tabela
+    body.append(row);
+    // Dalim
+    return;
+  }
+  // Një rresht për çdo tast
+  ranked.forEach((item) => {
+    // Krijojmë rreshtin me 4 qeliza
+    body.append(createRow([
+      { text: item.key === " " ? MESSAGES.space : item.key }, // tasti; hapësira shkruhet me fjalë
+      { text: String(item.errors), numeric: true }, // gabimet
+      { text: String(item.attempts), numeric: true }, // herë që doli
+      { text: `${Stats.formatAccuracy(item.rate * 100)}%`, numeric: true }, // shkalla në përqindje, me presje
+    ]));
+  });
 }
 
 /**
@@ -196,6 +256,8 @@ function initHistoryPage() {
     empty: document.getElementById("history-empty"), // gjendja bosh
     content: document.getElementById("history-content"), // pjesa me të dhëna
     recordsBody: document.getElementById("records-body"), // trupi i tabelës së rekordeve
+    keysBody: document.getElementById("keys-body"), // trupi i tabelës së tasteve të dobëta
+    keysPractice: document.getElementById("keys-practice"), // lidhja "Praktiko tastet e dobëta"
     historyBody: document.getElementById("history-body"), // trupi i tabelës së historikut
     historyCount: document.getElementById("history-count"), // fjalia me numrin e testeve
     filters: Array.from(document.querySelectorAll("[data-filter]")), // tre listat e filtrave
@@ -231,6 +293,8 @@ function initHistoryPage() {
     }
     // Tabela e rekordeve
     renderRecords(elements.recordsBody, storage.getRecords());
+    // Tabela e tasteve të dobëta
+    renderWeakKeys(elements.keysBody, elements.keysPractice, storage.getKeyStats());
     // Tabela e historikut
     renderHistory(elements.historyBody, history);
     // Fjalia me numrin real të testeve

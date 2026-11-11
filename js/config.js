@@ -11,7 +11,9 @@
  * CHARS_PER_WORD, DEFAULT_SETTINGS, THEMES, DEFAULT_THEME, TEXTS_URL,
  * TIMER_INTERVAL_MS, LIVE_WPM_MIN_SECONDS, TEXT_TARGET_WPM,
  * APPEND_THRESHOLD_CHARS, APPEND_CHUNK_CHARS, CARET_IDLE_MS,
- * MOST_MISSED_LIMIT, CHART_MAX_POINTS, MESSAGES, findLabel.
+ * MOST_MISSED_LIMIT, CHART_MAX_POINTS, PRACTICE_LEVEL, LEVEL_LABELS,
+ * WEAK_KEY_LIMIT, WEAK_KEY_TABLE_LIMIT, WEAK_KEY_MIN_ATTEMPTS,
+ * WEAK_KEY_MIN_ERRORS, PRACTICE_TOKENS_PER_KEY, MESSAGES, findLabel.
  *
  * Kush e përdor: pothuajse të gjithë modulet (texts.js, timer.js, stats.js,
  * storage.js, ui.js, theme.js, chart.js, app.js) dhe faqet te js/pages/.
@@ -37,6 +39,21 @@ export const LEVELS = Object.freeze([
 ]);
 
 /**
+ * "Niveli" që u jepet testeve të praktikës në historik. NUK është zgjedhje te
+ * shiriti i cilësimeve: teksti i praktikës ndërtohet nga tastet e dobëta, jo nga një nivel.
+ * Testet e praktikës nuk hyjnë te rekordet, sepse teksti i tyre nuk krahasohet drejt me nivelet.
+ * @type {Readonly<{id: string, label: string}>}
+ */
+export const PRACTICE_LEVEL = Object.freeze({ id: "practice", label: "Praktikë" });
+
+/**
+ * Të gjitha emrat e niveleve që mund të shfaqen te rezultati dhe historiku
+ * (tre nivelet e zakonshme plus praktika). Përdoret vetëm për të gjetur tekstin shqip.
+ * @type {ReadonlyArray<{id: string, label: string}>}
+ */
+export const LEVEL_LABELS = Object.freeze([...LEVELS, PRACTICE_LEVEL]);
+
+/**
  * Gjuhët e tekstit. "id" është kodi i gjuhës te data/texts.json.
  * @type {ReadonlyArray<{id: string, label: string}>}
  */
@@ -56,6 +73,7 @@ export const STORAGE_KEYS = Object.freeze({
   RECORDS: "typefast:records", // rekordet për çdo kombinim
   SETTINGS: "typefast:settings", // cilësimet e fundit të testit
   THEME: "typefast:theme", // tema e zgjedhur
+  KEYS: "typefast:keys", // për çdo tast: sa herë doli dhe sa herë u gabua (të gjitha testet)
 });
 
 /**
@@ -148,6 +166,38 @@ export const MOST_MISSED_LIMIT = 5;
 export const CHART_MAX_POINTS = 30;
 
 /**
+ * Sa taste të dobëta përdor praktika njëherësh (5 më të dobëtat).
+ * @type {number}
+ */
+export const WEAK_KEY_LIMIT = 5;
+
+/**
+ * Sa taste shfaq tabela "Tastet e dobëta" te historiku.
+ * @type {number}
+ */
+export const WEAK_KEY_TABLE_LIMIT = 10;
+
+/**
+ * Një tast renditet si "i dobët" vetëm pasi të ketë dalë të paktën kaq herë.
+ * Pa këtë kufi, një tast që doli 1 herë dhe u gabua 1 herë do të kishte 100% gabim
+ * dhe do të dilte i pari, edhe pse është thjesht fat i keq.
+ * @type {number}
+ */
+export const WEAK_KEY_MIN_ATTEMPTS = 5;
+
+/**
+ * Një tast renditet si "i dobët" vetëm nëse është gabuar të paktën kaq herë.
+ * @type {number}
+ */
+export const WEAK_KEY_MIN_ERRORS = 2;
+
+/**
+ * Për çdo tast të dobët, praktika zgjedh nga kaq fjalët ku ai tast zë pjesën më të madhe të shkronjave.
+ * @type {number}
+ */
+export const PRACTICE_TOKENS_PER_KEY = 30;
+
+/**
  * Mesazhet në shqip që krijon JavaScript (tekstet e tjera janë te HTML).
  * Funksionet brenda marrin numra realë dhe kthejnë fjalinë e plotë.
  */
@@ -160,6 +210,23 @@ export const MESSAGES = Object.freeze({
   themeToDark: "Kalo në temën e errët", // aria-label kur tema aktuale është e çelët
   chartUnavailable: "Grafiku nuk mund të shfaqet, sepse skedari assets/libs/chart.umd.min.js nuk u ngarkua.", // kur Chart.js mungon
   noRecords: "Ende nuk ka rekord. Një rekord kërkon të paktën 1 WPM.", // tabela e rekordeve bosh
+  practiceNoData: "Ende s'ka të dhëna të mjaftueshme. Mbaro një test dhe do të shohim ku gabon.", // butoni i praktikës i çaktivizuar
+  noWeakKeys: "Ende s'ka asnjë tast të dobët. Një tast shfaqet këtu pasi të ketë dalë të paktën 5 herë dhe të jetë gabuar të paktën 2 herë.", // tabela e tasteve bosh
+
+  /**
+   * Shënimi poshtë butonit të praktikës, me tastet reale më të dobëta.
+   * @param {string} keys - tastet, p.sh. "j · ë · q"
+   * @returns {string} fjalia
+   */
+  practiceHint: (keys) => `Tastet e tua më të dobëta: ${keys}`,
+
+  /**
+   * Kur asnjë nga tastet e dobëta nuk gjendet në tekstet e gjuhës së zgjedhur (p.sh. ë në anglisht).
+   * @param {string} keys - tastet
+   * @param {string} language - emri i gjuhës
+   * @returns {string} fjalia
+   */
+  practiceNoMatch: (keys, language) => `Tastet e tua më të dobëta (${keys}) nuk gjenden në tekstet në ${language}. Zgjidh gjuhën tjetër për t'i praktikuar.`,
 
   /**
    * Fjalia që lexon lexuesi i ekranit kur mbaron testi.

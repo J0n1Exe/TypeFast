@@ -23,8 +23,8 @@ Projekti punon edhe pa internet: shkronjat janë të sistemit dhe Chart.js ësht
 
 ```
 typefast/
-  index.html              testi dhe paneli i rezultatit
-  historiku.html          rekordet, grafiku i përparimit dhe tabela e testeve
+  index.html              testi, praktika e tasteve të dobëta dhe paneli i rezultatit
+  historiku.html          rekordet, tastet e dobëta, grafiku i përparimit dhe tabela e testeve
   rreth.html              si funksionon: formulat, shembulli, shkurtoret, teknologjitë
   README.md               ky skedar
   css/
@@ -40,10 +40,10 @@ typefast/
     protocol-check.js     kontrolli për file:// (skript i zakonshëm, shiko shënimin më poshtë)
     app.js                klasa TypingTest: kontrolluesi që lidh të gjitha modulet
     modules/
-      texts.js            klasa TextGenerator: lexon dhe gjeneron tekstin
+      texts.js            klasa TextGenerator: lexon dhe gjeneron tekstin, edhe atë të praktikës
       timer.js            klasa Timer: kohëmatësi me performance.now()
-      stats.js            klasa Stats: shtypjet, WPM, saktësia, gabimet
-      storage.js          klasa StorageService: localStorage me try/catch
+      stats.js            klasa Stats: shtypjet, WPM, saktësia, gabimet, renditja e tasteve të dobëta
+      storage.js          klasa StorageService: localStorage me try/catch, edhe numrat e tasteve
       ui.js               klasa TestUI: gjithçka që prek faqen gjatë testit
       theme.js            klasa ThemeManager: tema e errët dhe e çelët
       chart.js            klasa ProgressChart: mbështjell Chart.js
@@ -98,6 +98,27 @@ Rrumbullakohet me një shifër pas presjes. Nëse nuk është shtypur asgjë, sa
 
 **Ë dhe ç:** me çelësin "Prano e për ë dhe c për ç" të ndezur, `e` pranohet për `ë` dhe `c` për `ç` (edhe shkronjat e mëdha). Krahasimi është te funksioni `TypingTest.charsMatch()` në `js/app.js`.
 
+## Tastet e dobëta dhe praktika
+
+Pas çdo testi të mbaruar, për çdo tast numërohet sa herë doli në tekst dhe sa herë u gabua. Numrat mblidhen nga të gjitha testet (`typefast:keys`). "Ë" dhe "ë" janë i njëjti tast.
+
+Tastet renditen sipas **shkallës së gabimit**, jo sipas numrit të gabimeve:
+
+```
+Shkalla e gabimit = gabime në tast / herë që doli tasti
+```
+
+Arsyeja: shkronjat e shpeshta (e, a, hapësira) do të kishin gjithmonë më shumë gabime vetëm sepse dalin më shpesh. Një tast renditet vetëm pasi të ketë dalë të paktën 5 herë dhe të jetë gabuar të paktën 2 herë, që një gabim i rastësishëm të mos e nxjerrë të parin. Renditja është te `Stats.rankWeakKeys()`.
+
+Butoni **Praktiko tastet e dobëta** (te testi, te rezultati dhe te historiku) nis një test ku teksti ndërtohet nga 5 tastet më të dobëta (`TextGenerator.generatePractice()`):
+
+1. Për çdo tast gjenden fjalët e gjuhës së zgjedhur që e përmbajnë (nga të tre nivelet; fjalët e fjalive mbajnë shenjat dhe numrat).
+2. Fjalët renditen sipas dendësisë së tasteve të dobëta dhe mbahen 30 më të dendurat për çdo tast.
+3. Çdo fjalë e tekstit zgjidhet me short: tasti me shkallë më të lartë zgjidhet më shpesh.
+4. Tastet që nuk gjenden në gjuhën e zgjedhur (p.sh. ë në anglisht) kapërcehen; nëse asnjë nuk gjendet, faqja e thotë qartë.
+
+Hapësira nuk praktikohet veçmas, sepse del në çdo tekst gjithsesi. Testet e praktikës ruhen në historik me nivelin "Praktikë", por nuk hyjnë te rekordet. Butoni është i çaktivizuar derisa të ketë të paktën një tast të dobët.
+
 ## Shkurtoret
 
 | Tasti | Çfarë bën |
@@ -137,6 +158,7 @@ Gjithçka ruhet në `localStorage` të shfletuesit, me çelësa që nisin me `ty
 | --- | --- |
 | `typefast:history` | deri në 200 testet e fundit: data, gjuha, niveli, koha, WPM, saktësia, gabimet, karakteret, karakteret më të gabuara |
 | `typefast:records` | rekordi më i mirë për çdo kombinim `gjuha-niveli-koha` |
+| `typefast:keys` | për çdo tast: sa herë doli (`attempts`) dhe sa herë u gabua (`errors`), nga të gjitha testet |
 | `typefast:settings` | cilësimet e fundit të testit |
 | `typefast:theme` | tema e zgjedhur |
 

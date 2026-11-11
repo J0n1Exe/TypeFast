@@ -142,6 +142,36 @@
         </div>
       </section>
 
+      <!-- ========== TASTET E DOBËTA ========== -->
+      <section class="section reveal" aria-labelledby="keys-title">
+        <!-- Titulli i seksionit -->
+        <h2 class="section__title" id="keys-title">Tastet e dobëta</h2>
+        <!-- Shpjegimi i renditjes, me fjalë të thjeshta -->
+        <p class="section__lead">Gabimet për çdo tast nga të gjitha testet e mbaruara. Renditja bëhet sipas shkallës së gabimit (gabime / herë që doli tasti), jo sipas numrit të gabimeve, sepse shkronjat e shpeshta do të kishin gjithmonë më shumë gabime. Një tast shfaqet pasi të ketë dalë të paktën 5 herë dhe të jetë gabuar të paktën 2 herë.</p>
+        <!-- Mbështjellësi i lëvizshëm i tabelës -->
+        <div class="table-wrap" tabindex="0" role="region" aria-labelledby="keys-title">
+          <table class="table">
+            <!-- Përshkrimi për lexuesit e ekranit -->
+            <caption class="visually-hidden">Tastet me shkallën më të lartë të gabimit</caption>
+            <thead>
+              <tr>
+                <th scope="col">Tasti</th>
+                <th scope="col" class="table__num">Gabime</th>
+                <th scope="col" class="table__num">Herë që doli</th>
+                <th scope="col" class="table__num">Shkalla e gabimit</th>
+              </tr>
+            </thead>
+            <!-- JavaScript krijon këtu një rresht për çdo tast të dobët -->
+            <tbody id="keys-body"></tbody>
+          </table>
+        </div>
+        <!--
+          Lidhja për praktikë. #praktike në fund të adresës i thotë faqes së testit
+          ta nisë menjëherë në modalitetin e praktikës. hidden derisa të ketë taste të dobëta.
+        -->
+        <a class="button" id="keys-practice" href="index.html#praktike" hidden>Praktiko tastet e dobëta</a>
+      </section>
+
       <!-- ========== GRAFIKU I PËRPARIMIT ========== -->
       <section class="section reveal" aria-labelledby="chart-title">
         <!-- Titulli i seksionit -->
@@ -170,6 +200,8 @@
               <option value="easy">E lehtë</option>
               <option value="medium">Mesatare</option>
               <option value="hard">E vështirë</option>
+              <!-- Testet e praktikës së tasteve të dobëta -->
+              <option value="practice">Praktikë</option>
             </select>
           </div>
           <!-- Filtri i kohës -->
@@ -233,7 +265,7 @@
         <!-- Titulli i seksionit -->
         <h2 class="section__title" id="clear-title">Fshi të dhënat</h2>
         <!-- Shpjegimi i asaj që fshihet -->
-        <p class="section__lead">Fshin të gjitha testet dhe rekordet nga ky shfletues. Cilësimet dhe tema mbeten.</p>
+        <p class="section__lead">Fshin të gjitha testet, rekordet dhe statistikat e tasteve nga ky shfletues. Cilësimet dhe tema mbeten.</p>
         <!-- Butoni hap dritaren e konfirmimit (jo window.confirm) -->
         <button class="button" id="clear-button" type="button">Fshi historikun</button>
       </section>
@@ -253,7 +285,7 @@
         <!-- Titulli i dritares -->
         <h2 class="dialog__title" id="clear-dialog-title">Ta fshij gjithë historikun?</h2>
         <!-- Pasojat e veprimit, të thëna qartë -->
-        <p class="dialog__text" id="clear-dialog-text">Të gjitha testet dhe rekordet personale do të fshihen përgjithmonë nga ky shfletues. Ky veprim nuk kthehet pas.</p>
+        <p class="dialog__text" id="clear-dialog-text">Të gjitha testet, rekordet personale dhe statistikat e tasteve do të fshihen përgjithmonë nga ky shfletues. Ky veprim nuk kthehet pas.</p>
         <!-- Butonat e dritares -->
         <div class="dialog__actions">
           <!-- value="cancel": mbyll pa fshirë. autofocus: fokusi vendoset te zgjedhja më e sigurt. -->
