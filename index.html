@@ -205,6 +205,25 @@
         </button>
       </div>
 
+      <!-- Grupi i garës me rekordin: çelësi dhe shënimi i tij -->
+      <div class="settings__group settings__group--practice">
+        <!--
+          role="switch": çelës ndezur/fikur. aria-checked e përditëson JavaScript.
+          data-setting="ghost": emri i cilësimit që ruhet (gara me rekordin).
+          aria-describedby: lexuesi i ekranit lexon edhe shënimin me rekordin aktual.
+        -->
+        <button class="switch" id="ghost-toggle" type="button" role="switch" aria-checked="false" data-setting="ghost" aria-describedby="ghost-hint">
+          <!-- Vizatimi i çelësit (zbukurim, prandaj aria-hidden) -->
+          <span class="switch__track" aria-hidden="true">
+            <span class="switch__thumb"></span>
+          </span>
+          <!-- Teksti i çelësit -->
+          <span class="switch__label">Garë me rekordin</span>
+        </button>
+        <!-- Shënimi: rekordi real për kombinimin e zgjedhur, ose pse gara s'punon -->
+        <p class="settings__hint" id="ghost-hint">Kursori gri lëviz me shpejtësinë e rekordit tënd.</p>
+      </div>
+
       <!--
         Grupi i praktikës së tasteve të dobëta. Butoni nis (ose ndal) një test ku teksti
         ndërtohet nga tastet ku gabon më shumë, të numëruara në të gjitha testet.
@@ -263,6 +282,16 @@
           <!-- Etiketa -->
           <span class="stat__label">% saktësi</span>
         </div>
+        <!--
+          Gara me rekordin: sa karaktere je para (+) ose mbrapa (-) kursorit gri.
+          hidden: shfaqet vetëm kur gara është aktive.
+        -->
+        <div class="stat" id="stat-ghost-wrap" hidden>
+          <!-- Numri me shenjë, p.sh. +12 ose -5 -->
+          <span class="stat__value" id="stat-ghost">0</span>
+          <!-- Etiketa -->
+          <span class="stat__label">ndaj rekordit</span>
+        </div>
       </div>
 
       <!--
@@ -277,6 +306,11 @@
         <div class="text-track" id="text-track">
           <!-- Këtu JavaScript vendos <span class="word"> dhe <span class="char"> për çdo shkronjë -->
           <div class="text-words" id="text-words"></div>
+          <!--
+            Kursori gri i garës: tregon ku do të ishte dikush që shkruan pa gabime me shpejtësinë e rekordit.
+            hidden: shfaqet vetëm kur gara është aktive. aria-hidden: vetëm vizual.
+          -->
+          <span class="ghost-caret" id="ghost-caret" aria-hidden="true" hidden></span>
           <!-- Kursori; aria-hidden sepse është vetëm vizual -->
           <span class="caret caret--idle" id="caret" aria-hidden="true"></span>
         </div>
@@ -352,6 +386,31 @@
           <dd class="result-card__value result-card__value--compact" id="result-chars">0 / 0</dd>
         </div>
       </dl>
+
+      <!-- Grafiku i shpejtësisë sekondë pas sekonde, i vizatuar me Canvas nga speed-graph.js -->
+      <div class="speed">
+        <!-- Titulli i grafikut -->
+        <h3 class="results__subtitle">Shpejtësia gjatë testit</h3>
+        <!-- Kutia me lartësi të fiksuar ku qëndron canvas-i -->
+        <div class="speed__panel">
+          <!--
+            canvas: sipërfaqja e vizatimit. role="img": lexuesi i ekranit e trajton si figurë.
+            aria-label vendoset nga JavaScript me numrat realë (sa sekonda, në sa prej tyre pati gabime).
+          -->
+          <canvas class="speed__canvas" id="speed-canvas" role="img" aria-label="Grafiku i shpejtësisë gjatë testit">Shfletuesi yt nuk e mbështet vizatimin e grafikut.</canvas>
+        </div>
+        <!-- Legjenda: çfarë tregon çdo vijë. role="list" sepse CSS heq pikat e listës. -->
+        <ul class="speed__legend" role="list">
+          <!-- Vija e plotë -->
+          <li class="speed__legend-item"><span class="speed__swatch speed__swatch--wpm" aria-hidden="true"></span>WPM (mesatarja nga fillimi)</li>
+          <!-- Vija me ndërprerje -->
+          <li class="speed__legend-item"><span class="speed__swatch speed__swatch--raw" aria-hidden="true"></span>Shpejtësia e çastit (shtypjet e asaj sekonde)</li>
+          <!-- Shenja e kuqe -->
+          <li class="speed__legend-item"><span class="speed__swatch speed__swatch--error" aria-hidden="true"></span>Sekondë me gabime</li>
+        </ul>
+        <!-- Qëndrueshmëria dhe shpejtësia më e lartë, të llogaritura nga testi real -->
+        <p class="speed__summary" id="speed-summary"></p>
+      </div>
 
       <!-- Lista e 5 shkronjave ku u gabua më shumë -->
       <div class="missed">

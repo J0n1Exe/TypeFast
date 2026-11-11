@@ -13,7 +13,8 @@
  * APPEND_THRESHOLD_CHARS, APPEND_CHUNK_CHARS, CARET_IDLE_MS,
  * MOST_MISSED_LIMIT, CHART_MAX_POINTS, PRACTICE_LEVEL, LEVEL_LABELS,
  * WEAK_KEY_LIMIT, WEAK_KEY_TABLE_LIMIT, WEAK_KEY_MIN_ATTEMPTS,
- * WEAK_KEY_MIN_ERRORS, PRACTICE_TOKENS_PER_KEY, MESSAGES, findLabel.
+ * WEAK_KEY_MIN_ERRORS, PRACTICE_TOKENS_PER_KEY, KEYBOARD_LAYOUTS,
+ * DEFAULT_LAYOUT, HEAT_THRESHOLDS, PROGRESS_SAMPLE_SIZE, MESSAGES, findLabel.
  *
  * Kush e përdor: pothuajse të gjithë modulet (texts.js, timer.js, stats.js,
  * storage.js, ui.js, theme.js, chart.js, app.js) dhe faqet te js/pages/.
@@ -74,6 +75,7 @@ export const STORAGE_KEYS = Object.freeze({
   SETTINGS: "typefast:settings", // cilësimet e fundit të testit
   THEME: "typefast:theme", // tema e zgjedhur
   KEYS: "typefast:keys", // për çdo tast: sa herë doli dhe sa herë u gabua (të gjitha testet)
+  LAYOUT: "typefast:layout", // cila tastierë shfaqet te harta e tastierës (sq ose us)
 });
 
 /**
@@ -91,13 +93,15 @@ export const CHARS_PER_WORD = 5;
 /**
  * Cilësimet e parazgjedhura kur përdoruesi hap faqen për herë të parë.
  * lenient: false do të thotë kontroll i rreptë (e NUK pranohet për ë).
- * @type {Readonly<{duration: number, level: string, lang: string, lenient: boolean}>}
+ * ghost: false do të thotë pa garë me rekordin (kursori gri nuk shfaqet).
+ * @type {Readonly<{duration: number, level: string, lang: string, lenient: boolean, ghost: boolean}>}
  */
 export const DEFAULT_SETTINGS = Object.freeze({
   duration: 30, // 30 sekonda
   level: "medium", // niveli mesatar
   lang: "sq", // shqip
   lenient: false, // kontroll i rreptë i ë dhe ç
+  ghost: false, // gara me rekordin është e fikur
 });
 
 /**
@@ -198,6 +202,43 @@ export const WEAK_KEY_MIN_ERRORS = 2;
 export const PRACTICE_TOKENS_PER_KEY = 30;
 
 /**
+ * Tastierat që di të vizatojë harta e tastierës te historiku.
+ * Çdo "rows" është një listë rreshtash; çdo rresht është një tekst ku çdo karakter është një tast
+ * (vetëm karakteret që shkruhen PA Shift). Karakteret që s'janë në tastierën e zgjedhur
+ * (p.sh. ? ! ose ë në tastierën amerikane) shfaqen veçmas te "Shenja të tjera".
+ * @type {ReadonlyArray<{id: string, label: string, rows: ReadonlyArray<string>}>}
+ */
+export const KEYBOARD_LAYOUTS = Object.freeze([
+  Object.freeze({ // tastiera e parë: shqipja
+    id: "sq", // tastiera shqipe, ku Z dhe Y kanë ndërruar vend dhe ë, ç kanë tastet e tyre
+    label: "Shqipe (QWERTZ)", // teksti i butonit
+    rows: Object.freeze(["1234567890-", "qwertzuiopç", "asdfghjklë", "yxcvbnm,."]), // katër rreshtat
+  }),
+  Object.freeze({ // tastiera e dytë: amerikanja
+    id: "us", // tastiera amerikane
+    label: "Amerikane (QWERTY)", // teksti i butonit
+    rows: Object.freeze(["1234567890-", "qwertyuiop", "asdfghjkl;'", "zxcvbnm,./"]), // katër rreshtat
+  }),
+]);
+
+/** @type {string} Tastiera që shfaqet kur përdoruesi s'ka zgjedhur asnjë. */
+export const DEFAULT_LAYOUT = "sq";
+
+/**
+ * Kufijtë e shkallës së gabimit për ngjyrat e hartës së tastierës.
+ * 0 gabime = shkalla 0; nën 2% = shkalla 1; nën 5% = shkalla 2; nën 10% = shkalla 3; 10% e lart = shkalla 4.
+ * @type {ReadonlyArray<number>}
+ */
+export const HEAT_THRESHOLDS = Object.freeze([0.02, 0.05, 0.1]);
+
+/**
+ * Sa teste krahasohen te "Përparimi": mesatarja e 10 të fundit kundrejt 10 të parave.
+ * Me më pak se 20 teste, krahasohen gjysmat (p.sh. 3 të fundit me 3 të parat).
+ * @type {number}
+ */
+export const PROGRESS_SAMPLE_SIZE = 10;
+
+/**
  * Mesazhet në shqip që krijon JavaScript (tekstet e tjera janë te HTML).
  * Funksionet brenda marrin numra realë dhe kthejnë fjalinë e plotë.
  */
@@ -227,6 +268,76 @@ export const MESSAGES = Object.freeze({
    * @returns {string} fjalia
    */
   practiceNoMatch: (keys, language) => `Tastet e tua më të dobëta (${keys}) nuk gjenden në tekstet në ${language}. Zgjidh gjuhën tjetër për t'i praktikuar.`,
+
+  ghostNoRecord: "Ende s'ka rekord për këtë kombinim. Mbaro një test dhe gara fillon.", // çelësi i garës pa rekord
+  ghostPractice: "Gara nuk punon në praktikë, sepse praktika s'ka rekord.", // çelësi i garës gjatë praktikës
+  ghostOff: "Kursori gri lëviz me shpejtësinë e rekordit tënd.", // çelësi i garës i fikur
+  heatNoData: "pak të dhëna", // tast që ka dalë më pak se 5 herë
+  summaryNoProgress: "Duhen të paktën 2 teste (pa praktikën) për të krahasuar.", // karta e përparimit pa të dhëna
+
+  /**
+   * Numër ditësh me fjalë, p.sh. "3 ditë" (në shqip njëjës dhe shumës janë njësoj).
+   * @param {number} count - numri i ditëve
+   * @returns {string} teksti
+   */
+  days: (count) => `${count} ditë`,
+
+  /**
+   * Shënimi i kartës "Teste gjithsej".
+   * @param {number} chars - të gjitha shtypjet në të gjitha testet
+   * @returns {string} fjalia
+   */
+  summaryChars: (chars) => `${chars} karaktere të shtypura gjithsej.`,
+
+  /**
+   * Shënimi i kartës "Ditë rresht".
+   * @param {number} longest - seria më e gjatë
+   * @returns {string} fjalia
+   */
+  summaryLongest: (longest) => `Seria më e gjatë: ${longest} ditë.`,
+
+  /**
+   * Shënimi i garës kur ka rekord.
+   * @param {number} wpm - rekordi për këtë kombinim
+   * @returns {string} fjalia
+   */
+  ghostHint: (wpm) => `Kursori gri lëviz me rekordin tënd: ${wpm} WPM.`,
+
+  /**
+   * Përmbledhja poshtë grafikut të shpejtësisë.
+   * @param {number} consistency - qëndrueshmëria në përqindje
+   * @param {number} peak - shpejtësia më e lartë e çastit
+   * @param {number} peakSecond - në cilën sekondë
+   * @returns {string} fjalia
+   */
+  speedSummary: (consistency, peak, peakSecond) => `Qëndrueshmëria: ${consistency}%. Shpejtësia më e lartë e çastit: ${peak} WPM, në sekondën ${peakSecond}.`,
+
+  /**
+   * Përshkrimi i grafikut për lexuesit e ekranit (canvas nuk lexohet vetë).
+   * @param {number} seconds - sa sekonda ka grafiku
+   * @param {number} errorSeconds - në sa sekonda pati gabime
+   * @returns {string} fjalia
+   */
+  speedAria: (seconds, errorSeconds) => `Grafiku i shpejtësisë për ${seconds} sekonda. Pati gabime në ${errorSeconds} sekonda.`,
+
+  /**
+   * Teksti i një tasti te harta, kur kalon miun mbi të.
+   * @param {string} key - tasti
+   * @param {number} errors - gabimet
+   * @param {number} attempts - herë që doli
+   * @param {string} rate - shkalla e formatuar, p.sh. "12,5"
+   * @returns {string} fjalia
+   */
+  heatTitle: (key, errors, attempts, rate) => `${key}: ${errors} gabime nga ${attempts} herë (${rate}%)`,
+
+  /**
+   * Karta e përparimit: shpjegimi i dy mesatareve.
+   * @param {number} count - sa teste ka çdo grup
+   * @param {number} lastAvg - mesatarja e të fundit
+   * @param {number} firstAvg - mesatarja e të parave
+   * @returns {string} fjalia
+   */
+  summaryProgress: (count, lastAvg, firstAvg) => `Mesatarja e ${count} testeve të fundit (${lastAvg} WPM) kundrejt ${count} të parave të ruajtura (${firstAvg} WPM), pa praktikën.`,
 
   /**
    * Fjalia që lexon lexuesi i ekranit kur mbaron testi.

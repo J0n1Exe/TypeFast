@@ -24,6 +24,8 @@ import {
   THEMES, // temat e lejuara
   DEFAULT_THEME, // tema e parazgjedhur
   PRACTICE_LEVEL, // "niveli" i testeve të praktikës, që nuk hyjnë te rekordet
+  KEYBOARD_LAYOUTS, // tastierat e lejuara për hartën
+  DEFAULT_LAYOUT, // tastiera e parazgjedhur
 } from "../config.js"; // skedari nga vijnë të gjitha
 
 /**
@@ -304,7 +306,7 @@ export class StorageService {
 
   /**
    * Lexon cilësimet dhe kontrollon çdo vlerë. Vlerat e pavlefshme zëvendësohen me parazgjedhjet.
-   * @returns {{duration: number, level: string, lang: string, lenient: boolean}} cilësimet
+   * @returns {{duration: number, level: string, lang: string, lenient: boolean, ghost: boolean}} cilësimet
    */
   getSettings() {
     // Lexojmë; rezerva është objekt bosh
@@ -319,6 +321,8 @@ export class StorageService {
       lang: LANGUAGES.some((item) => item.id === saved.lang) ? saved.lang : DEFAULT_SETTINGS.lang,
       // lenient duhet të jetë true/false
       lenient: typeof saved.lenient === "boolean" ? saved.lenient : DEFAULT_SETTINGS.lenient,
+      // ghost (gara me rekordin) duhet të jetë true/false
+      ghost: typeof saved.ghost === "boolean" ? saved.ghost : DEFAULT_SETTINGS.ghost,
     };
   }
 
@@ -353,6 +357,29 @@ export class StorageService {
   saveTheme(theme) {
     // Ruajmë si JSON
     return this.writeJSON(STORAGE_KEYS.THEME, theme);
+  }
+
+  // ---------------- TASTIERA E HARTËS ----------------
+
+  /**
+   * Lexon cilën tastierë ka zgjedhur përdoruesi për hartën e tastierës.
+   * @returns {string} "sq" ose "us"
+   */
+  getLayout() {
+    // Lexojmë vlerën; rezerva është tastiera e parazgjedhur
+    const layout = this.readJSON(STORAGE_KEYS.LAYOUT, DEFAULT_LAYOUT);
+    // Pranojmë vetëm tastierat që ekzistojnë te config.js
+    return KEYBOARD_LAYOUTS.some((item) => item.id === layout) ? layout : DEFAULT_LAYOUT;
+  }
+
+  /**
+   * Ruan tastierën e zgjedhur.
+   * @param {string} layout - "sq" ose "us"
+   * @returns {boolean} true nëse u ruajt
+   */
+  saveLayout(layout) {
+    // Ruajmë si JSON
+    return this.writeJSON(STORAGE_KEYS.LAYOUT, layout);
   }
 
   // ---------------- NDIHMËS ----------------

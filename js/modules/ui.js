@@ -7,7 +7,8 @@
  * (e pashkruar, e saktë, e gabuar), lëviz kursorin, ngjit rreshtat lart,
  * përditëson statistikat e drejtpërdrejta, tregon mesazhin e fokusit,
  * shiritin e cilësimeve, butonin dhe shiritin e praktikës së tasteve të
- * dobëta dhe panelin e rezultatit.
+ * dobëta, kursorin gri të garës me rekordin dhe panelin e rezultatit me
+ * grafikun e shpejtësisë.
  * Kjo klasë NUK vendos asgjë për logjikën e testit: vetëm shfaq atë që
  * i thotë app.js. Kështu logjika dhe pamja janë të ndara.
  *
@@ -20,6 +21,8 @@
 import { MESSAGES, LEVEL_LABELS, LANGUAGES, findLabel } from "../config.js";
 // Importojmë Stats vetëm për funksionin e formatimit të saktësisë
 import { Stats } from "./stats.js";
+// Grafiku i shpejtësisë te rezultati, i vizatuar me Canvas
+import { SpeedGraph } from "./speed-graph.js";
 
 /**
  * Gjen një element sipas id-së. Shkurtim i document.getElementById.
@@ -54,10 +57,15 @@ export class TestUI {
     this.statTime = byId("stat-time"); // numri i sekondave
     this.statWpm = byId("stat-wpm"); // WPM i drejtpërdrejtë
     this.statAccuracy = byId("stat-accuracy"); // saktësia e drejtpërdrejtë
+    this.statGhostWrap = byId("stat-ghost-wrap"); // kutia e statistikës "ndaj rekordit"
+    this.statGhost = byId("stat-ghost"); // numri me shenjë: karaktere para ose mbrapa rekordit
+    this.ghostToggle = byId("ghost-toggle"); // çelësi "Garë me rekordin"
+    this.ghostHint = byId("ghost-hint"); // shënimi poshtë çelësit të garës
     this.textBox = byId("text-box"); // kutia e tekstit
     this.track = byId("text-track"); // shiriti që ngjitet lart
     this.words = byId("text-words"); // mbështjellësi i fjalëve
     this.caret = byId("caret"); // kursori
+    this.ghostCaret = byId("ghost-caret"); // kursori gri i garës me rekordin
     this.input = byId("typing-input"); // fusha e fshehur e shkrimit
     this.status = byId("text-status"); // mesazhi i ngarkimit / gabimit
 
@@ -72,6 +80,9 @@ export class TestUI {
     this.missedList = byId("missed-list"); // lista e karaktereve të gabuara
     this.missedEmpty = byId("missed-empty"); // mesazhi "asnjë gabim"
     this.saveNote = byId("save-note"); // shënimi kur ruajtja dështon
+    this.speedCanvas = byId("speed-canvas"); // canvas-i i grafikut të shpejtësisë
+    this.speedSummary = byId("speed-summary"); // fjalia me qëndrueshmërinë
+    this.speedGraph = new SpeedGraph(this.speedCanvas); // objekti që vizaton grafikun
     this.retryButton = byId("retry-button"); // butoni "Provo përsëri"
     this.resultsPractice = byId("results-practice"); // butoni i praktikës te rezultati
     this.announcer = byId("results-announcer"); // njoftuesi për lexuesit e ekranit
@@ -264,10 +275,8 @@ export class TestUI {
       // Zhvendosja është negative: teksti ngjitet lart
       this.track.style.setProperty("--scroll-y", `${-scrollLines * lineHeight}px`);
     }
-    // Pozicioni horizontal: sa larg është shkronja nga e majta e shiritit
-    const x = el.offsetLeft;
-    // Pozicioni vertikal: kursori (1em) qendërzohet brenda lartësisë së rreshtit
-    const y = el.offsetTop + (el.offsetHeight - this.caret.offsetHeight) / 2;
+    // Pozicioni i shkronjës brenda shiritit
+    const { x, y } = this.getCharPosition(el);
     // CSS e lexon --caret-x dhe e përdor te transform
     this.caret.style.setProperty("--caret-x", `${x}px`);
     // CSS e lexon --caret-y
@@ -281,6 +290,67 @@ export class TestUI {
       // Shiriti rifiton animacionin
       this.track.classList.remove("text-track--instant");
     }
+  }
+
+  /**
+   * Llogarit ku duhet vendosur një kursor (i yti ose ai gri) për një shkronjë.
+   * @param {HTMLElement} el - elementi i shkronjës
+   * @returns {{x: number, y: number}} pozicioni në piksela, brenda shiritit të tekstit
+   */
+  getCharPosition(el) {
+    // Kthejmë dy koordinatat
+    return {
+      x: el.offsetLeft, // sa larg është shkronja nga e majta e shiritit
+      y: el.offsetTop + (el.offsetHeight - this.caret.offsetHeight) / 2, // kursori (1em) qendërzohet brenda lartësisë së rreshtit
+    };
+  }
+
+  // ---------------- GARA ME REKORDIN (kursori gri) ----------------
+
+  /**
+   * Shfaq ose fsheh kursorin gri dhe statistikën "ndaj rekordit", dhe vendos shënimin e çelësit.
+   * @param {boolean} active - true kur gara është aktive (çelësi i ndezur, ka rekord, s'është praktikë)
+   * @param {string} hint - shënimi poshtë çelësit
+   * @returns {void}
+   */
+  setGhost(active, hint) {
+    // Kursori gri shfaqet vetëm kur gara është aktive
+    this.ghostCaret.hidden = !active;
+    // Edhe statistika "ndaj rekordit"
+    this.statGhostWrap.hidden = !active;
+    // Teksti i shënimit
+    this.ghostHint.textContent = hint;
+  }
+
+  /**
+   * Çon kursorin gri te shkronja në pozicionin index.
+   * Nëse rekordi është më shpejt se teksti i gjeneruar deri tani, kursori ndalet te shkronja e fundit.
+   * @param {number} index - sa karaktere do të kishte shkruar rekordi deri tani
+   * @returns {void}
+   */
+  updateGhost(index) {
+    // Math.min: jo përtej shkronjës së fundit që ekziston
+    const el = this.charEls[Math.min(index, this.charEls.length - 1)];
+    // Pa shkronja s'bëjmë asgjë
+    if (!el) {
+      return; // asgjë për të pozicionuar
+    }
+    // Pozicioni i shkronjës
+    const { x, y } = this.getCharPosition(el);
+    // CSS e lexon --ghost-x dhe e përdor te transform
+    this.ghostCaret.style.setProperty("--ghost-x", `${x}px`);
+    // CSS e lexon --ghost-y
+    this.ghostCaret.style.setProperty("--ghost-y", `${y}px`);
+  }
+
+  /**
+   * Shfaq sa karaktere je para ose mbrapa rekordit, me shenjë: +12, 0 ose -5.
+   * @param {number} lead - karakteret e tua të sakta minus karakteret e rekordit
+   * @returns {void}
+   */
+  updateGhostLead(lead) {
+    // Numrat pozitivë marrin "+" përpara; negativët e kanë vetë "-"
+    this.statGhost.textContent = lead > 0 ? `+${lead}` : String(lead);
   }
 
   /**
@@ -375,6 +445,8 @@ export class TestUI {
     });
     // Çelësi i ë/ç: aria-checked "true" ose "false"
     this.lenientToggle.setAttribute("aria-checked", String(settings.lenient));
+    // Çelësi i garës me rekordin
+    this.ghostToggle.setAttribute("aria-checked", String(settings.ghost));
     // Butoni i praktikës është "i shtypur" kur praktika është aktive
     this.practiceToggle.setAttribute("aria-pressed", String(practiceActive));
   }
@@ -392,6 +464,8 @@ export class TestUI {
     });
     // Edhe çelësi
     this.lenientToggle.disabled = disabled;
+    // Edhe çelësi i garës
+    this.ghostToggle.disabled = disabled;
     // Butoni i praktikës: i bllokuar gjatë testit OSE kur s'ka ende të dhëna
     this.practiceToggle.disabled = disabled || !this.practiceAvailable;
   }
@@ -498,10 +572,13 @@ export class TestUI {
   /**
    * Plotëson dhe shfaq panelin e rezultatit në vend të testit.
    * @param {{lang: string, level: string, duration: number, wpm: number, accuracy: number, errors: number, correctChars: number, totalChars: number, mostMissed: {char: string, count: number}[]}} result - rezultati
-   * @param {{isRecord: boolean, saved: boolean}} flags - rekord i ri? u ruajt?
+   * @param {object} extra - të dhëna shtesë
+   * @param {boolean} extra.isRecord - a është rekord i ri
+   * @param {boolean} extra.saved - a u ruajt në historik
+   * @param {{samples: object[], consistency: number, peak: number, peakSecond: number}} extra.speed - të dhënat e grafikut të shpejtësisë
    * @returns {void}
    */
-  showResults(result, { isRecord, saved }) {
+  showResults(result, { isRecord, saved, speed }) {
     // WPM
     this.resultWpm.textContent = String(result.wpm);
     // Saktësia me presje dhe shenjën %
@@ -522,6 +599,14 @@ export class TestUI {
     this.testArea.hidden = true;
     // Shfaqim rezultatin (CSS nis animacionin e shfaqjes)
     this.results.hidden = false;
+    // Fjalia me qëndrueshmërinë dhe shpejtësinë më të lartë
+    this.speedSummary.textContent = MESSAGES.speedSummary(speed.consistency, speed.peak, speed.peakSecond);
+    // Në sa sekonda pati gabime (për përshkrimin e grafikut)
+    const errorSeconds = speed.samples.filter((sample) => sample.errors > 0).length;
+    // Përshkrimi me tekst i grafikut, për lexuesit e ekranit
+    this.speedCanvas.setAttribute("aria-label", MESSAGES.speedAria(speed.samples.length, errorSeconds));
+    // Vizatojmë grafikun PASI paneli është i dukshëm, që canvas-i të ketë përmasa reale
+    this.speedGraph.setSamples(speed.samples);
   }
 
   /**

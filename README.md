@@ -48,6 +48,9 @@ typefast/
       theme.js            klasa ThemeManager: tema e errët dhe e çelët
       chart.js            klasa ProgressChart: mbështjell Chart.js
       reveal.js           klasa ScrollReveal: IntersectionObserver për seksionet
+      speed-graph.js      klasa SpeedGraph: grafiku i shpejtësisë, i vizatuar me Canvas 2D
+      summary.js          klasa HistorySummary: koha totale, ditët rresht, përparimi
+      heatmap.js          klasa KeyboardHeatmap: harta e tastierës me ngjyra sipas gabimeve
     pages/
       index-page.js       pika e hyrjes për index.html
       history-page.js     pika e hyrjes për historiku.html
@@ -119,6 +122,32 @@ Butoni **Praktiko tastet e dobëta** (te testi, te rezultati dhe te historiku) n
 
 Hapësira nuk praktikohet veçmas, sepse del në çdo tekst gjithsesi. Testet e praktikës ruhen në historik me nivelin "Praktikë", por nuk hyjnë te rekordet. Butoni është i çaktivizuar derisa të ketë të paktën një tast të dobët.
 
+## Gara me rekordin
+
+Çelësi **Garë me rekordin** shfaq një kursor të dytë gri që lëviz me shpejtësinë e rekordit për kombinimin e zgjedhur (`TypingTest.runGhostFrame()`):
+
+```
+Karakteret e rekordit = WPM e rekordit x 5 x minuta të kaluara
+```
+
+Pozicioni llogaritet në çdo kornizë me `requestAnimationFrame`, nga ora e saktë e kohëmatësit. Statistika "ndaj rekordit" tregon karakteret e tua të sakta minus karakteret e rekordit (`+12` para, `-5` mbrapa). Gara nuk punon në praktikë ose kur s'ka ende rekord; faqja e thotë këtë te shënimi pranë çelësit.
+
+## Grafiku i shpejtësisë dhe qëndrueshmëria
+
+Çdo sekondë të testit `Stats.takeSample()` ruan një mostër: WPM mesatar deri në atë çast, shpejtësinë e çastit `(shtypjet e sekondës / 5) x 60` dhe gabimet e sekondës. Pas testit, `SpeedGraph` (`js/modules/speed-graph.js`) i vizaton direkt me Canvas 2D, pa librari: vija e plotë për WPM, vija me ndërprerje për shpejtësinë e çastit dhe një X e kuqe te sekondat me gabime.
+
+```
+Qëndrueshmëria = (1 - devijimi standard / mesatarja) x 100
+```
+
+Llogaritet nga shpejtësitë e çastit dhe kufizohet mes 0 dhe 100 (`Stats.calculateConsistency()`). Shembull: 40, 80, 40, 80 kanë mesatare 60 dhe devijim 20, pra (1 - 20 / 60) x 100 = 67%.
+
+## Përmbledhja dhe harta e tastierës (Historiku)
+
+`HistorySummary` (`js/modules/summary.js`) llogarit me funksione të pastra: numrin e testeve, kohën totale të shkrimit, ditët rresht me të paktën një test (seria aktuale dhe më e gjata) dhe përparimin (mesatarja e 10 testeve të fundit minus 10 të parave të ruajtura, pa praktikën).
+
+`KeyboardHeatmap` (`js/modules/heatmap.js`) vizaton një tastierë me `document.createElement` dhe ngjyros çdo tast sipas shkallës së gabimit: 0%, nën 2%, 2 deri 5%, 5 deri 10%, 10% e lart. Tastet me më pak se 5 shtypje mbeten pa ngjyrë. Zgjedhja mes tastierës shqipe (QWERTZ) dhe amerikane (QWERTY) ruhet te `typefast:layout`.
+
 ## Shkurtoret
 
 | Tasti | Çfarë bën |
@@ -159,7 +188,8 @@ Gjithçka ruhet në `localStorage` të shfletuesit, me çelësa që nisin me `ty
 | `typefast:history` | deri në 200 testet e fundit: data, gjuha, niveli, koha, WPM, saktësia, gabimet, karakteret, karakteret më të gabuara |
 | `typefast:records` | rekordi më i mirë për çdo kombinim `gjuha-niveli-koha` |
 | `typefast:keys` | për çdo tast: sa herë doli (`attempts`) dhe sa herë u gabua (`errors`), nga të gjitha testet |
-| `typefast:settings` | cilësimet e fundit të testit |
+| `typefast:settings` | cilësimet e fundit të testit (koha, niveli, gjuha, ë/ç, gara me rekordin) |
+| `typefast:layout` | tastiera e zgjedhur për hartën (`sq` ose `us`) |
 | `typefast:theme` | tema e zgjedhur |
 
 Nëse `localStorage` është plot ose i bllokuar, testi punon njësoj dhe faqja thotë qartë që rezultati nuk u ruajt. Asnjë e dhënë nuk dërgohet askund.
@@ -173,7 +203,8 @@ Nëse `localStorage` është plot ose i bllokuar, testi punon njësoj dhe faqja 
 - **localStorage**: historiku, rekordet, cilësimet, tema.
 - **performance.now**: koha e saktë. Koha e mbetur llogaritet gjithmonë nga kjo orë; `setInterval` (100ms) përdoret vetëm për të rifreskuar ekranin.
 - **IntersectionObserver**: shfaq butë seksionet e historikut dhe të faqes "Si funksionon" kur hyjnë në ekran.
-- **Canvas**: sipërfaqja ku Chart.js vizaton grafikun.
+- **Canvas**: grafiku i shpejtësisë te rezultati vizatohet direkt me Canvas 2D; grafiku i përparimit vizatohet nga Chart.js mbi Canvas.
+- **requestAnimationFrame**: lëviz kursorin gri të garës dhe kufizon rivizatimet gjatë ndryshimit të madhësisë.
 
 ## Aksesueshmëria
 

@@ -14,6 +14,9 @@
  * - correctCharsInPlace: karakteret që janë të sakta në tekst tani.
  * - WPM = (correctCharsInPlace / 5) / minuta
  * - Saktësia = (shtypje të sakta / totalKeystrokes) x 100
+ * - Mostrat: një herë në sekondë ruhet WPM deri në atë çast, shpejtësia e
+ *   çastit (vetëm shtypjet e asaj sekonde) dhe gabimet e asaj sekonde.
+ *   Prej tyre vizatohet grafiku i shpejtësisë dhe llogaritet qëndrueshmëria.
  * - Statistikat e tasteve: për çdo tast, sa herë doli dhe sa herë u gabua.
  * - Shkalla e gabimit të një tasti = gabime / herë që doli. Tastet renditen
  *   sipas saj, jo sipas numrit bruto të gabimeve (shiko rankWeakKeys).
@@ -52,6 +55,38 @@ export class Stats {
     this.errorCount = 0;
     // Harta: karakteri i pritur -> sa herë u gabua (Map ruan rendin e futjes)
     this.missed = new Map();
+    // Mostrat sekondë pas sekonde: { second, wpm, raw, errors }
+    this.samples = [];
+    // Sa shtypje kishte në mostrën e fundit (për të gjetur shtypjet e sekondës së re)
+    this.keystrokesAtLastSample = 0;
+    // Sa gabime kishte në mostrën e fundit
+    this.errorsAtLastSample = 0;
+  }
+
+  /**
+   * Merr një mostër në fund të një sekonde. E thërret app.js sa herë mbushet një sekondë e plotë.
+   * - wpm: shpejtësia mesatare nga fillimi deri në këtë sekondë (formula e zakonshme e WPM)
+   * - raw: shpejtësia e çastit, vetëm nga shtypjet e kësaj sekonde: (shtypje / 5) x 60
+   * - errors: gabimet e kësaj sekonde
+   * @param {number} second - numri i sekondës që sapo mbaroi (1, 2, 3, ...)
+   * @returns {void}
+   */
+  takeSample(second) {
+    // Shtypjet e kësaj sekonde = totali tani minus totali në mostrën e mëparshme
+    const keystrokes = this.totalKeystrokes - this.keystrokesAtLastSample;
+    // Gabimet e kësaj sekonde, në të njëjtën mënyrë
+    const errors = this.errorCount - this.errorsAtLastSample;
+    // Ruajmë mostrën
+    this.samples.push({
+      second, // në cilën sekondë
+      wpm: Stats.calculateWpm(this.correctCharsInPlace, second / 60), // mesatarja deri tani
+      raw: Math.round((keystrokes / CHARS_PER_WORD) * 60), // shtypjet e një sekonde, të kthyera në fjalë për minutë
+      errors, // gabimet e sekondës
+    });
+    // Mbajmë mend totalin e shtypjeve për mostrën tjetër
+    this.keystrokesAtLastSample = this.totalKeystrokes;
+    // Mbajmë mend totalin e gabimeve për mostrën tjetër
+    this.errorsAtLastSample = this.errorCount;
   }
 
   /**
@@ -221,6 +256,54 @@ export class Stats {
       .slice(0, limit)
       // Çdo çift bëhet objekt i lexueshëm
       .map(([char, count]) => ({ char, count }));
+  }
+
+  /**
+   * Të dhënat për grafikun e shpejtësisë: mostrat, qëndrueshmëria dhe sekonda më e shpejtë.
+   * @returns {{samples: {second: number, wpm: number, raw: number, errors: number}[], consistency: number, peak: number, peakSecond: number}} të dhënat
+   */
+  getSpeedData() {
+    // Mostra me shpejtësinë e çastit më të lartë; reduce mban më të mirën deri tani (fillon me një mostër zero)
+    const peakSample = this.samples.reduce((best, sample) => (sample.raw > best.raw ? sample : best), { raw: 0, second: 0 });
+    // Kthejmë gjithçka që i duhet grafikut
+    return {
+      samples: this.samples, // të gjitha mostrat
+      consistency: Stats.calculateConsistency(this.samples.map((sample) => sample.raw)), // nga shpejtësitë e çastit
+      peak: peakSample.raw, // shpejtësia më e lartë e çastit
+      peakSecond: peakSample.second, // në cilën sekondë ndodhi
+    };
+  }
+
+  /**
+   * QËNDRUESHMËRIA (e pastër): sa e njëtrajtshme ishte shpejtësia e çastit.
+   * Hapat:
+   * 1. mesatarja e vlerave
+   * 2. devijimi standard (sa larg mesatares janë vlerat, mesatarisht)
+   * 3. koeficienti i variacionit = devijimi / mesatarja
+   * 4. qëndrueshmëria = (1 - koeficienti) x 100, e kufizuar mes 0 dhe 100
+   * Shpejtësi gjithmonë e njëjtë jep 100%. Sa më shumë luhatje dhe ndalesa, aq më pak.
+   * @param {number[]} values - shpejtësia e çastit për çdo sekondë
+   * @returns {number} përqindje e plotë nga 0 deri në 100
+   */
+  static calculateConsistency(values) {
+    // Me më pak se 2 vlera s'ka çfarë të krahasojmë
+    if (values.length < 2) {
+      return 0; // pa të dhëna të mjaftueshme
+    }
+    // Hapi 1: mesatarja = shuma pjesëtuar me numrin e vlerave
+    const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+    // Nëse mesatarja është 0 (asnjë shtypje), s'mund të pjesëtojmë me të
+    if (mean === 0) {
+      return 0; // asgjë për të matur
+    }
+    // Varianca: mesatarja e katrorëve të largësive nga mesatarja
+    const variance = values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length;
+    // Hapi 2: devijimi standard është rrënja katrore e variancës
+    const deviation = Math.sqrt(variance);
+    // Hapat 3 dhe 4: koeficienti dhe kthimi në përqindje
+    const percent = (1 - deviation / mean) * 100;
+    // Math.max/Math.min e mbajnë mes 0 dhe 100; Math.round e bën numër të plotë
+    return Math.round(Math.max(0, Math.min(100, percent)));
   }
 
   /**
