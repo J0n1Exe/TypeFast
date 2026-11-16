@@ -14,7 +14,8 @@
  * MOST_MISSED_LIMIT, CHART_MAX_POINTS, PRACTICE_LEVEL, LEVEL_LABELS,
  * WEAK_KEY_LIMIT, WEAK_KEY_TABLE_LIMIT, WEAK_KEY_MIN_ATTEMPTS,
  * WEAK_KEY_MIN_ERRORS, PRACTICE_TOKENS_PER_KEY, KEYBOARD_LAYOUTS,
- * DEFAULT_LAYOUT, HEAT_THRESHOLDS, PROGRESS_SAMPLE_SIZE, MESSAGES, findLabel.
+ * DEFAULT_LAYOUT, HEAT_THRESHOLDS, PROGRESS_SAMPLE_SIZE, GUIDE_STEPS,
+ * GUIDE_FINGERS, GUIDE_ADVANCE_MS, MESSAGES, findLabel.
  *
  * Kush e përdor: pothuajse të gjithë modulet (texts.js, timer.js, stats.js,
  * storage.js, ui.js, theme.js, chart.js, app.js) dhe faqet te js/pages/.
@@ -239,6 +240,82 @@ export const HEAT_THRESHOLDS = Object.freeze([0.02, 0.05, 0.1]);
 export const PROGRESS_SAMPLE_SIZE = 10;
 
 /**
+ * Hapat e udhëzuesit "Mëso bazat". Çdo hap ka një titull, një shpjegim dhe "keys":
+ * tastet që duhen shtypur me radhë (çdo karakter bëhet një katror në ekran).
+ * Hapat janë shkruar për tastierën shqipe; për tastierën amerikane, guide.js e
+ * zëvendëson "ë" me ";" (i njëjti tast fizik, nën gishtin e vogël të djathtë).
+ * @type {ReadonlyArray<{title: string, text: string, keys: string}>}
+ */
+export const GUIDE_STEPS = Object.freeze([
+  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
+    title: "Dy tastet e nisjes", // hapi 1
+    text: "Prek tastet F dhe J: kanë nga një vijë të vogël të ngritur, që t'i gjesh pa parë. Vendos gishtin tregues të majtë te F dhe të djathtin te J. Tani shtypi me radhë.", // shpjegimi që lexon përdoruesi
+    keys: "fj", // vetëm dy tastet me vijë
+  }),
+  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
+    title: "Gishtat tregues", // hapi 2
+    text: "Përsërite disa herë pa parë tastierën. Gishtat e tjerë le të pushojnë lehtë mbi tastet ngjitur.", // shpjegimi që lexon përdoruesi
+    keys: "jfjffj", // ushtrim me dy gishtat tregues
+  }),
+  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
+    title: "Gishtat e mesit", // hapi 3
+    text: "Ngjitur me F është D, ngjitur me J është K. I shtyp me gishtat e mesit, pa i lëvizur gishtat tregues nga vendi.", // shpjegimi që lexon përdoruesi
+    keys: "dkdk", // D majtas, K djathtas
+  }),
+  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
+    title: "Gishtat e unazës", // hapi 4
+    text: "Një tast më tej: S me gishtin e unazës të majtë, L me të djathtin.", // shpjegimi që lexon përdoruesi
+    keys: "slsl", // S majtas, L djathtas
+  }),
+  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
+    title: "Gishtat e vegjël", // hapi 5
+    text: "Tastet e fundit të rreshtit: A me gishtin e vogël të majtë dhe tasti në skajin e djathtë me gishtin e vogël të djathtë.", // shpjegimi që lexon përdoruesi
+    keys: "aëaë", // A majtas, Ë djathtas (";" në tastierën amerikane)
+  }),
+  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
+    title: "Rreshti bazë", // hapi 6
+    text: "Ky është rreshti bazë: tetë gishta mbi tetë taste. Hapësirën e shtyp me gishtin e madh. Pas çdo tasti, gishtat kthehen këtu.", // shpjegimi që lexon përdoruesi
+    keys: "asdf jklë", // gjithë rreshti, me hapësirën në mes
+  }),
+  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
+    title: "Lart dhe kthehu", // hapi 7
+    text: "E është mbi D dhe I është mbi K. Zgjate gishtin e mesit lart, shtype dhe ktheje menjëherë te rreshti bazë.", // shpjegimi që lexon përdoruesi
+    keys: "eiei", // dy taste të rreshtit të sipërm
+  }),
+  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
+    title: "Fjalët e para", // hapi 8
+    text: "Tani bashkoji në fjalë. Mos shiko tastierën: nëse humbet, gjej sërish F dhe J me prekje.", // shpjegimi që lexon përdoruesi
+    keys: "ai ka disa ide", // fjali vetëm me tastet e mësuara
+  }),
+]);
+
+/**
+ * Cili gisht e shtyp çdo tast të udhëzuesit. Përdoret për fjalinë "Tasti F: gishti tregues i majtë".
+ * @type {Readonly<Object<string, string>>}
+ */
+export const GUIDE_FINGERS = Object.freeze({
+  a: "gishti i vogël i majtë", // skaji i majtë i rreshtit bazë
+  s: "gishti i unazës i majtë", // i dyti nga e majta
+  d: "gishti i mesit i majtë", // i treti nga e majta
+  f: "gishti tregues i majtë", // tasti me vijë, dora e majtë
+  j: "gishti tregues i djathtë", // tasti me vijë, dora e djathtë
+  k: "gishti i mesit i djathtë", // pas J
+  l: "gishti i unazës i djathtë", // pas K
+  "ë": "gishti i vogël i djathtë", // skaji i djathtë, tastiera shqipe
+  ";": "gishti i vogël i djathtë", // i njëjti tast, tastiera amerikane
+  e: "gishti i mesit i majtë", // mbi D
+  i: "gishti i mesit i djathtë", // mbi K
+  " ": "gishti i madh, i cilësdo dorë", // hapësira
+});
+
+/**
+ * Sa milisekonda pret udhëzuesi pasi mbaron një hap, para se të kalojë te tjetri
+ * (që përdoruesi të shohë animacionin e tastit të fundit).
+ * @type {number}
+ */
+export const GUIDE_ADVANCE_MS = 700;
+
+/**
  * Mesazhet në shqip që krijon JavaScript (tekstet e tjera janë te HTML).
  * Funksionet brenda marrin numra realë dhe kthejnë fjalinë e plotë.
  */
@@ -274,6 +351,26 @@ export const MESSAGES = Object.freeze({
   ghostOff: "Kursori gri lëviz me shpejtësinë e rekordit tënd.", // çelësi i garës i fikur
   heatNoData: "pak të dhëna", // tast që ka dalë më pak se 5 herë
   summaryNoProgress: "Duhen të paktën 2 teste (pa praktikën) për të krahasuar.", // karta e përparimit pa të dhëna
+
+  guideEndTitle: "I mbarove bazat", // titulli i ekranit të fundit të udhëzuesit
+  guideEndText: "Kjo është gjithë teknika: gishtat nisen nga rreshti bazë dhe kthehen aty pas çdo tasti. Në fillim rëndësi ka saktësia; shpejtësia vjen vetë me praktikë. Provoje në një test të lehtë.", // teksti i ekranit të fundit
+  guideEndCount: "Udhëzuesi mbaroi", // në vend të "Hapi X nga Y" në fund
+
+  /**
+   * Numëruesi i hapave të udhëzuesit.
+   * @param {number} current - hapi aktual (nga 1)
+   * @param {number} total - sa hapa janë gjithsej
+   * @returns {string} teksti
+   */
+  guideCount: (current, total) => `Hapi ${current} nga ${total}`,
+
+  /**
+   * Fjalia që tregon me cilin gisht shtypet tasti aktual.
+   * @param {string} keyName - emri i tastit, p.sh. "F" ose "Hapësira"
+   * @param {string} finger - gishti, p.sh. "gishti tregues i majtë"
+   * @returns {string} fjalia
+   */
+  guideFinger: (keyName, finger) => `Tasti ${keyName}: ${finger}.`,
 
   /**
    * Numër ditësh me fjalë, p.sh. "3 ditë" (në shqip njëjës dhe shumës janë njësoj).

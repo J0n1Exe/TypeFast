@@ -51,6 +51,7 @@ typefast/
       speed-graph.js      klasa SpeedGraph: grafiku i shpejtësisë, i vizatuar me Canvas 2D
       summary.js          klasa HistorySummary: koha totale, ditët rresht, përparimi
       heatmap.js          klasa KeyboardHeatmap: harta e tastierës me ngjyra sipas gabimeve
+      guide.js            klasa TypingGuide: udhëzuesi "Mëso bazat" me katrorë të animuar
     pages/
       index-page.js       pika e hyrjes për index.html
       history-page.js     pika e hyrjes për historiku.html
@@ -121,6 +122,17 @@ Butoni **Praktiko tastet e dobëta** (te testi, te rezultati dhe te historiku) n
 4. Tastet që nuk gjenden në gjuhën e zgjedhur (p.sh. ë në anglisht) kapërcehen; nëse asnjë nuk gjendet, faqja e thotë qartë.
 
 Hapësira nuk praktikohet veçmas, sepse del në çdo tekst gjithsesi. Testet e praktikës ruhen në historik me nivelin "Praktikë", por nuk hyjnë te rekordet. Butoni është i çaktivizuar derisa të ketë të paktën një tast të dobët.
+
+## Udhëzuesi "Mëso bazat"
+
+Butoni **I ri këtu? Mëso bazat** (poshtë testit) hap një dritare `<dialog>` me 8 hapa për fillestarët (`TypingGuide`, `js/modules/guide.js`). Çdo hap shfaq një rresht katrorësh me shkronja; përdoruesi shtyp tastin e katrorit aktual:
+
+1. F dhe J (tastet me vijë të ngritur), pastaj gishtat e mesit, të unazës dhe të vegjël
+2. rreshti bazë i plotë me hapësirën
+3. E dhe I (zgjatja lart dhe kthimi)
+4. fjalët e para: "ai ka disa ide"
+
+Për çdo tast tregohet cili gisht e shtyp dhe një tastierë e vogël e ndriçon. Animacionet janë në CSS (`animations.css`): katrorët hyjnë njëri pas tjetrit, tasti aktual "merr frymë", shtypja e saktë kërcen dhe bëhet e gjelbër, tasti i gabuar e dridh rreshtin. JavaScript vetëm shton dhe heq klasa. Me "prefers-reduced-motion" animacionet fiken. Hapat dhe gishtat janë te `config.js` (`GUIDE_STEPS`, `GUIDE_FINGERS`); për tastierën amerikane "ë" zëvendësohet me ";". Adresa `index.html#bazat` e hap udhëzuesin direkt.
 
 ## Gara me rekordin
 

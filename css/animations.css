@@ -56,6 +56,72 @@
   }
 }
 
+/*
+  @keyframes guide-key-in: një katror i udhëzuesit hyn në skenë.
+  Nis i padukshëm, pak më poshtë dhe pak më i vogël, dhe mbërrin në vendin e vet.
+*/
+@keyframes guide-key-in {
+  from {
+    opacity: 0; /* nis i padukshëm */
+    transform: translateY(var(--space-1)) scale(0.9); /* 8px më poshtë dhe 90% i madhësisë */
+  }
+  to {
+    opacity: 1; /* mbaron i dukshëm */
+    transform: none; /* në vendin dhe madhësinë e vet */
+  }
+}
+
+/*
+  @keyframes guide-breathe: tasti që duhet shtypur "merr frymë",
+  zmadhohet pak dhe kthehet, që syri ta gjejë menjëherë.
+*/
+@keyframes guide-breathe {
+  0%,
+  100% {
+    transform: scale(1); /* madhësia normale */
+  }
+  50% {
+    transform: scale(1.05); /* 5% më i madh në mes të ciklit */
+  }
+}
+
+/*
+  @keyframes guide-pop: tasti i shtypur saktë "kërcen" një herë,
+  si shpërblim i vogël vizual.
+*/
+@keyframes guide-pop {
+  0%,
+  100% {
+    transform: scale(1); /* madhësia normale në fillim dhe në fund */
+  }
+  50% {
+    transform: scale(1.15); /* 15% më i madh në mes */
+  }
+}
+
+/*
+  @keyframes guide-shake: rreshti i katrorëve dridhet majtas-djathtas
+  kur shtypet tasti i gabuar. Lëkundjet zvogëlohen derisa ndalon.
+*/
+@keyframes guide-shake {
+  0%,
+  100% {
+    transform: translateX(0); /* në vend */
+  }
+  20% {
+    transform: translateX(calc(-1 * var(--space-1))); /* 8px majtas */
+  }
+  40% {
+    transform: translateX(var(--space-1)); /* 8px djathtas */
+  }
+  60% {
+    transform: translateX(calc(var(--space-1) / -2)); /* 4px majtas */
+  }
+  80% {
+    transform: translateX(calc(var(--space-1) / 2)); /* 4px djathtas */
+  }
+}
+
 /* ---------------- KURSORI ---------------- */
 
 /*
@@ -94,6 +160,39 @@
 /* Karta 4 nis 180ms pas të parës */
 .result-card:nth-child(4) {
   animation-delay: calc(var(--duration-stagger) * 3); /* 3 x 60ms */
+}
+
+/* ---------------- UDHËZUESI "MËSO BAZAT" ---------------- */
+
+/*
+  Çdo katror hyn në skenë pak pas atij para tij. JavaScript i jep çdo katrori
+  numrin e vet --key-index (0, 1, 2, ...); CSS e shumëzon me 60ms për vonesën.
+*/
+.guide-key {
+  --key-index: 0; /* vlera fillestare: pa vonesë (JavaScript e ndryshon) */
+  animation: guide-key-in var(--duration-base) var(--easing) both; /* hyrja; both e mban të padukshëm gjatë vonesës */
+  animation-delay: calc(var(--key-index) * var(--duration-stagger)); /* katrori i 3-të pret 2 x 60ms */
+}
+
+/*
+  Katrori aktual: mban animacionin e hyrjes dhe, pasi ai mbaron, "merr frymë" pa ndalim.
+  Dy animacione njëherësh ndahen me presje.
+*/
+.guide-key--current {
+  animation: guide-key-in var(--duration-base) var(--easing) both, guide-breathe var(--duration-breathe) ease-in-out var(--duration-base) infinite; /* hyrja, pastaj frymëmarrja */
+}
+
+/* Katrori i shtypur saktë kërcen një herë */
+.guide-key--done {
+  animation: guide-pop var(--duration-base) var(--easing); /* një kërcim 240ms */
+}
+
+/*
+  Tasti i gabuar: dridhet gjithë rreshti i katrorëve. Dridhja vihet te rreshti dhe
+  jo te katrori, që animacioni i hyrjes së katrorit të mos rifillojë kur hiqet klasa.
+*/
+.guide__keys--shake {
+  animation: guide-shake var(--duration-base) linear; /* një dridhje 240ms */
 }
 
 /* ---------------- SHFAQJA GJATË LËVIZJES (scroll reveal) ---------------- */
