@@ -358,11 +358,8 @@
       <!-- Udhëzimi i shkurtër. Pika e mesme (&middot;) ndan dy shkurtoret. -->
       <p class="hint" id="test-hint"><kbd>Tab</kbd>: rifillo testin &middot; <kbd>Esc</kbd>: anulo</p>
 
-      <!--
-        Butoni për fillestarët: hap udhëzuesin "Mëso bazat" (dritarja #guide më poshtë).
-        aria-haspopup="dialog": lexuesi i ekranit njofton që butoni hap një dritare.
-      -->
-      <button class="button" id="guide-open" type="button" aria-haspopup="dialog">I ri këtu? Mëso bazat</button>
+      <!-- Lidhja për fillestarët: të çon te faqja "Mësimet", me rrugën e mësimeve hap pas hapi -->
+      <a class="button" href="mesimet.html">I ri këtu? Mëso bazat</a>
     </section>
 
     <!--
@@ -465,78 +462,6 @@
       Është jashtë panelit të fshehur, që të jetë gjithmonë "i gjallë".
     -->
     <p class="visually-hidden" id="results-announcer" aria-live="polite"></p>
-
-    <!--
-      ========== UDHËZUESI "MËSO BAZAT" ==========
-      Dritare vendase <dialog>, e hapur nga guide.js me showModal().
-      Tregon hap pas hapi ku vendosen gishtat: shfaqen katrorë me shkronja,
-      përdoruesi shtyp tastin e treguar dhe katrori animohet.
-      aria-labelledby: emri i dritares merret nga titulli i hapit.
-    -->
-    <dialog class="dialog guide" id="guide" aria-labelledby="guide-title">
-      <!-- Rreshti i sipërm: numëruesi i hapave dhe butoni i mbylljes -->
-      <div class="guide__top">
-        <!-- "Hapi 1 nga 8"; JavaScript e përditëson -->
-        <p class="guide__count" id="guide-count"></p>
-        <!-- Butoni i mbylljes ka vetëm ikonë, prandaj emri vjen nga aria-label -->
-        <button class="icon-button" id="guide-close" type="button" aria-label="Mbyll udhëzuesin">
-          <!-- Ikona X; aria-hidden sepse është zbukurim; stroke="currentColor" merr ngjyrën e tekstit -->
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false">
-            <path d="M6 6l12 12M18 6L6 18"></path>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Shiriti i përparimit: vija e brendshme zgjatet me çdo hap (aria-hidden: numëruesi e thotë me fjalë) -->
-      <div class="guide__bar" aria-hidden="true">
-        <span class="guide__bar-fill" id="guide-bar"></span>
-      </div>
-
-      <!-- Titulli i hapit -->
-      <h2 class="dialog__title" id="guide-title"></h2>
-      <!-- Shpjegimi i hapit. aria-live="polite": lexuesi i ekranit e lexon kur ndryshon hapi. -->
-      <p class="guide__text" id="guide-text" aria-live="polite"></p>
-
-      <!-- Skena: katrorët e tasteve dhe fusha e fshehur ku kapen shtypjet -->
-      <div class="guide__stage" id="guide-stage">
-        <!-- JavaScript krijon këtu një katror për çdo tast të hapit -->
-        <div class="guide__keys" id="guide-keys"></div>
-        <!--
-          Fusha e fshehur e shkrimit, me të njëjtën teknikë si te testi: është e padukshme,
-          mbulon skenën dhe lexon shkronjat me ngjarjen "input" (punon me ë dhe në tablet).
-          autocomplete, autocorrect, autocapitalize, spellcheck: fikin ndihmat e shfletuesit.
-        -->
-        <textarea class="guide__input" id="guide-input" rows="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Shtyp tastin e treguar"></textarea>
-      </div>
-
-      <!-- Cili gisht e shtyp tastin aktual, p.sh. "Tasti F: gishti tregues i majtë." -->
-      <p class="guide__finger" id="guide-finger"></p>
-
-      <!--
-        Tastiera e vogël: tregon ku ndodhet tasti aktual. aria-hidden="true" sepse
-        e njëjta gjë thuhet me fjalë te fjalia e gishtit më lart.
-      -->
-      <div class="mini-keyboard" id="guide-keyboard" aria-hidden="true"></div>
-
-      <!-- Zgjedhja e tastierës: në atë amerikane tasti i gishtit të vogël të djathtë është ";" dhe jo "ë" -->
-      <div class="chip-row guide__layouts" role="group" aria-label="Lloji i tastierës">
-        <!-- data-guide-layout: cila tastierë vizatohet; aria-pressed e përditëson JavaScript -->
-        <button class="chip" type="button" data-guide-layout="sq" aria-pressed="true">Shqipe (QWERTZ)</button>
-        <button class="chip" type="button" data-guide-layout="us" aria-pressed="false">Amerikane (QWERTY)</button>
-      </div>
-
-      <!-- Butonat e udhëzuesit -->
-      <div class="dialog__actions">
-        <!-- Kthehet një hap mbrapa -->
-        <button class="button" id="guide-prev" type="button">Mbrapa</button>
-        <!-- Kalon te hapi tjetër pa e mbaruar këtë -->
-        <button class="button" id="guide-skip" type="button">Kapërce hapin</button>
-        <!-- Shfaqet vetëm në fund: nis udhëzuesin nga e para -->
-        <button class="button" id="guide-restart" type="button" hidden>Nga fillimi</button>
-        <!-- Shfaqet vetëm në fund: mbyll udhëzuesin dhe kalon te testi -->
-        <button class="button button--primary" id="guide-start" type="button" hidden>Fillo testin</button>
-      </div>
-    </dialog>
   </main>
 
   <!-- ========== FUNDI I FAQES (i njëjtë në të tri faqet) ========== -->

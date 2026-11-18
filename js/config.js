@@ -14,8 +14,9 @@
  * MOST_MISSED_LIMIT, CHART_MAX_POINTS, PRACTICE_LEVEL, LEVEL_LABELS,
  * WEAK_KEY_LIMIT, WEAK_KEY_TABLE_LIMIT, WEAK_KEY_MIN_ATTEMPTS,
  * WEAK_KEY_MIN_ERRORS, PRACTICE_TOKENS_PER_KEY, KEYBOARD_LAYOUTS,
- * DEFAULT_LAYOUT, HEAT_THRESHOLDS, PROGRESS_SAMPLE_SIZE, GUIDE_STEPS,
- * GUIDE_FINGERS, GUIDE_ADVANCE_MS, MESSAGES, findLabel.
+ * DEFAULT_LAYOUT, HEAT_THRESHOLDS, PROGRESS_SAMPLE_SIZE, GUIDE_CHAPTERS,
+ * GUIDE_US_MAP, GUIDE_FINGERS, GUIDE_THUMB, GUIDE_CHUNK_SIZE, GUIDE_CHUNK_MS,
+ * GUIDE_ADVANCE_MS, GUIDE_PASS_ACCURACY, MESSAGES, findLabel.
  *
  * Kush e përdor: pothuajse të gjithë modulet (texts.js, timer.js, stats.js,
  * storage.js, ui.js, theme.js, chart.js, app.js) dhe faqet te js/pages/.
@@ -77,6 +78,7 @@ export const STORAGE_KEYS = Object.freeze({
   THEME: "typefast:theme", // tema e zgjedhur
   KEYS: "typefast:keys", // për çdo tast: sa herë doli dhe sa herë u gabua (të gjitha testet)
   LAYOUT: "typefast:layout", // cila tastierë shfaqet te harta e tastierës (sq ose us)
+  GUIDE: "typefast:guide", // id-të e mësimeve të kursit "Mëso bazat" që janë kryer
 });
 
 /**
@@ -240,80 +242,145 @@ export const HEAT_THRESHOLDS = Object.freeze([0.02, 0.05, 0.1]);
 export const PROGRESS_SAMPLE_SIZE = 10;
 
 /**
- * Hapat e udhëzuesit "Mëso bazat". Çdo hap ka një titull, një shpjegim dhe "keys":
- * tastet që duhen shtypur me radhë (çdo karakter bëhet një katror në ekran).
- * Hapat janë shkruar për tastierën shqipe; për tastierën amerikane, guide.js e
- * zëvendëson "ë" me ";" (i njëjti tast fizik, nën gishtin e vogël të djathtë).
- * @type {ReadonlyArray<{title: string, text: string, keys: string}>}
+ * Kursi "Mëso bazat": kapitujt dhe mësimet e udhëzuesit për fillestarët.
+ * Çdo kapitull ka: id, titull, një hyrje (intro) dhe një listë mësimesh.
+ * Çdo mësim ka:
+ *   - id: emër i qëndrueshëm, p.sh. "1-3" (me të ruhet përparimi në localStorage)
+ *   - title dhe text: titulli dhe shpjegimi që lexon përdoruesi
+ *   - keys: tastet që shtypen me radhë, për tastierën shqipe (çdo karakter bëhet një katror)
+ *   - keysUs (opsionale): tekst tjetër për tastierën amerikane, kur fjalët shqipe s'kanë kuptim aty
+ *   - onlySq (opsionale): mësimi shfaqet vetëm në tastierën shqipe (p.sh. Ç)
+ * Kur mungon keysUs, guide.js e kthen tekstin shqip me GUIDE_US_MAP (i njëjti tast fizik).
+ * @type {ReadonlyArray<{id: string, title: string, intro: string, lessons: ReadonlyArray<{id: string, title: string, text: string, keys: string, keysUs?: string, onlySq?: boolean}>}>}
  */
-export const GUIDE_STEPS = Object.freeze([
-  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
-    title: "Dy tastet e nisjes", // hapi 1
-    text: "Prek tastet F dhe J: kanë nga një vijë të vogël të ngritur, që t'i gjesh pa parë. Vendos gishtin tregues të majtë te F dhe të djathtin te J. Tani shtypi me radhë.", // shpjegimi që lexon përdoruesi
-    keys: "fj", // vetëm dy tastet me vijë
+export const GUIDE_CHAPTERS = Object.freeze([
+  Object.freeze({ // kapitulli 1
+    id: "1", // numri i kapitullit
+    title: "Rreshti bazë", // titulli i kapitullit
+    intro: "Rreshti bazë është shtëpia e gishtave: çdo gisht nis prej këtu dhe kthehet këtu pas çdo tasti. Ulu drejt, mbaji kyçet pak lart pa i mbështetur dhe shiko ekranin, jo tastierën.", // hyrja që shfaqet te lista e kapitujve
+    lessons: Object.freeze([ // mësimet e kapitullit, me radhë
+      Object.freeze({ id: "1-1", title: "F dhe J", text: "Prek tastet F dhe J: kanë nga një vijë të vogël të ngritur, që t'i gjesh pa parë. Vendos gishtin tregues të majtë te F dhe të djathtin te J.", keys: "fj fj jf fj" }), // mësimi 1-1: F dhe J
+      Object.freeze({ id: "1-2", title: "Gishtat tregues", text: "Përsërit F dhe J pa parë tastierën. Gishtat e tjerë pushojnë lehtë mbi tastet ngjitur, pa i shtypur.", keys: "fff jjj fjf jfj ffjj" }), // mësimi 1-2: Gishtat tregues
+      Object.freeze({ id: "1-3", title: "D dhe K", text: "Ngjitur me F është D, ngjitur me J është K. I shtyp me gishtat e mesit; gishtat tregues mbeten mbi F dhe J.", keys: "ddd kkk dkd kdk fdf jkj" }), // mësimi 1-3: D dhe K
+      Object.freeze({ id: "1-4", title: "S dhe L", text: "Një tast më tej: S me gishtin e unazës të majtë, L me gishtin e unazës të djathtë.", keys: "sss lll sls lsl dsd klk" }), // mësimi 1-4: S dhe L
+      Object.freeze({ id: "1-5", title: "A dhe Ë", text: "Tastet e skajeve: A me gishtin e vogël të majtë dhe Ë me gishtin e vogël të djathtë (në tastierën amerikane ky tast është pikëpresja).", keys: "aaa ëëë aëa ëaë sas lël" }), // mësimi 1-5: A dhe Ë
+      Object.freeze({ id: "1-6", title: "G dhe H", text: "Gishtat tregues zgjaten një tast drejt mesit: nga F te G dhe nga J te H. Pas shtypjes kthehen menjëherë në vend.", keys: "fgf jhj ggg hhh fgh jhg" }), // mësimi 1-6: G dhe H
+      Object.freeze({ id: "1-7", title: "Hapësira", text: "Hapësirën e shtyp me gishtin e madh, pa i ngritur gishtat e tjerë nga rreshti bazë.", keys: "a s d f g h j k l ë" }), // mësimi 1-7: Hapësira
+      Object.freeze({ id: "1-8", title: "Fjalët e para", text: "Fjalë të vërteta vetëm me tastet e rreshtit bazë. Shko ngadalë dhe pa parë tastierën.", keys: "ka gjak flas djalë kafshë shkak halla", keysUs: "a sad lad has a glass flask" }), // mësimi 1-8: Fjalët e para
+    ]),
   }),
-  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
-    title: "Gishtat tregues", // hapi 2
-    text: "Përsërite disa herë pa parë tastierën. Gishtat e tjerë le të pushojnë lehtë mbi tastet ngjitur.", // shpjegimi që lexon përdoruesi
-    keys: "jfjffj", // ushtrim me dy gishtat tregues
+  Object.freeze({ // kapitulli 2
+    id: "2", // numri i kapitullit
+    title: "Rreshti i sipërm", // titulli i kapitullit
+    intro: "Për rreshtin e sipërm gishti zgjatet lart dhe pak majtas, shtyp tastin dhe kthehet menjëherë në rreshtin bazë. Lëviz vetëm gishtin, jo gjithë dorën.", // hyrja që shfaqet te lista e kapitujve
+    lessons: Object.freeze([ // mësimet e kapitullit, me radhë
+      Object.freeze({ id: "2-1", title: "E dhe I", text: "E është mbi D dhe I është mbi K. I shtypin gishtat e mesit.", keys: "ded kik eee iii dei kie ei ie" }), // mësimi 2-1: E dhe I
+      Object.freeze({ id: "2-2", title: "R dhe U", text: "R është mbi F dhe U është mbi J. I shtypin gishtat tregues.", keys: "frf juj rrr uuu fru jur ru ur" }), // mësimi 2-2: R dhe U
+      Object.freeze({ id: "2-3", title: "T dhe Z", text: "T është lart djathtas nga F, Z lart majtas nga J (në tastierën amerikane ky tast është Y). Të dyja i shtypin gishtat tregues.", keys: "ftf jzj ttt zzz ftz jzt" }), // mësimi 2-3: T dhe Z
+      Object.freeze({ id: "2-4", title: "W dhe O", text: "W është mbi S dhe O është mbi L. I shtypin gishtat e unazës.", keys: "sws lol www ooo swo low" }), // mësimi 2-4: W dhe O
+      Object.freeze({ id: "2-5", title: "Q dhe P", text: "Q është mbi A dhe P mbi tastin e skajit të djathtë. I shtypin gishtat e vegjël.", keys: "aqa ëpë qqq ppp aqp ëpq" }), // mësimi 2-5: Q dhe P
+      Object.freeze({ id: "2-6", title: "Ç", text: "Ç është në skajin e djathtë të rreshtit të sipërm, pas P. Gishti i vogël i djathtë zgjatet lart djathtas.", keys: "ëçë ççç çaj çdo çast", onlySq: true }), // mësimi 2-6: Ç
+      Object.freeze({ id: "2-7", title: "Fjalë me dy rreshta", text: "Fjalë që përdorin rreshtin bazë dhe atë të sipërm. Pas çdo shkronje të sipërme, gishti kthehet poshtë.", keys: "ti je i ri ajo flet shqip ku je", keysUs: "we sit here quietly at the pool" }), // mësimi 2-7: Fjalë me dy rreshta
+    ]),
   }),
-  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
-    title: "Gishtat e mesit", // hapi 3
-    text: "Ngjitur me F është D, ngjitur me J është K. I shtyp me gishtat e mesit, pa i lëvizur gishtat tregues nga vendi.", // shpjegimi që lexon përdoruesi
-    keys: "dkdk", // D majtas, K djathtas
+  Object.freeze({ // kapitulli 3
+    id: "3", // numri i kapitullit
+    title: "Rreshti i poshtëm", // titulli i kapitullit
+    intro: "Për rreshtin e poshtëm gishtat përkulen poshtë dhe pak djathtas. Ky rresht është më i vështiri, prandaj shko ngadalë: saktësia vjen para shpejtësisë.", // hyrja që shfaqet te lista e kapitujve
+    lessons: Object.freeze([ // mësimet e kapitullit, me radhë
+      Object.freeze({ id: "3-1", title: "V dhe M", text: "V është poshtë F, M është poshtë J. I shtypin gishtat tregues.", keys: "fvf jmj vvv mmm fvm jmv" }), // mësimi 3-1: V dhe M
+      Object.freeze({ id: "3-2", title: "B dhe N", text: "B dhe N janë në mes të rreshtit të poshtëm. Gishtat tregues zgjaten poshtë dhe drejt mesit.", keys: "fbf jnj bbb nnn fbn jnb" }), // mësimi 3-2: B dhe N
+      Object.freeze({ id: "3-3", title: "C dhe presja", text: "C është poshtë D, presja poshtë K. I shtypin gishtat e mesit.", keys: "dcd k,k ccc ,,, dc, k,c" }), // mësimi 3-3: C dhe presja
+      Object.freeze({ id: "3-4", title: "X dhe pika", text: "X është poshtë S, pika poshtë L. I shtypin gishtat e unazës.", keys: "sxs l.l xxx ... sx. l.x" }), // mësimi 3-4: X dhe pika
+      Object.freeze({ id: "3-5", title: "Y", text: "Y është në skajin e majtë të rreshtit të poshtëm (në tastierën amerikane ky tast është Z). E shtyp gishti i vogël i majtë.", keys: "aya yyy aya yay" }), // mësimi 3-5: Y
+      Object.freeze({ id: "3-6", title: "Fjalë me tre rreshta", text: "Tani të tre rreshtat bashkë. Mos shiko tastierën: nëse humbet, gjej sërish F dhe J me prekje.", keys: "nëna bën bukë vëllai im më ndihmon", keysUs: "my mom bakes bread and makes jam" }), // mësimi 3-6: Fjalë me tre rreshta
+    ]),
   }),
-  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
-    title: "Gishtat e unazës", // hapi 4
-    text: "Një tast më tej: S me gishtin e unazës të majtë, L me të djathtin.", // shpjegimi që lexon përdoruesi
-    keys: "slsl", // S majtas, L djathtas
+  Object.freeze({ // kapitulli 4
+    id: "4", // numri i kapitullit
+    title: "Shkronjat e mëdha, shenjat dhe numrat", // titulli i kapitullit
+    intro: "Shkronjën e madhe e shkruan duke mbajtur Shift me gishtin e vogël të dorës tjetër: për shkronjat e dorës së majtë Shift-in e djathtë, për ato të dorës së djathtë Shift-in e majtë.", // hyrja që shfaqet te lista e kapitujve
+    lessons: Object.freeze([ // mësimet e kapitullit, me radhë
+      Object.freeze({ id: "4-1", title: "Shkronja e madhe", text: "Emra që nisin me shkronjë të madhe. Mbaj Shift me dorën tjetër, shtyp shkronjën, pastaj lësho Shift.", keys: "Ana Dita Lala Jeta Kaja" }), // mësimi 4-1: Shkronja e madhe
+      Object.freeze({ id: "4-2", title: "Presja dhe pika në fjali", text: "Pas presjes dhe pikës vjen një hapësirë. Fjalia nis me shkronjë të madhe.", keys: "Po, e di. Jo, nuk e di.", keysUs: "Yes, I know. No, I do not." }), // mësimi 4-2: Presja dhe pika në fjali
+      Object.freeze({ id: "4-3", title: "Numrat", text: "Numrat janë në rreshtin më të lartë. Çdo gisht shtyp numrin mbi tastin e vet: 4 dhe 5 gishti tregues i majtë, 6 dhe 7 gishti tregues i djathtë.", keys: "12 34 56 78 90 2026 1912" }), // mësimi 4-3: Numrat
+      Object.freeze({ id: "4-4", title: "Fjali me numra", text: "Një fjali me shkronja të mëdha, numra dhe pikë. Gishtat kthehen në rreshtin bazë pas çdo numri.", keys: "Më 28 nëntor 1912 Shqipëria shpalli pavarësinë.", keysUs: "In 1969 people walked on the moon." }), // mësimi 4-4: Fjali me numra
+    ]),
   }),
-  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
-    title: "Gishtat e vegjël", // hapi 5
-    text: "Tastet e fundit të rreshtit: A me gishtin e vogël të majtë dhe tasti në skajin e djathtë me gishtin e vogël të djathtë.", // shpjegimi që lexon përdoruesi
-    keys: "aëaë", // A majtas, Ë djathtas (";" në tastierën amerikane)
-  }),
-  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
-    title: "Rreshti bazë", // hapi 6
-    text: "Ky është rreshti bazë: tetë gishta mbi tetë taste. Hapësirën e shtyp me gishtin e madh. Pas çdo tasti, gishtat kthehen këtu.", // shpjegimi që lexon përdoruesi
-    keys: "asdf jklë", // gjithë rreshti, me hapësirën në mes
-  }),
-  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
-    title: "Lart dhe kthehu", // hapi 7
-    text: "E është mbi D dhe I është mbi K. Zgjate gishtin e mesit lart, shtype dhe ktheje menjëherë te rreshti bazë.", // shpjegimi që lexon përdoruesi
-    keys: "eiei", // dy taste të rreshtit të sipërm
-  }),
-  Object.freeze({ // një hap i udhëzuesit (i pandryshueshëm)
-    title: "Fjalët e para", // hapi 8
-    text: "Tani bashkoji në fjalë. Mos shiko tastierën: nëse humbet, gjej sërish F dhe J me prekje.", // shpjegimi që lexon përdoruesi
-    keys: "ai ka disa ide", // fjali vetëm me tastet e mësuara
+  Object.freeze({ // kapitulli 5
+    id: "5", // numri i kapitullit
+    title: "Shkrimi i rrjedhshëm", // titulli i kapitullit
+    intro: "Tani bashko gjithçka. Shkruaj me ritëm të njëtrajtshëm: më mirë ngadalë dhe pa gabime, se shpejt dhe me ndalesa.", // hyrja që shfaqet te lista e kapitujve
+    lessons: Object.freeze([ // mësimet e kapitullit, me radhë
+      Object.freeze({ id: "5-1", title: "Fjali e shkurtër", text: "Një fjali e plotë. Mos u ndal te gabimet e vogla: vazhdo me ritëm.", keys: "Sot mësoj të shkruaj pa parë tastierën.", keysUs: "Today I learn to type without looking." }), // mësimi 5-1: Fjali e shkurtër
+      Object.freeze({ id: "5-2", title: "Fjali me presje", text: "Presja është një pushim i vogël. Shtype dhe vazhdo pa e humbur ritmin.", keys: "Kur gabon, ndalo, merr frymë dhe vazhdo.", keysUs: "When you make a mistake, stop and breathe." }), // mësimi 5-2: Fjali me presje
+      Object.freeze({ id: "5-3", title: "Fjali e gjatë", text: "Fjalia e fundit e kursit. Pasi ta mbarosh, provo testin e lehtë në faqen kryesore.", keys: "Çdo ditë pak praktikë e bën shkrimin më të shpejtë dhe më të saktë.", keysUs: "A little practice every day makes typing faster and more accurate." }), // mësimi 5-3: Fjali e gjatë
+    ]),
   }),
 ]);
 
 /**
- * Cili gisht e shtyp çdo tast të udhëzuesit. Përdoret për fjalinë "Tasti F: gishti tregues i majtë".
+ * Si kthehet teksti i një mësimi për tastierën amerikane: çdo karakter zëvendësohet me
+ * karakterin që ndodhet në të NJËJTIN tast fizik. Karakteret që s'janë këtu mbeten njësoj.
  * @type {Readonly<Object<string, string>>}
  */
-export const GUIDE_FINGERS = Object.freeze({
-  a: "gishti i vogël i majtë", // skaji i majtë i rreshtit bazë
-  s: "gishti i unazës i majtë", // i dyti nga e majta
-  d: "gishti i mesit i majtë", // i treti nga e majta
-  f: "gishti tregues i majtë", // tasti me vijë, dora e majtë
-  j: "gishti tregues i djathtë", // tasti me vijë, dora e djathtë
-  k: "gishti i mesit i djathtë", // pas J
-  l: "gishti i unazës i djathtë", // pas K
-  "ë": "gishti i vogël i djathtë", // skaji i djathtë, tastiera shqipe
-  ";": "gishti i vogël i djathtë", // i njëjti tast, tastiera amerikane
-  e: "gishti i mesit i majtë", // mbi D
-  i: "gishti i mesit i djathtë", // mbi K
-  " ": "gishti i madh, i cilësdo dorë", // hapësira
+export const GUIDE_US_MAP = Object.freeze({
+  "z": "y", // tasti i "z" në tastierën shqipe është "y" në atë amerikane
+  "y": "z", // tasti i "y" në tastierën shqipe është "z" në atë amerikane
+  "Z": "Y", // tasti i "Z" në tastierën shqipe është "Y" në atë amerikane
+  "Y": "Z", // tasti i "Y" në tastierën shqipe është "Z" në atë amerikane
+  "ë": ";", // tasti i "ë" në tastierën shqipe është ";" në atë amerikane
 });
 
 /**
- * Sa milisekonda pret udhëzuesi pasi mbaron një hap, para se të kalojë te tjetri
+ * Emri i gishtit sipas kolonës së tastit në rresht (0 = tasti i parë majtas).
+ * Në shkrimin me dhjetë gishta, çdo gisht ka kolonën e vet në të katër rreshtat;
+ * kolonat 4 dhe 5 janë zgjatjet e gishtave tregues drejt mesit; nga kolona 9 e tutje
+ * shtyp gjithmonë gishti i vogël i djathtë.
+ * @type {ReadonlyArray<string>}
+ */
+export const GUIDE_FINGERS = Object.freeze([
+  "gishti i vogël i majtë", // kolona 0
+  "gishti i unazës i majtë", // kolona 1
+  "gishti i mesit i majtë", // kolona 2
+  "gishti tregues i majtë", // kolona 3
+  "gishti tregues i majtë", // kolona 4
+  "gishti tregues i djathtë", // kolona 5
+  "gishti tregues i djathtë", // kolona 6
+  "gishti i mesit i djathtë", // kolona 7
+  "gishti i unazës i djathtë", // kolona 8
+  "gishti i vogël i djathtë", // kolona 9
+]);
+
+/** @type {string} Gishti i hapësirës. */
+export const GUIDE_THUMB = "gishti i madh, i cilësdo dorë";
+
+/**
+ * Sa katrorë shfaqen njëherësh. Mësimet më të gjata ndahen në pjesë me kaq karaktere,
+ * që katrorët të nxënë në dritare pa e zgjatur atë.
+ * @type {number}
+ */
+export const GUIDE_CHUNK_SIZE = 9;
+
+/**
+ * Sa milisekonda pret udhëzuesi pasi mbaron një pjesë, para se të shfaqë pjesën tjetër.
+ * @type {number}
+ */
+export const GUIDE_CHUNK_MS = 350;
+
+/**
+ * Sa milisekonda pret udhëzuesi pasi mbaron një mësim, para se të kalojë te tjetri
  * (që përdoruesi të shohë animacionin e tastit të fundit).
  * @type {number}
  */
 export const GUIDE_ADVANCE_MS = 700;
+
+/**
+ * Saktësia minimale (në përqindje) për të kaluar provën e një kapitulli.
+ * Kush e kalon, e kapërcen kapitullin: të gjitha mësimet e tij shënohen të kryera.
+ * @type {number}
+ */
+export const GUIDE_PASS_ACCURACY = 90;
 
 /**
  * Mesazhet në shqip që krijon JavaScript (tekstet e tjera janë te HTML).
@@ -353,17 +420,114 @@ export const MESSAGES = Object.freeze({
   heatNoData: "pak të dhëna", // tast që ka dalë më pak se 5 herë
   summaryNoProgress: "Duhen të paktën 2 teste (pa praktikën) për të krahasuar.", // karta e përparimit pa të dhëna
 
-  guideEndTitle: "I mbarove bazat", // titulli i ekranit të fundit të udhëzuesit
-  guideEndText: "Kjo është gjithë teknika: gishtat nisen nga rreshti bazë dhe kthehen aty pas çdo tasti. Në fillim rëndësi ka saktësia; shpejtësia vjen vetë me praktikë. Provoje në një test të lehtë.", // teksti i ekranit të fundit
-  guideEndCount: "Udhëzuesi mbaroi", // në vend të "Hapi X nga Y" në fund
+  guideEndTitle: "E mbarove kursin", // titulli kur mbaron kapitulli i fundit
+  guideEndText: "Kjo është gjithë teknika: gishtat nisen nga rreshti bazë dhe kthehen aty pas çdo tasti. Në fillim rëndësi ka saktësia; shpejtësia vjen vetë me praktikë. Provoje tani në një test të lehtë.", // teksti kur mbaron kursi
+  guideChapterEndText: "I kalove të gjitha mësimet e këtij kapitulli. Vazhdo me kapitullin tjetër, ose bëj një test për ta provuar atë që mësove.", // teksti kur mbaron një kapitull
+  guideCaseHint: "Kujdes shkronjën e madhe dhe të vogël: kontrollo Shift dhe Caps Lock.", // kur shtypet shkronja e duhur, por me madhësi tjetër
+  guideStart: "Fillo mësimin e parë", // butoni kryesor i faqes kur s'është kryer asnjë mësim
+  guideContinue: "Vazhdo mësimin e radhës", // butoni kryesor kur kursi është nisur
+  guideAllDone: "Kursi u krye. Mund të përsëritësh çdo mësim.", // shënimi kur janë kryer të gjitha mësimet
+  guideCheckpointText: "Shkruaj tekstin e mësimit të fundit të kapitullit. Me të paktën 90% saktësi, i gjithë kapitulli shënohet si i kryer dhe hapet kapitulli tjetër.", // shpjegimi i provës
+  guideCheckpointPassTitle: "E kalove provën", // titulli kur kalohet prova
+  guideCheckpointFailTitle: "Edhe pak", // titulli kur prova s'kalohet
 
   /**
-   * Numëruesi i hapave të udhëzuesit.
-   * @param {number} current - hapi aktual (nga 1)
-   * @param {number} total - sa hapa janë gjithsej
+   * Titulli i provës së një kapitulli.
+   * @param {number} number - numri i kapitullit
    * @returns {string} teksti
    */
-  guideCount: (current, total) => `Hapi ${current} nga ${total}`,
+  guideCheckpointTitle: (number) => `Prova e kapitullit ${number}`,
+
+  /**
+   * Numëruesi gjatë provës.
+   * @param {number} chapter - numri i kapitullit
+   * @param {number} part - pjesa aktuale
+   * @param {number} parts - sa pjesë ka prova
+   * @returns {string} teksti
+   */
+  guideCheckpointCount: (chapter, part, parts) => `Kapitulli ${chapter} \u00B7 Prova \u00B7 Pjesa ${part} nga ${parts}`,
+
+  /**
+   * Teksti kur kalohet prova.
+   * @param {number} accuracy - saktësia në përqindje
+   * @returns {string} fjalia
+   */
+  guideCheckpointPass: (accuracy) => `Saktësia: ${accuracy}%. I gjithë kapitulli u shënua si i kryer dhe u hap kapitulli tjetër.`,
+
+  /**
+   * Teksti kur prova s'kalohet.
+   * @param {number} accuracy - saktësia në përqindje
+   * @returns {string} fjalia
+   */
+  guideCheckpointFail: (accuracy) => `Saktësia: ${accuracy}%. Duhen të paktën 90%. Provo përsëri, ose bëj mësimet e kapitullit me radhë.`,
+
+  /**
+   * Emri i një mësimi në rrugë për lexuesit e ekranit, me gjendjen e tij.
+   * @param {string} code - numri, p.sh. "1.3"
+   * @param {string} title - titulli
+   * @param {"done"|"current"|"open"|"locked"} state - gjendja
+   * @returns {string} p.sh. "Mësimi 1.3, D dhe K: i kryer"
+   */
+  guideNodeLabel: (code, title, state) => `Mësimi ${code}, ${title}: ${{ done: "i kryer", current: "mësimi i radhës", open: "i hapur", locked: "i kyçur" }[state]}`,
+
+  /**
+   * Vështirësia e kapitullit, për lexuesit e ekranit.
+   * @param {number} level - vështirësia
+   * @param {number} max - vështirësia më e lartë
+   * @returns {string} teksti
+   */
+  guideDifficulty: (level, max) => `Vështirësia ${level} nga ${max}`,
+
+  /**
+   * Përparimi i gjithë kursit.
+   * @param {number} done - mësime të kryera
+   * @param {number} total - mësime gjithsej
+   * @returns {string} teksti
+   */
+  guideCourseProgress: (done, total) => `${done} nga ${total} mësime të kryera`,
+
+  /**
+   * Përparimi i një kapitulli, te karta e tij.
+   * @param {number} done - mësime të kryera në kapitull
+   * @param {number} total - mësime në kapitull
+   * @returns {string} teksti
+   */
+  guideChapterProgress: (done, total) => `${done} nga ${total} mësime`,
+
+  /**
+   * Titulli i një kapitulli me numrin e tij.
+   * @param {string} number - numri, p.sh. "2"
+   * @param {string} title - titulli
+   * @returns {string} p.sh. "Kapitulli 2: Rreshti i sipërm"
+   */
+  guideChapterTitle: (number, title) => `Kapitulli ${number}: ${title}`,
+
+  /**
+   * Titulli kur mbaron një kapitull.
+   * @param {string} number - numri i kapitullit
+   * @returns {string} teksti
+   */
+  guideChapterDone: (number) => `Kapitulli ${number} u krye`,
+
+  /**
+   * Numëruesi gjatë një mësimi. Pjesa shtohet vetëm kur mësimi ka më shumë se një pjesë.
+   * @param {string} chapter - numri i kapitullit
+   * @param {number} lesson - numri i mësimit në kapitull (nga 1)
+   * @param {number} total - mësime në kapitull
+   * @param {number} part - pjesa aktuale (nga 1)
+   * @param {number} parts - sa pjesë ka mësimi
+   * @returns {string} p.sh. "Kapitulli 1 · Mësimi 3 nga 8 · Pjesa 2 nga 3"
+   */
+  guideCount: (chapter, lesson, total, part, parts) => `Kapitulli ${chapter} \u00B7 Mësimi ${lesson} nga ${total}${parts > 1 ? ` \u00B7 Pjesa ${part} nga ${parts}` : ""}`,
+
+  /**
+   * Fjalia për një shkronjë të madhe: gishti i shkronjës dhe Shift-i i dorës tjetër.
+   * @param {string} keyName - shkronja, p.sh. "A"
+   * @param {string} finger - gishti i shkronjës
+   * @param {string} shift - cili Shift, p.sh. "Shift-in e djathtë me gishtin e vogël të djathtë"
+   * @returns {string} fjalia
+   */
+  guideFingerShift: (keyName, finger, shift) => `Tasti ${keyName}: ${finger}, duke mbajtur ${shift}.`,
 
   /**
    * Fjalia që tregon me cilin gisht shtypet tasti aktual.
