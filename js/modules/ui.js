@@ -59,6 +59,8 @@ export class TestUI {
     this.statAccuracy = byId("stat-accuracy"); // saktësia e drejtpërdrejtë
     this.statGhostWrap = byId("stat-ghost-wrap"); // kutia e statistikës "ndaj rekordit"
     this.statGhost = byId("stat-ghost"); // numri me shenjë: karaktere para ose mbrapa rekordit
+    this.capsWarning = byId("caps-warning"); // paralajmërimi "Caps Lock është aktiv"
+    this.capsLockOn = false; // gjendja e fundit e shfaqur, që të mos e rinjoftojmë pa nevojë
     this.ghostToggle = byId("ghost-toggle"); // çelësi "Garë me rekordin"
     this.ghostHint = byId("ghost-hint"); // shënimi poshtë çelësit të garës
     this.textBox = byId("text-box"); // kutia e tekstit
@@ -387,6 +389,23 @@ export class TestUI {
   setFocused(focused) {
     // Pa fokus: klasa is-blurred turbullon tekstin dhe shfaq mesazhin
     this.textBox.classList.toggle("is-blurred", !focused);
+  }
+
+  /**
+   * Shfaq ose fsheh paralajmërimin e Caps Lock. Ndryshon faqen vetëm kur gjendja ndryshon:
+   * po ta rishkruanim tekstin në çdo shtypje, lexuesi i ekranit do ta përsëriste pa fund.
+   * @param {boolean} on - true kur Caps Lock është i ndezur
+   * @returns {void}
+   */
+  setCapsLock(on) {
+    // Nëse gjendja s'ka ndryshuar, s'bëjmë asgjë
+    if (on === this.capsLockOn) {
+      return; // asnjë ndryshim
+    }
+    // Ruajmë gjendjen e re
+    this.capsLockOn = on;
+    // Me tekst: shfaqet dhe njoftohet. Bosh: CSS e bën të padukshëm (:empty)
+    this.capsWarning.textContent = on ? MESSAGES.capsLock : "";
   }
 
   /**

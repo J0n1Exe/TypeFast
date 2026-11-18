@@ -295,50 +295,64 @@
       </div>
 
       <!--
-        Kutia e tekstit. Klikimi këtu vendos fokusin te fusha e fshehur e shkrimit.
-        Brenda saj është teksti, kursori, fusha e fshehur dhe mesazhi i fokusit.
+        Korniza e kutisë së tekstit. Ekziston vetëm që paralajmërimi i Caps Lock
+        të pozicionohet sipër kutisë, pa e shtyrë tekstin poshtë kur shfaqet.
       -->
-      <div class="text-box" id="text-box">
+      <div class="text-box-frame">
         <!--
-          "Shiriti" që mban fjalët dhe kursorin. Kur kursori arrin rreshtin e 3-të,
-          ky shirit ngjitet lart me një rresht (translateY), që rreshti aktual të jetë në mes.
+          Paralajmërimi i Caps Lock. JavaScript vendos këtu tekstin "Caps Lock është aktiv"
+          ose e lë bosh. role="status": lexuesi i ekranit e njofton me qetësi sa herë ndryshon teksti.
+          Elementi mbetet gjithmonë në faqe (bosh kur Caps Lock është fikur), sepse një zonë
+          e njoftimeve që shfaqet dhe fshihet nuk lexohet gjithmonë nga lexuesit e ekranit.
         -->
-        <div class="text-track" id="text-track">
-          <!-- Këtu JavaScript vendos <span class="word"> dhe <span class="char"> për çdo shkronjë -->
-          <div class="text-words" id="text-words"></div>
+        <p class="caps-warning" id="caps-warning" role="status"></p>
+
+        <!--
+          Kutia e tekstit. Klikimi këtu vendos fokusin te fusha e fshehur e shkrimit.
+          Brenda saj është teksti, kursori, fusha e fshehur dhe mesazhi i fokusit.
+        -->
+        <div class="text-box" id="text-box">
           <!--
-            Kursori gri i garës: tregon ku do të ishte dikush që shkruan pa gabime me shpejtësinë e rekordit.
-            hidden: shfaqet vetëm kur gara është aktive. aria-hidden: vetëm vizual.
+            "Shiriti" që mban fjalët dhe kursorin. Kur kursori arrin rreshtin e 3-të,
+            ky shirit ngjitet lart me një rresht (translateY), që rreshti aktual të jetë në mes.
           -->
-          <span class="ghost-caret" id="ghost-caret" aria-hidden="true" hidden></span>
-          <!-- Kursori; aria-hidden sepse është vetëm vizual -->
-          <span class="caret caret--idle" id="caret" aria-hidden="true"></span>
+          <div class="text-track" id="text-track">
+            <!-- Këtu JavaScript vendos <span class="word"> dhe <span class="char"> për çdo shkronjë -->
+            <div class="text-words" id="text-words"></div>
+            <!--
+              Kursori gri i garës: tregon ku do të ishte dikush që shkruan pa gabime me shpejtësinë e rekordit.
+              hidden: shfaqet vetëm kur gara është aktive. aria-hidden: vetëm vizual.
+            -->
+            <span class="ghost-caret" id="ghost-caret" aria-hidden="true" hidden></span>
+            <!-- Kursori; aria-hidden sepse është vetëm vizual -->
+            <span class="caret caret--idle" id="caret" aria-hidden="true"></span>
+          </div>
+
+          <!--
+            Fusha e fshehur ku shkruan përdoruesi. Është e padukshme (opacity 0),
+            por mbulon gjithë kutinë, që prekja në tablet të hapë tastierën në ekran.
+            autocomplete="off": shfletuesi nuk sugjeron fjalë të shkruara më parë.
+            autocorrect="off": Safari nuk i korrigjon fjalët automatikisht.
+            autocapitalize="off": tastiera e tabletit nuk e bën shkronjën e parë të madhe.
+            spellcheck="false": pa vija të kuqe drejtshkrimi dhe pa korrigjim.
+            aria-label: emri i fushës për lexuesit e ekranit.
+            aria-describedby: lexon edhe udhëzimin e shkurtër poshtë kutisë.
+            rows="1": fusha ka vetëm një rresht; madhësia reale vendoset nga CSS.
+          -->
+          <textarea class="typing-input" id="typing-input" rows="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Shkruaj tekstin e testit këtu" aria-describedby="test-hint"></textarea>
+
+          <!--
+            Mesazhi që del kur fusha humbet fokusin. aria-hidden="true" sepse
+            lexuesi i ekranit e kupton fokusin vetë; ky mesazh është për syrin.
+          -->
+          <p class="focus-overlay" id="focus-overlay" aria-hidden="true">Kliko këtu ose shtyp çfarëdo tasti për të vazhduar</p>
+
+          <!--
+            Mesazhi i ngarkimit ose i gabimit (p.sh. kur data/texts.json nuk lexohet).
+            role="status": lexuesi i ekranit e njofton me qetësi kur ndryshon.
+          -->
+          <p class="text-box__status" id="text-status" role="status" hidden></p>
         </div>
-
-        <!--
-          Fusha e fshehur ku shkruan përdoruesi. Është e padukshme (opacity 0),
-          por mbulon gjithë kutinë, që prekja në tablet të hapë tastierën në ekran.
-          autocomplete="off": shfletuesi nuk sugjeron fjalë të shkruara më parë.
-          autocorrect="off": Safari nuk i korrigjon fjalët automatikisht.
-          autocapitalize="off": tastiera e tabletit nuk e bën shkronjën e parë të madhe.
-          spellcheck="false": pa vija të kuqe drejtshkrimi dhe pa korrigjim.
-          aria-label: emri i fushës për lexuesit e ekranit.
-          aria-describedby: lexon edhe udhëzimin e shkurtër poshtë kutisë.
-          rows="1": fusha ka vetëm një rresht; madhësia reale vendoset nga CSS.
-        -->
-        <textarea class="typing-input" id="typing-input" rows="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Shkruaj tekstin e testit këtu" aria-describedby="test-hint"></textarea>
-
-        <!--
-          Mesazhi që del kur fusha humbet fokusin. aria-hidden="true" sepse
-          lexuesi i ekranit e kupton fokusin vetë; ky mesazh është për syrin.
-        -->
-        <p class="focus-overlay" id="focus-overlay" aria-hidden="true">Kliko këtu ose shtyp çfarëdo tasti për të vazhduar</p>
-
-        <!--
-          Mesazhi i ngarkimit ose i gabimit (p.sh. kur data/texts.json nuk lexohet).
-          role="status": lexuesi i ekranit e njofton me qetësi kur ndryshon.
-        -->
-        <p class="text-box__status" id="text-status" role="status" hidden></p>
       </div>
 
       <!-- Udhëzimi i shkurtër. Pika e mesme (&middot;) ndan dy shkurtoret. -->

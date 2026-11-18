@@ -321,6 +321,7 @@ export const GUIDE_ADVANCE_MS = 700;
  */
 export const MESSAGES = Object.freeze({
   loading: "Duke ngarkuar tekstet...", // gjatë leximit të data/texts.json
+  capsLock: "Caps Lock është aktiv", // paralajmërimi mbi kutinë e tekstit
   textsError: "Tekstet e testit nuk u ngarkuan. Kontrollo që skedari data/texts.json ekziston dhe që faqja është hapur me Live Server, pastaj rifresko faqen.", // kur fetch dështon
   textsInvalid: "Skedari data/texts.json nuk ka strukturën e duhur.", // kur JSON nuk ka formën e pritur
   space: "Hapësira", // si shfaqet karakteri hapësirë te lista e gabimeve

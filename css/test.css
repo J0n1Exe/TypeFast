@@ -141,6 +141,48 @@
 /* ---------------- KUTIA E TEKSTIT ---------------- */
 
 /*
+  Korniza rreth kutisë së tekstit. Është "position: relative", që paralajmërimi
+  i Caps Lock të vendoset sipër kutisë pa zënë vend në faqe.
+*/
+.text-box-frame {
+  position: relative; /* paralajmërimi pozicionohet sipas kësaj kornize */
+  display: flex; /* lejon qendërzimin e kutisë */
+  justify-content: center; /* kutia e tekstit në mes, si më parë */
+  width: 100%; /* gjithë gjerësia; kutia brenda mban gjerësinë maksimale të vet */
+}
+
+/*
+  Paralajmërimi "Caps Lock është aktiv". Qëndron në hapësirën bosh mes statistikave
+  dhe kutisë (32px), pra teksti nuk lëviz kur ai shfaqet ose zhduket.
+  Nuk përdor të verdhën (ajo është vetëm për "ku je") as të kuqen (ajo është për gabimet).
+*/
+.caps-warning {
+  position: absolute; /* nuk zë vend në faqe */
+  top: 0; /* nis nga maja e kornizës */
+  left: 0; /* shtrihet nga e majta */
+  right: 0; /* deri në të djathtë, që të qendërzohet */
+  width: fit-content; /* sa teksti, jo gjithë gjerësia */
+  margin: 0 auto; /* qendërzim horizontal brenda left/right */
+  padding: 0 var(--space-1); /* 8px anash tekstit */
+  border: var(--border-width) solid var(--text); /* kornizë e hollë me ngjyrën e tekstit, që të bjerë në sy */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  background-color: var(--surface); /* sfond karte */
+  color: var(--text); /* tekst i qartë */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  font-weight: var(--fw-bold); /* i trashë, që të vihet re menjëherë */
+  transform: translateY(calc(-100% - var(--space-1))); /* ngjitet sipër kutisë, me 8px hapësirë */
+  pointer-events: none; /* klikimet kalojnë përmes tij */
+}
+
+/* Kur Caps Lock është fikur, elementi është bosh: pa kornizë dhe pa hapësirë, pra i padukshëm */
+.caps-warning:empty {
+  padding: 0; /* pa hapësirë */
+  border: 0; /* pa kornizë */
+}
+
+/*
   Kutia që tregon saktësisht 3 rreshta tekst.
   Lartësia = madhësia e shkronjës x lartësia e rreshtit x 3 rreshta.
   Gjithçka që del poshtë rreshtit të 3-të fshihet (overflow: hidden).
