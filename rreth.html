@@ -276,11 +276,17 @@
               <th scope="row">Çdo tast</th>
               <td>Kur teksti është i turbullt (pa fokus), e rikthen fokusin te testi.</td>
             </tr>
+            <tr>
+              <th scope="row"><kbd>Caps Lock</kbd></th>
+              <td>Kur është i ndezur, mbi kutinë e tekstit del "Caps Lock është aktiv", që të mos shkruash pa dashur me shkronja të mëdha. Mesazhi zhduket sapo fiket dhe lexohet edhe nga lexuesi i ekranit.</td>
+            </tr>
           </tbody>
         </table>
       </div>
       <!-- Shënim për shigjetat dhe ngjitjen -->
       <p>Shigjetat dhe ngjitja e tekstit (paste) janë të bllokuara gjatë testit, që rezultati të jetë i ndershëm.</p>
+      <!-- Si zbulohet Caps Lock -->
+      <p>Caps Lock zbulohet me funksionin e shfletuesit getModifierState("CapsLock"), që lexohet në çdo shtypje dhe lëshim tasti. Shfletuesi nuk e tregon gjendjen e Caps Lock pa shtypur një tast, prandaj paralajmërimi del me shtypjen e parë.</p>
     </section>
 
     <!-- ========== 9. TEKNOLOGJITË ========== -->

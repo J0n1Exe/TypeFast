@@ -175,8 +175,11 @@ export class TypingTest {
     input.addEventListener("input", (event) => this.handleInput(event));
     // "compositionend": mbaron një shkronjë e përbërë (p.sh. ¨ + e = ë) ose një fjalë në tastierat e Android
     input.addEventListener("compositionend", () => this.consumeInput());
-    // "keydown": vetëm për Backspace, Tab, Esc dhe tastet e bllokuara
+    // "keydown": vetëm për Backspace, Tab, Esc, tastet e bllokuara dhe kontrollin e Caps Lock
     input.addEventListener("keydown", (event) => this.handleKeydown(event));
+    // "keyup": kontrollojmë Caps Lock edhe kur lëshohet tasti, sepse disa shfletues
+    // e raportojnë gjendjen e re të Caps Lock vetëm pas lëshimit të tij
+    input.addEventListener("keyup", (event) => this.updateCapsLock(event));
     // "paste": ngjitja e tekstit bllokohet, që rezultati të jetë i ndershëm
     input.addEventListener("paste", (event) => event.preventDefault());
     // "drop": edhe tërheqja e tekstit me miun bllokohet
@@ -184,7 +187,12 @@ export class TypingTest {
     // "focus": teksti bëhet i qartë
     input.addEventListener("focus", () => this.ui.setFocused(true));
     // "blur": teksti turbullohet dhe shfaqet mesazhi
-    input.addEventListener("blur", () => this.ui.setFocused(false));
+    input.addEventListener("blur", () => {
+      // Teksti turbullohet
+      this.ui.setFocused(false);
+      // Pa fokus s'mund ta dimë më gjendjen e Caps Lock, prandaj e fshehim paralajmërimin
+      this.ui.setCapsLock(false);
+    });
 
     // Klikimi kudo në kuti vendos fokusin te fusha (rezervë, se fusha e mbulon kutinë)
     this.ui.textBox.addEventListener("click", () => this.focusIfActive());
@@ -563,6 +571,8 @@ export class TypingTest {
    * @returns {void}
    */
   handleKeydown(event) {
+    // Çdo shtypje tregon edhe gjendjen e Caps Lock; e kontrollojmë para çdo gjëje tjetër
+    this.updateCapsLock(event);
     // Gjatë një shkronje të përbërë, tastet i përkasin sistemit (p.sh. Backspace fshin shenjën ¨)
     if (event.isComposing) {
       return; // ndalojmë këtu, pjesa tjetër e funksionit nuk ekzekutohet
@@ -603,6 +613,21 @@ export class TypingTest {
       // Ndalojmë sjelljen e parazgjedhur
       event.preventDefault();
     }
+  }
+
+  /**
+   * Lexon gjendjen e Caps Lock nga një ngjarje tastiere dhe shfaq ose fsheh paralajmërimin.
+   * getModifierState("CapsLock") kthen true kur Caps Lock është i ndezur.
+   * @param {KeyboardEvent} event - ngjarja keydown ose keyup
+   * @returns {void}
+   */
+  updateCapsLock(event) {
+    // Disa tastiera virtuale dërgojnë ngjarje pa këtë funksion; atëherë s'mund të dimë asgjë
+    if (typeof event.getModifierState !== "function") {
+      return; // s'ka informacion për Caps Lock
+    }
+    // true kur Caps Lock është i ndezur
+    this.ui.setCapsLock(event.getModifierState("CapsLock"));
   }
 
   /**

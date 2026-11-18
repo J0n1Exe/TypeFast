@@ -168,6 +168,7 @@ Llogaritet nga shpejtësitë e çastit dhe kufizohet mes 0 dhe 100 (`Stats.calcu
 | Esc | Anulon testin dhe kthen të njëjtin tekst në fillim |
 | Backspace | Një karakter mbrapa (gabimi mbetet i numëruar) |
 | Shift + Tab | Del nga fusha e testit për navigim me tastierë |
+| Caps Lock | Kur është i ndezur, mbi tekst del "Caps Lock është aktiv" (`getModifierState("CapsLock")`) |
 | Çdo tast | Kur teksti është i turbullt, rikthen fokusin te testi |
 
 ## Struktura e `data/texts.json`
