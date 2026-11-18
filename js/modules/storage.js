@@ -6,7 +6,8 @@
  * Çdo lexim dhe shkrim është brenda try/catch: nëse kujtesa është plot,
  * e bllokuar (p.sh. modaliteti privat në disa shfletues) ose të dhënat janë
  * të prishura, faqja vazhdon të punojë pa u rrëzuar.
- * Ruan historikun, rekordet, statistikat e tasteve, cilësimet dhe temën.
+ * Ruan historikun, rekordet, statistikat e tasteve, cilësimet, temën
+ * dhe përparimin e kursit "Mëso bazat".
  *
  * Çfarë eksporton: klasën StorageService.
  * Kush e përdor: app.js, theme.js dhe faqet te js/pages/.
@@ -380,6 +381,29 @@ export class StorageService {
   saveLayout(layout) {
     // Ruajmë si JSON
     return this.writeJSON(STORAGE_KEYS.LAYOUT, layout);
+  }
+
+  // ---------------- KURSI "MËSO BAZAT" ----------------
+
+  /**
+   * Lexon cilat mësime të kursit janë kryer.
+   * @returns {string[]} id-të e mësimeve të kryera, p.sh. ["1-1", "1-2"]
+   */
+  getGuideProgress() {
+    // Lexojmë vargun; rezerva është varg bosh
+    const saved = this.readJSON(STORAGE_KEYS.GUIDE, []);
+    // Pranojmë vetëm një varg me tekste; çdo gjë tjetër (të dhëna të prishura) injorohet
+    return Array.isArray(saved) ? saved.filter((id) => typeof id === "string") : [];
+  }
+
+  /**
+   * Ruan listën e mësimeve të kryera.
+   * @param {string[]} ids - id-të e mësimeve të kryera
+   * @returns {boolean} true nëse u ruajt
+   */
+  saveGuideProgress(ids) {
+    // Ruajmë si JSON (writeJSON e ka try/catch brenda)
+    return this.writeJSON(STORAGE_KEYS.GUIDE, ids);
   }
 
   // ---------------- NDIHMËS ----------------
