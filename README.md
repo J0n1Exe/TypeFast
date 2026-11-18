@@ -24,6 +24,7 @@ Projekti punon edhe pa internet: shkronjat janë të sistemit dhe Chart.js ësht
 ```
 typefast/
   index.html              testi, praktika e tasteve të dobëta dhe paneli i rezultatit
+  mesimet.html            kursi për fillestarët: rruga e mësimeve me kapituj
   historiku.html          rekordet, tastet e dobëta, grafiku i përparimit dhe tabela e testeve
   rreth.html              si funksionon: formulat, shembulli, shkurtoret, teknologjitë
   README.md               ky skedar
@@ -34,6 +35,7 @@ typefast/
     components.css        butonat, zgjedhjet (chips), çelësi, kartat, tabelat, dialogu, gjendja bosh
     test.css              shiriti i cilësimeve, statistikat, kutia e tekstit, kursori, rezultati
     pages.css             stilet e historikut dhe të faqes "Si funksionon"
+    lessons.css           rruga e mësimeve dhe dritarja e mësimit
     animations.css        keyframes, shfaqja gjatë lëvizjes (.reveal), prefers-reduced-motion
   js/
     config.js             konstantet: kohët, nivelet, gjuhët, çelësat e ruajtjes, kufijtë, mesazhet
@@ -51,9 +53,11 @@ typefast/
       speed-graph.js      klasa SpeedGraph: grafiku i shpejtësisë, i vizatuar me Canvas 2D
       summary.js          klasa HistorySummary: koha totale, ditët rresht, përparimi
       heatmap.js          klasa KeyboardHeatmap: harta e tastierës me ngjyra sipas gabimeve
-      guide.js            klasa TypingGuide: udhëzuesi "Mëso bazat" me katrorë të animuar
+      course.js           klasa Course: kapitujt, kyçja, përparimi dhe gishti për çdo tast
+      guide.js            klasa TypingGuide: dritarja e mësimit me katrorë të animuar dhe prova e kapitullit
     pages/
       index-page.js       pika e hyrjes për index.html
+      lessons-page.js     pika e hyrjes për mesimet.html
       history-page.js     pika e hyrjes për historiku.html
       about-page.js       pika e hyrjes për rreth.html
   data/
@@ -123,16 +127,27 @@ Butoni **Praktiko tastet e dobëta** (te testi, te rezultati dhe te historiku) n
 
 Hapësira nuk praktikohet veçmas, sepse del në çdo tekst gjithsesi. Testet e praktikës ruhen në historik me nivelin "Praktikë", por nuk hyjnë te rekordet. Butoni është i çaktivizuar derisa të ketë të paktën një tast të dobët.
 
-## Udhëzuesi "Mëso bazat"
+## Mësimet (kursi për fillestarët)
 
-Butoni **I ri këtu? Mëso bazat** (poshtë testit) hap një dritare `<dialog>` me 8 hapa për fillestarët (`TypingGuide`, `js/modules/guide.js`). Çdo hap shfaq një rresht katrorësh me shkronja; përdoruesi shtyp tastin e katrorit aktual:
+Faqja `mesimet.html` është një kurs i shkrimit me dhjetë gishta, i ndërtuar si **rrugë që ndiqet me radhë**: 5 kapituj dhe 28 mësime (27 në tastierën amerikane), nga rreshti bazë deri te fjalitë e plota. Butoni **I ri këtu? Mëso bazat** te testi dhe lidhja **Mësimet** në menu të çojnë aty.
 
-1. F dhe J (tastet me vijë të ngritur), pastaj gishtat e mesit, të unazës dhe të vegjël
-2. rreshti bazë i plotë me hapësirën
-3. E dhe I (zgjatja lart dhe kthimi)
-4. fjalët e para: "ai ka disa ide"
+1. Rreshti bazë (8 mësime): F J, D K, S L, A Ë, G H, hapësira, fjalët e para
+2. Rreshti i sipërm (7): E I, R U, T Z, W O, Q P, Ç, fjalë me dy rreshta
+3. Rreshti i poshtëm (6): V M, B N, C dhe presja, X dhe pika, Y, fjalë me tre rreshta
+4. Shkronjat e mëdha, shenjat dhe numrat (4): Shift, presja dhe pika, numrat, fjali me numra
+5. Shkrimi i rrjedhshëm (3): fjali gjithnjë e më të gjata
 
-Për çdo tast tregohet cili gisht e shtyp dhe një tastierë e vogël e ndriçon. Animacionet janë në CSS (`animations.css`): katrorët hyjnë njëri pas tjetrit, tasti aktual "merr frymë", shtypja e saktë kërcen dhe bëhet e gjelbër, tasti i gabuar e dridh rreshtin. JavaScript vetëm shton dhe heq klasa. Me "prefers-reduced-motion" animacionet fiken. Hapat dhe gishtat janë te `config.js` (`GUIDE_STEPS`, `GUIDE_FINGERS`); për tastierën amerikane "ë" zëvendësohet me ";". Adresa `index.html#bazat` e hap udhëzuesin direkt.
+**Rruga:** mësimet janë katrorë që gjarpërojnë, të lidhur me një vijë SVG (kurba Bézier nga qendra e një katrori te tjetri, të vizatuara nga `lessons-page.js`). Të kryerat janë jeshile, mësimi i radhës ka ngjyrën e theksit dhe "merr frymë", të tjerat janë të kyçura me dry. Vështirësia e çdo kapitulli tregohet me 5 shtylla.
+
+**Kyçja** (`Course.isUnlocked()`): një mësim hapet vetëm kur është kryer mësimi para tij. **Prova e kapitullit** lejon ta kapërcesh kapitullin aktual: shkruan tekstin e mësimit të tij të fundit dhe, me të paktën 90% saktësi, i gjithë kapitulli shënohet i kryer.
+
+```
+Saktësia e provës = karaktere të sakta / (karaktere të sakta + gabime) x 100
+```
+
+**Mësimi** zhvillohet në një `<dialog>` (`TypingGuide`, `js/modules/guide.js`). Teksti ndahet në pjesë me nga 9 karaktere; çdo karakter është një katror. Tasti i saktë kërcen dhe bëhet jeshil, i gabuari e dridh rreshtin (animacione në CSS). Shkronjat e mëdha krahasohen saktë, dhe tastiera e vogël ndriçon edhe Shift-in e dorës tjetër. Gishti llogaritet nga **kolona** e tastit në tastierë (`Course.fingerFor()`), jo nga një listë shkronjash.
+
+Përmbajtja e kursit është te `config.js` (`GUIDE_CHAPTERS`). Për tastierën amerikane çdo mësim kthehet tast për tast me `GUIDE_US_MAP` (Z dhe Y, ë dhe ;), ose përdor fjalë anglisht kur shqipja s'ka kuptim aty. Përparimi ruhet te `typefast:guide`.
 
 ## Gara me rekordin
 
@@ -202,7 +217,8 @@ Gjithçka ruhet në `localStorage` të shfletuesit, me çelësa që nisin me `ty
 | `typefast:records` | rekordi më i mirë për çdo kombinim `gjuha-niveli-koha` |
 | `typefast:keys` | për çdo tast: sa herë doli (`attempts`) dhe sa herë u gabua (`errors`), nga të gjitha testet |
 | `typefast:settings` | cilësimet e fundit të testit (koha, niveli, gjuha, ë/ç, gara me rekordin) |
-| `typefast:layout` | tastiera e zgjedhur për hartën (`sq` ose `us`) |
+| `typefast:layout` | tastiera e zgjedhur për hartën dhe mësimet (`sq` ose `us`) |
+| `typefast:guide` | id-të e mësimeve të kryera të kursit |
 | `typefast:theme` | tema e zgjedhur |
 
 Nëse `localStorage` është plot ose i bllokuar, testi punon njësoj dhe faqja thotë qartë që rezultati nuk u ruajt. Asnjë e dhënë nuk dërgohet askund.

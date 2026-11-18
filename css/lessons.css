@@ -1,0 +1,595 @@
+/*
+  ==========================================================================
+  lessons.css
+  --------------------------------------------------------------------------
+  Stilet vetëm për mesimet.html: përmbledhja e kursit, rruga e mësimeve
+  (kapitujt, vështirësia, katrorët e mësimeve dhe vija që i lidh) dhe
+  dritarja ku zhvillohet një mësim (katrorët me shkronja, tastiera e vogël).
+  ==========================================================================
+*/
+
+/* ---------------- PËRMBLEDHJA E KURSIT ---------------- */
+
+/* Kutia sipër rrugës: përparimi, butonat dhe zgjedhja e tastierës */
+.course-summary {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* pjesët në kolonë */
+  gap: var(--space-3); /* 24px mes tyre */
+  padding: var(--space-4); /* 32px brenda */
+  margin-bottom: var(--space-8); /* 64px para kapitullit të parë */
+  background-color: var(--surface); /* sfond karte */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-md); /* qoshe 8px */
+}
+
+/* Rreshti i përparimit: teksti dhe vija */
+.course-summary__progress {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* teksti mbi vijën */
+  gap: var(--space-1); /* 8px */
+}
+
+/* "12 nga 28 mësime të kryera" */
+.course-summary__count {
+  font-family: var(--font-mono); /* shifrat me gjerësi të njëjtë */
+  font-variant-numeric: tabular-nums; /* numrat nuk lëvizin */
+  font-weight: var(--fw-bold); /* i trashë */
+}
+
+/* Vija e përparimit të gjithë kursit: sfondi */
+.course-bar {
+  height: var(--space-1); /* 8px e lartë */
+  overflow: hidden; /* vija e brendshme nuk del jashtë qosheve */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  background-color: var(--surface-2); /* sfond i zbehtë */
+}
+
+/*
+  Pjesa e mbushur e vijës. JavaScript jep vetëm numrin --progress (nga 0 në 1).
+  Ngjyra e tekstit dhe jo e verdha: e verdha është vetëm për "ku je".
+*/
+.course-bar__fill {
+  --progress: 0; /* vlera fillestare */
+  display: block; /* që të ketë gjerësi dhe lartësi */
+  height: 100%; /* gjithë lartësia */
+  background-color: var(--text); /* ngjyra e tekstit */
+  transform: scaleX(var(--progress)); /* gjatësia sipas përparimit */
+  transform-origin: left; /* zgjatet nga e majta */
+  transition: transform var(--duration-base) var(--easing); /* zgjatje e butë */
+}
+
+/* Butonat e përmbledhjes */
+.course-summary__actions {
+  display: flex; /* në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri */
+  align-items: center; /* në mes vertikalisht */
+  gap: var(--space-2); /* 16px */
+}
+
+/* Zgjedhja e tastierës: etiketa dhe dy butonat */
+.course-layout {
+  display: flex; /* në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri */
+  align-items: center; /* në mes vertikalisht */
+  gap: var(--space-1) var(--space-2); /* 8px mes rreshtave, 16px mes elementeve */
+}
+
+/* Dy butonat e tastierës */
+.course-layout__chips {
+  display: flex; /* në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri */
+  gap: var(--space-1); /* 8px mes butonave */
+}
+
+/* Shënimi kur kursi është kryer i gjithi */
+.course-summary__note {
+  color: var(--text-muted); /* i zbehur */
+}
+
+/* ---------------- RRUGA: KAPITUJT ---------------- */
+
+/* Mbështjellësi i të gjithë kapitujve */
+.path {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* kapitujt njëri poshtë tjetrit */
+  gap: var(--space-12); /* 96px mes kapitujve */
+}
+
+/* Një kapitull i rrugës */
+.path-chapter {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* pjesët në kolonë */
+  gap: var(--space-2); /* 16px */
+}
+
+/* Koka e kapitullit: titulli majtas, vështirësia djathtas */
+.path-chapter__head {
+  display: flex; /* në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri */
+  align-items: flex-end; /* rreshtohen poshtë */
+  justify-content: space-between; /* njëri në secilin skaj */
+  gap: var(--space-1) var(--space-3); /* 8px mes rreshtave, 24px mes elementeve */
+}
+
+/* "KAPITULLI 1" mbi titull */
+.path-chapter__kicker {
+  color: var(--text-muted); /* i zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  text-transform: uppercase; /* shkronja të mëdha */
+}
+
+/* Titulli i kapitullit */
+.path-chapter__title {
+  font-size: var(--fs-title); /* titull */
+}
+
+/* Hyrja dhe përparimi i kapitullit */
+.path-chapter__intro,
+.path-chapter__progress {
+  max-width: var(--prose-max); /* gjerësi e lexueshme */
+  color: var(--text-muted); /* i zbehur */
+}
+
+/* Butoni "Kapërce me provë": nuk zgjerohet */
+.path-chapter__skip {
+  align-self: flex-start; /* majtas, me gjerësinë e tekstit */
+}
+
+/* ---------------- VËSHTIRËSIA ---------------- */
+
+/* Vështirësia: etiketa dhe pesë shtyllat */
+.difficulty {
+  display: flex; /* në rresht */
+  align-items: center; /* në mes vertikalisht */
+  gap: var(--space-1); /* 8px mes etiketës dhe shtyllave */
+}
+
+/* Pesë shtylla që rriten: sa më shumë të mbushura, aq më i vështirë kapitulli */
+.difficulty__bars {
+  display: flex; /* në rresht */
+  align-items: flex-end; /* shtyllat nisin nga poshtë, si shkallë */
+  gap: var(--space-1); /* 8px mes tyre */
+}
+
+/* Etiketa "VËSHTIRËSIA" para shtyllave */
+.difficulty__label {
+  color: var(--text-muted); /* e zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  text-transform: uppercase; /* shkronja të mëdha */
+}
+
+/*
+  Një shtyllë. JavaScript i jep numrin --bar (1 deri 5); lartësia rritet me të:
+  shtylla 1 është 8px, shtylla 5 është 24px, si një shkallë që ngjitet.
+*/
+.difficulty__bar {
+  --bar: 1; /* vlera fillestare */
+  width: var(--space-1); /* 8px e gjerë */
+  height: calc(var(--space-1) + (var(--bar) - 1) * var(--space-1) / 2); /* 8, 12, 16, 20, 24px */
+  border: var(--border-width) solid var(--text-muted); /* kornizë e hollë; pa qoshe të rrumbullakëta, që shtylla 8px të mos duket si pikë */
+}
+
+/* Shtyllat e mbushura deri te vështirësia e kapitullit */
+.difficulty__bar--filled {
+  background-color: var(--text); /* e mbushur me ngjyrën e tekstit */
+  border-color: var(--text); /* korniza e njëjtë */
+}
+
+/* ---------------- RRUGA: MËSIMET ---------------- */
+
+/*
+  Lista e mësimeve të një kapitulli. Është "position: relative", që vija SVG
+  që i lidh të vendoset pas tyre, në të njëjtat koordinata.
+*/
+.path-steps {
+  position: relative; /* vija SVG pozicionohet sipas saj */
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* mësimet njëri poshtë tjetrit */
+  align-items: center; /* në qendër */
+  gap: var(--space-4); /* 32px mes mësimeve */
+  padding: var(--space-3) 0; /* 24px lart dhe poshtë */
+  list-style: none; /* pa numra liste */
+}
+
+/*
+  Një mësim në rrugë. JavaScript i jep --path-offset (nga -2 në 2); mësimi zhvendoset
+  majtas ose djathtas me aq x 64px, që rruga të gjarpërojë.
+*/
+.path-step {
+  --path-offset: 0; /* vlera fillestare: në mes */
+  position: relative; /* mbi vijën SVG */
+  z-index: var(--z-base); /* mbi vijën */
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* katrori mbi titullin */
+  align-items: center; /* në qendër */
+  gap: var(--space-1); /* 8px */
+  transform: translateX(calc(var(--path-offset) * var(--space-8))); /* zhvendosja e gjarpërimit */
+}
+
+/* Katrori i një mësimi: si një tast i madh */
+.path-node {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* numri mbi ikonën */
+  align-items: center; /* në qendër horizontalisht */
+  justify-content: center; /* në qendër vertikalisht */
+  gap: var(--space-1); /* 8px mes numrit dhe ikonës */
+  width: var(--space-8); /* 64px */
+  height: var(--space-8); /* 64px, katror */
+  padding: 0; /* pa hapësirë shtesë */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-sm); /* qoshe 4px, si tastet */
+  background-color: var(--surface); /* sfond karte, që të mbulojë vijën pas tij */
+  color: var(--text); /* tekst i qartë */
+  font-family: var(--font-mono); /* numri me gjerësi të njëjtë */
+  font-size: var(--fs-body); /* madhësia normale */
+  font-weight: var(--fw-bold); /* i trashë */
+  cursor: pointer; /* dora e miut */
+  transition: background-color var(--duration-fast) var(--easing), border-color var(--duration-fast) var(--easing); /* hover i butë */
+}
+
+/* Katrori në hover (vetëm kur s'është i kyçur) */
+.path-node:not(:disabled):hover {
+  background-color: var(--surface-2); /* sfond pak më i çelët */
+}
+
+/* Ikona brenda katrorit (shenja e kryer ose dryni) */
+.path-node__icon {
+  display: block; /* heq hapësirën poshtë elementeve inline */
+  flex-shrink: 0; /* nuk ngushtohet */
+}
+
+/* Mësim i kryer: kornizë dhe ikonë jeshile (ngjyra e statusit "saktë") */
+.path-node--done {
+  border-color: var(--correct); /* kornizë jeshile */
+}
+
+/* Ikona e mësimit të kryer */
+.path-node--done .path-node__icon {
+  color: var(--correct); /* shenja jeshile */
+}
+
+/* Mësimi i radhës: korniza me ngjyrën e theksit, sepse ky është "ku je" */
+.path-node--current {
+  border-color: var(--accent); /* e verdha */
+}
+
+/* Mësim i kyçur: vijë e ndërprerë, tekst i zbehur, s'klikohet */
+.path-node--locked {
+  border-style: dashed; /* "ende jo" */
+  color: var(--text-muted); /* i zbehur */
+  cursor: not-allowed; /* miu tregon që s'lejohet */
+}
+
+/* Titulli poshtë katrorit, p.sh. "D dhe K" */
+.path-step__title {
+  max-width: calc(var(--space-12) + var(--space-4)); /* 128px, që titujt e gjatë të kalojnë në dy rreshta */
+  color: var(--text-muted); /* i zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  text-align: center; /* në qendër */
+  padding: 0 var(--space-1); /* 8px anash, që sfondi të mbulojë vijën rreth tekstit */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  background-color: var(--bg); /* ngjyra e faqes: mbulon vijën e rrugës që kalon pas titullit */
+}
+
+/* Titulli i mësimit të radhës: i qartë */
+.path-step--current .path-step__title {
+  color: var(--text); /* tekst i qartë */
+  font-weight: var(--fw-bold); /* i trashë */
+}
+
+/* ---------------- RRUGA: VIJA QË LIDH MËSIMET ---------------- */
+
+/* Vizatimi SVG pas mësimeve; JavaScript e mbush me vija */
+.path-line {
+  position: absolute; /* nuk zë vend, mbulon listën */
+  top: 0; /* nga maja e listës */
+  left: 0; /* nga e majta e listës */
+  width: 100%; /* gjithë gjerësia */
+  height: 100%; /* gjithë lartësia */
+  overflow: visible; /* vijat në skaj nuk priten */
+  pointer-events: none; /* klikimet kalojnë te mësimet */
+}
+
+/* Një copë vije mes dy mësimeve, ende e paarritur: e ndërprerë dhe e zbehtë */
+.path-line__segment {
+  fill: none; /* vetëm vija, pa mbushje */
+  stroke: var(--border); /* ngjyra e kornizave */
+  stroke-width: var(--focus-width); /* 2px */
+  stroke-dasharray: var(--space-1) var(--space-1); /* 8px vijë, 8px bosh */
+  stroke-linecap: round; /* skaje të rrumbullakëta të vijës */
+}
+
+/* Copa e arritur (mësimi pas saj është i kryer ose është i radhës): e plotë */
+.path-line__segment--reached {
+  stroke: var(--text-muted); /* më e dukshme */
+  stroke-dasharray: none; /* pa ndërprerje */
+}
+
+/* ---------------- DRITARJA E MËSIMIT ---------------- */
+
+/* Dritarja e mësimit: më e gjerë se dritarja e zakonshme e konfirmimit */
+.guide {
+  max-width: var(--guide-max); /* deri në 720px */
+}
+
+/*
+  Rregullimi i brendshëm vlen VETËM kur dritarja është e hapur ([open]).
+  Po ta vendosnim display: flex pa [open], dritarja do të shfaqej edhe e mbyllur.
+*/
+.guide[open] {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* pjesët njëra poshtë tjetrës */
+  gap: var(--space-3); /* 24px mes pjesëve */
+}
+
+/* Rreshti i sipërm: numëruesi majtas, butoni i mbylljes djathtas */
+.guide__top {
+  display: flex; /* në rresht */
+  align-items: center; /* në mes vertikalisht */
+  justify-content: space-between; /* njëri në secilin skaj */
+  gap: var(--space-2); /* 16px mes tyre */
+}
+
+/* Numëruesi, p.sh. "KAPITULLI 1 · MËSIMI 3 NGA 8" */
+.guide__count {
+  color: var(--text-muted); /* i zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  text-transform: uppercase; /* shkronja të mëdha */
+}
+
+/* Shiriti i përparimit: sfondi i vijës */
+.guide__bar {
+  height: var(--space-1); /* 8px i lartë */
+  overflow: hidden; /* vija e brendshme nuk del jashtë qosheve */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  background-color: var(--surface-2); /* sfond i zbehtë */
+}
+
+/*
+  Vija e brendshme e përparimit. JavaScript jep vetëm numrin --progress (nga 0 në 1);
+  CSS e zgjat vijën me scaleX. Ngjyra e theksit, sepse tregon "ku je".
+*/
+.guide__bar-fill {
+  --progress: 0; /* vlera fillestare: asnjë hap i mbaruar */
+  display: block; /* që të ketë gjerësi dhe lartësi */
+  height: 100%; /* gjithë lartësia e shiritit */
+  background-color: var(--accent); /* ngjyra e theksit */
+  transform: scaleX(var(--progress)); /* gjatësia sipas përparimit */
+  transform-origin: left; /* zgjatet nga e majta */
+  transition: transform var(--duration-base) var(--easing); /* zgjatje e butë */
+}
+
+/* Shpjegimi i mësimit */
+.guide__text {
+  color: var(--text-muted); /* i zbehur */
+}
+
+/*
+  Skena ku shfaqen katrorët. Lartësia minimale është sa dy rreshta katrorësh,
+  që dritarja të mos kërcejë kur një hap ka më shumë taste se tjetri.
+*/
+.guide__stage {
+  position: relative; /* fusha e fshehur pozicionohet sipas saj */
+  display: flex; /* lejon qendërzim */
+  align-items: center; /* katrorët në mes vertikalisht */
+  justify-content: center; /* katrorët në mes horizontalisht */
+  min-height: calc(var(--space-8) * 2 + var(--space-1)); /* dy rreshta 64px plus 8px mes tyre */
+}
+
+/* Rreshti i katrorëve; kalon në rresht të dytë kur hapi ka shumë taste */
+.guide__keys {
+  display: flex; /* katrorët në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri */
+  justify-content: center; /* në qendër */
+  gap: var(--space-1); /* 8px mes katrorëve */
+  transition: opacity var(--duration-fast) var(--easing); /* zbehje e butë kur humbet fokusi */
+}
+
+/*
+  Kur fusha e fshehur s'ka fokus, shtypjet nuk kapen. Katrorët zbehen
+  për ta treguar këtë; klikimi mbi skenë e rikthen fokusin.
+*/
+.guide__stage:not(:focus-within) .guide__keys {
+  opacity: 0.5; /* gjysmë të dukshëm */
+}
+
+/* Një katror tasti: ende i pashtypur */
+.guide-key {
+  display: flex; /* lejon qendërzimin e shkronjës */
+  align-items: center; /* shkronja në mes vertikalisht */
+  justify-content: center; /* shkronja në mes horizontalisht */
+  width: var(--space-8); /* 64px */
+  height: var(--space-8); /* 64px, katror */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  background-color: var(--bg); /* sfond më i errët se dritarja, që katrori të dallohet */
+  color: var(--text-muted); /* shkronja e zbehur derisa t'i vijë radha */
+  font-family: var(--font-mono); /* shkronjë me gjerësi të njëjtë */
+  font-size: var(--fs-title); /* shkronjë e madhe */
+  line-height: var(--lh-title); /* rresht i ngjeshur */
+  font-weight: var(--fw-bold); /* e trashë */
+}
+
+/* Katrori i hapësirës: më i gjerë dhe me fjalë në vend të shkronjës */
+.guide-key--space {
+  width: var(--space-12); /* 96px */
+  font-family: var(--font-ui); /* shkronjat e ndërfaqes */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  text-transform: none; /* fjala "Hapësira" shkruhet normalisht, që të nxërë në katror */
+}
+
+/* Katrori që duhet shtypur tani: korniza me ngjyrën e theksit ("ku je") */
+.guide-key--current {
+  border-color: var(--accent); /* theksi */
+  color: var(--text); /* shkronja e qartë */
+}
+
+/* Katrori i shtypur saktë: i gjelbër (ngjyra e statusit "saktë") */
+.guide-key--done {
+  border-color: var(--correct); /* kornizë e gjelbër */
+  color: var(--correct); /* shkronjë e gjelbër */
+}
+
+/* Katrori kur shtypet tasti i gabuar: i kuq për një çast (ngjyra e statusit "gabim") */
+.guide-key--wrong {
+  border-color: var(--wrong); /* kornizë e kuqe */
+  color: var(--wrong); /* shkronjë e kuqe */
+}
+
+/* Fusha e fshehur e udhëzuesit: mbulon skenën dhe kap shtypjet, si te testi */
+.guide__input {
+  position: absolute; /* mbi gjithë skenën */
+  inset: 0; /* nga të katër anët deri në skaj */
+  width: 100%; /* gjithë gjerësia */
+  height: 100%; /* gjithë lartësia */
+  margin: 0; /* pa hapësirë të jashtme */
+  padding: 0; /* pa hapësirë të brendshme */
+  border: 0; /* pa kornizë */
+  opacity: 0; /* e padukshme */
+  resize: none; /* pa dorezën e zmadhimit */
+  overflow: hidden; /* pa shirit lëvizës */
+  background-color: transparent; /* pa sfond */
+  color: transparent; /* teksti i saj nuk shihet */
+  caret-color: transparent; /* kursori i saj nuk shihet */
+  font-size: var(--fs-body); /* 16px: iPad nuk e zmadhon faqen kur fokusohet */
+  cursor: pointer; /* miu tregon që skena klikohet */
+  z-index: var(--z-input); /* sipër katrorëve, që të marrë klikimet */
+}
+
+/* Pjesa e mësimit: skena, ndihmat dhe tastiera e vogël, njëra poshtë tjetrës */
+.guide__lesson {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* pjesët në kolonë */
+  gap: var(--space-3); /* 24px mes tyre */
+}
+
+/* Ndihmat poshtë katrorëve: paralajmërimi i Caps Lock dhe fjalia e gishtit */
+.guide__hints {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* njëra poshtë tjetrës */
+  align-items: center; /* në qendër */
+  gap: var(--space-1); /* 8px mes tyre */
+}
+
+/* Paralajmërimi "Caps Lock është aktiv" brenda mësimit */
+.guide__caps {
+  padding: 0 var(--space-1); /* 8px anash tekstit */
+  border: var(--border-width) solid var(--text); /* kornizë e hollë me ngjyrën e tekstit */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  font-weight: var(--fw-bold); /* i trashë, që të vihet re */
+}
+
+/* Kur Caps Lock është fikur, elementi është bosh: pa kornizë dhe pa hapësirë, pra i padukshëm */
+.guide__caps:empty {
+  padding: 0; /* pa hapësirë */
+  border: 0; /* pa kornizë */
+}
+
+/* Fjalia "Tasti F: gishti tregues i majtë." */
+.guide__finger {
+  text-align: center; /* në qendër */
+  font-weight: var(--fw-medium); /* pak e trashë */
+}
+
+/* Tastiera e vogël: katër rreshtat e tastierës, Shift-et dhe hapësira */
+.mini-keyboard {
+  display: flex; /* rregullim fleksibël */
+  flex-direction: column; /* rreshtat njëri poshtë tjetrit */
+  align-items: center; /* në qendër */
+  gap: var(--space-1); /* 8px mes rreshtave */
+}
+
+/* Një rresht i tastierës së vogël */
+.mini-keyboard__row {
+  display: flex; /* tastet në rresht */
+  gap: var(--space-1); /* 8px mes tasteve */
+}
+
+/* Një tast i tastierës së vogël */
+.mini-key {
+  display: flex; /* lejon qendërzim */
+  align-items: center; /* në mes vertikalisht */
+  justify-content: center; /* në mes horizontalisht */
+  width: var(--space-4); /* 32px */
+  height: var(--space-4); /* 32px, katror */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  color: var(--text-muted); /* shkronja e zbehur */
+  font-family: var(--font-mono); /* shkronjë me gjerësi të njëjtë */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  text-transform: uppercase; /* si në tastierë */
+}
+
+/* Tasti i hapësirës te tastiera e vogël: gjashtë herë më i gjerë */
+.mini-key--wide {
+  width: calc(var(--space-4) * 6); /* 192px */
+}
+
+/* Tasti Shift te tastiera e vogël: dy herë më i gjerë, me fjalën të shkruar normalisht */
+.mini-key--shift {
+  width: calc(var(--space-4) * 2); /* 64px */
+  text-transform: none; /* "Shift", jo "SHIFT" */
+}
+
+/* F dhe J: vija e trashë poshtë përfaqëson vijën e ngritur që ndien gishti */
+.mini-key--bump {
+  border-bottom: var(--focus-width) solid var(--text-muted); /* vijë 2px në fund të tastit */
+}
+
+/* Tasti që duhet shtypur tani: theksi tregon ku ndodhet në tastierë */
+.mini-key--target {
+  border-color: var(--accent); /* korniza me ngjyrën e theksit */
+  background-color: var(--surface-2); /* sfond pak më i çelët */
+  color: var(--text); /* shkronja e qartë */
+}
+
+/* ---------------- PIKAT E NDËRPRERJES ---------------- */
+
+/* 768px: tableta në këmbë */
+@media (max-width: 768px) {
+  /* Përmbledhja me më pak hapësirë brenda */
+  .course-summary {
+    padding: var(--space-3); /* 24px */
+    margin-bottom: var(--space-6); /* 48px */
+  }
+
+  /* Kapitujt më afër njëri-tjetrit */
+  .path {
+    gap: var(--space-8); /* 64px */
+  }
+
+  /* Gjarpërimi më i ngushtë: 40px për hap në vend të 64px */
+  .path-step {
+    transform: translateX(calc(var(--path-offset) * var(--space-5))); /* zhvendosje më e vogël */
+  }
+
+  /* Katrorët e udhëzuesit më të vegjël, që të nxënë në tablet */
+  .guide-key {
+    width: var(--space-6); /* 48px */
+    height: var(--space-6); /* 48px */
+  }
+
+  /* Katrori i hapësirës mbetet i gjerë, që fjala "Hapësira" të nxërë */
+  .guide-key--space {
+    width: var(--space-12); /* 96px */
+  }
+
+  /* Skena: dy rreshta katrorësh 48px */
+  .guide__stage {
+    min-height: calc(var(--space-6) * 2 + var(--space-1)); /* 104px */
+  }
+}

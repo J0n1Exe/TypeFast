@@ -43,6 +43,8 @@
       <nav class="site-nav" aria-label="Navigimi kryesor">
         <ul class="site-nav__list">
           <li><a class="site-nav__link" href="index.html">Testi</a></li>
+          <!-- Faqja e kursit për fillestarët -->
+          <li><a class="site-nav__link" href="mesimet.html">Mësimet</a></li>
           <li><a class="site-nav__link" href="historiku.html">Historiku</a></li>
           <!-- aria-current="page": kjo është faqja aktuale -->
           <li><a class="site-nav__link" href="rreth.html" aria-current="page">Si funksionon</a></li>
@@ -96,10 +98,10 @@
       <p>Shumica e testeve të tilla janë vetëm në anglisht dhe nuk e njohin mirë shqipen. TypeFast ka tekste origjinale në shqip, me ë dhe ç, dhe të lejon të vendosësh nëse e dhe c pranohen në vend të tyre. U ndërtua si projekt final në kurs, vetëm me HTML, CSS dhe JavaScript.</p>
       <!-- Shënim për privatësinë -->
       <p>Rezultatet ruhen vetëm në shfletuesin tënd. Nuk ka llogari, server apo dërgim të dhënash.</p>
-      <!-- Udhëzuesi për fillestarët -->
-      <p>Nëse s'ke shkruar kurrë me dhjetë gishta, nis nga udhëzuesi "Mëso bazat". Në 8 hapa të shkurtër të tregon ku vendosen gishtat: fillon me F dhe J (dy tastet me vijë të ngritur), vazhdon me rreshtin bazë dhe mbaron me fjalët e para. Për çdo tast shfaqet një katror; ti shtyp tastin, katrori bëhet i gjelbër dhe kalon te tjetri.</p>
-      <!-- #bazat në fund të adresës i thotë faqes së testit ta hapë udhëzuesin menjëherë -->
-      <a class="button" href="index.html#bazat">Mëso bazat</a>
+      <!-- Kursi për fillestarët -->
+      <p>Nëse s'ke shkruar kurrë me dhjetë gishta, nis nga faqja "Mësimet": një kurs me 5 kapituj dhe 28 mësime, që nis nga rreshti bazë i tastierës dhe vështirësohet me çdo kapitull.</p>
+      <!-- Lidhja te faqja e kursit -->
+      <a class="button" href="mesimet.html">Shko te mësimet</a>
     </section>
 
     <!-- ========== 2. FORMULAT ========== -->
@@ -186,7 +188,37 @@
       <p>Testet e praktikës ruhen në historik me nivelin "Praktikë", por nuk hyjnë te rekordet personale, sepse teksti i tyre nuk krahasohet drejt me nivelet e zakonshme.</p>
     </section>
 
-    <!-- ========== 5. GARA ME REKORDIN ========== -->
+    <!-- ========== 5. MËSIMET ========== -->
+    <section class="section reveal" aria-labelledby="lessons-title">
+      <!-- Titulli -->
+      <h2 class="section__title" id="lessons-title">Mësimet: rruga e shkrimit me dhjetë gishta</h2>
+      <!-- Çfarë është -->
+      <p>Faqja "Mësimet" është një kurs për fillestarët, i ndërtuar si rrugë që ndiqet me radhë. Mësimet shfaqen si katrorë, të lidhur me një vijë që gjarpëron. Mësimet e kryera janë jeshile, mësimi i radhës ka ngjyrën e theksit (aty ku je) dhe të tjerat janë të kyçura.</p>
+      <!-- Kapitujt, nga më i lehti te më i vështiri -->
+      <h3 class="subsection__title">Pesë kapituj, nga më i lehti te më i vështiri</h3>
+      <ol class="rule-list">
+        <li>Rreshti bazë: F dhe J, pastaj D K, S L, A Ë, G H, hapësira dhe fjalët e para.</li>
+        <li>Rreshti i sipërm: E I, R U, T Z, W O, Q P, Ç dhe fjalë me dy rreshta.</li>
+        <li>Rreshti i poshtëm: V M, B N, C dhe presja, X dhe pika, Y dhe fjalë me tre rreshta.</li>
+        <li>Shkronjat e mëdha, shenjat dhe numrat: Shift, presja dhe pika në fjali, numrat, fjali me numra.</li>
+        <li>Shkrimi i rrjedhshëm: fjali gjithnjë e më të gjata.</li>
+      </ol>
+      <!-- Si zhvillohet një mësim -->
+      <h3 class="subsection__title">Si zhvillohet një mësim</h3>
+      <p>Mësimi hapet në një dritare. Teksti ndahet në pjesë me nga 9 karaktere; çdo karakter është një katror. Shtyp tastin e katrorit me kornizë të verdhë: nëse është i saktë, katrori kërcen dhe bëhet jeshil; nëse është gabim, rreshti dridhet. Poshtë katrorëve shkruhet me cilin gisht shtypet tasti, dhe një tastierë e vogël e ndriçon. Për shkronjat e mëdha ndriçohet edhe Shift-i i dorës tjetër, dhe "a" nuk pranohet në vend të "A". Kur mbaron mësimi, ai shënohet i kryer dhe hapet vetë mësimi tjetër.</p>
+      <!-- Si gjendet gishti -->
+      <p>Gishti nuk ruhet për çdo shkronjë veçmas: llogaritet nga pozicioni i tastit. Çdo gisht ka kolonën e vet në të katër rreshtat e tastierës (p.sh. kolona e tretë nga e majta, E, D dhe C, i takon gishtit të mesit të majtë), prandaj mjafton të gjendet kolona e tastit.</p>
+      <!-- Kyçja -->
+      <h3 class="subsection__title">Kyçja dhe prova e kapitullit</h3>
+      <p>Një mësim hapet vetëm kur është kryer mësimi para tij. Kush di të shkruajë, mund ta kapërcejë kapitullin aktual me një provë: shkruan tekstin e mësimit të fundit të kapitullit, dhe me të paktën 90% saktësi i gjithë kapitulli shënohet i kryer.</p>
+      <p class="formula"><code>Saktësia e provës = karaktere të sakta / (karaktere të sakta + gabime) × 100</code></p>
+      <!-- Shembull -->
+      <p>Shembull: një tekst me 50 karaktere, i shkruar me 4 gabime: 50 / (50 + 4) × 100 = 92,6, e rrumbullakuar 93%, pra prova kalohet. Me 6 gabime: 50 / 56 × 100 = 89%, pra jo.</p>
+      <!-- Tastiera dhe ruajtja -->
+      <p>Kursi punon me tastierën shqipe (QWERTZ) dhe atë amerikane (QWERTY). Në atë amerikane disa mësime ndryshojnë (Z dhe Y ndërrojnë vend, në vend të Ë është pikëpresja, dhe mësimi i Ç-së hiqet). Përparimi ruhet në localStorage dhe mund të fshihet me "Rinis kursin"; historiku i testeve nuk preket.</p>
+    </section>
+
+    <!-- ========== 6. GARA ME REKORDIN ========== -->
     <section class="section reveal" aria-labelledby="ghost-title">
       <!-- Titulli -->
       <h2 class="section__title" id="ghost-title">Gara me rekordin</h2>
@@ -200,7 +232,7 @@
       <p>Pozicioni llogaritet para çdo vizatimi të ekranit me requestAnimationFrame (rreth 60 herë në sekondë), gjithmonë nga ora e saktë performance.now. Gara nuk punon në praktikë dhe as kur ende s'ka rekord për kombinimin e zgjedhur.</p>
     </section>
 
-    <!-- ========== 6. GRAFIKU I SHPEJTËSISË ========== -->
+    <!-- ========== 7. GRAFIKU I SHPEJTËSISË ========== -->
     <section class="section reveal" aria-labelledby="speed-title">
       <!-- Titulli -->
       <h2 class="section__title" id="speed-title">Grafiku i shpejtësisë dhe qëndrueshmëria</h2>
@@ -222,7 +254,7 @@
       <p>Grafiku vizatohet direkt me Canvas, pa librari: çdo sekondë kthehet në koordinatë x dhe çdo shpejtësi në koordinatë y, pastaj pikat lidhen me vija.</p>
     </section>
 
-    <!-- ========== 7. PËRMBLEDHJA DHE HARTA ========== -->
+    <!-- ========== 8. PËRMBLEDHJA DHE HARTA ========== -->
     <section class="section reveal" aria-labelledby="overview-title">
       <!-- Titulli -->
       <h2 class="section__title" id="overview-title">Përmbledhja dhe harta e tastierës</h2>
@@ -237,7 +269,7 @@
       <p>Harta e tastierës vizaton çdo tast dhe e ngjyros sipas shkallës së gabimit: pa ngjyrë për 0%, pastaj gjithnjë e më e kuqe nën 2%, 2 deri 5%, 5 deri 10% dhe 10% e lart. Tastet që kanë dalë më pak se 5 herë mbeten pa ngjyrë, me vijë të ndërprerë. Mund të zgjedhësh tastierën shqipe (QWERTZ) ose amerikane (QWERTY).</p>
     </section>
 
-    <!-- ========== 8. SHKURTORET ========== -->
+    <!-- ========== 9. SHKURTORET ========== -->
     <section class="section reveal" aria-labelledby="keys-title">
       <!-- Titulli -->
       <h2 class="section__title" id="keys-title">Shkurtoret e tastierës</h2>
@@ -289,7 +321,7 @@
       <p>Caps Lock zbulohet me funksionin e shfletuesit getModifierState("CapsLock"), që lexohet në çdo shtypje dhe lëshim tasti. Shfletuesi nuk e tregon gjendjen e Caps Lock pa shtypur një tast, prandaj paralajmërimi del me shtypjen e parë.</p>
     </section>
 
-    <!-- ========== 9. TEKNOLOGJITË ========== -->
+    <!-- ========== 10. TEKNOLOGJITË ========== -->
     <section class="section reveal" aria-labelledby="tech-title">
       <!-- Titulli -->
       <h2 class="section__title" id="tech-title">Teknologjitë e përdorura</h2>

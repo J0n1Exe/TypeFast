@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<!--
+  mesimet.html: faqja e kursit "Mësimet" për fillestarët.
+  Tregon një rrugë mësimesh që ndiqet me radhë: nis nga rreshti bazë i tastierës
+  dhe vështirësohet me çdo kapitull. Një mësim hapet vetëm kur mbaron atë para tij.
+  Mësimi zhvillohet në një dritare <dialog>: katrorë me shkronja që shtypen me radhë.
+  Rruga dhe katrorët krijohen nga JavaScript (lessons-page.js dhe guide.js).
+-->
+<!-- lang="sq": faqja është në shqip. data-theme="dark": tema e parazgjedhur, JavaScript mund ta ndryshojë. -->
+<html lang="sq" data-theme="dark">
+<head>
+  <!-- Kodimi i shkronjave, që ë dhe ç të shfaqen saktë -->
+  <meta charset="utf-8">
+  <!-- Faqja përdor gjerësinë reale të ekranit në tablet -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Titulli i skedës -->
+  <title>Mësimet: TypeFast</title>
+  <!-- Përshkrimi i faqes -->
+  <meta name="description" content="Kurs hap pas hapi për shkrimin me dhjetë gishta: nga rreshti bazë deri te fjalitë e plota.">
+
+  <!-- CSS në rendin e fiksuar: tokenat, baza, struktura, komponentët, stilet e faqeve (koka e faqes), stilet e kësaj faqeje, animacionet -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/lessons.css">
+  <link rel="stylesheet" href="css/animations.css">
+
+  <!-- Kontrolli për file:// (skript i thjeshtë, jo modul). defer: ekzekutohet pasi lexohet HTML. -->
+  <script src="js/protocol-check.js" defer></script>
+  <!-- Skripti hyrës i kësaj faqeje, si modul ES6 -->
+  <script type="module" src="js/pages/lessons-page.js"></script>
+</head>
+<body>
+  <!-- Lidhja për të kapërcyer navigimin me tastierë -->
+  <a class="skip-link" href="#main">Kalo te përmbajtja</a>
+
+  <!-- ========== KOKA E FAQES ========== -->
+  <header class="site-header">
+    <div class="site-header__inner">
+      <!-- Emri i faqes si tekst -->
+      <a class="wordmark" href="index.html">TypeFast</a>
+      <!-- Navigimi kryesor -->
+      <nav class="site-nav" aria-label="Navigimi kryesor">
+        <ul class="site-nav__list">
+          <li><a class="site-nav__link" href="index.html">Testi</a></li>
+          <!-- aria-current="page": kjo është faqja aktuale -->
+          <li><a class="site-nav__link" href="mesimet.html" aria-current="page">Mësimet</a></li>
+          <li><a class="site-nav__link" href="historiku.html">Historiku</a></li>
+          <li><a class="site-nav__link" href="rreth.html">Si funksionon</a></li>
+        </ul>
+      </nav>
+      <!-- Butoni i temës me aria-label, sepse ka vetëm ikonë -->
+      <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="Kalo në temën e çelët">
+        <!-- Ikona e diellit -->
+        <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+        </svg>
+        <!-- Ikona e hënës -->
+        <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Paralajmërimi për file:// (i fshehur si parazgjedhje; role="alert" e lexon menjëherë kur shfaqet) -->
+  <div class="file-warning" id="file-warning" role="alert" hidden>
+    <h2 class="file-warning__title">Kjo faqe duhet hapur me Live Server</h2>
+    <p>Faqja u hap direkt nga dosja (adresa fillon me file://). Në këtë mënyrë shfletuesi bllokon modulet JavaScript, prandaj mësimet nuk mund të shfaqen.</p>
+    <ol class="file-warning__steps">
+      <li>Hap dosjen e projektit në VS Code.</li>
+      <li>Instalo shtesën "Live Server" (nga Ritwick Dey), nëse nuk e ke.</li>
+      <li>Kliko me të djathtën mbi index.html dhe zgjidh "Open with Live Server".</li>
+      <li>Faqja hapet te http://127.0.0.1:5500 dhe gjithçka punon.</li>
+    </ol>
+  </div>
+
+  <!-- Përmbajtja kryesore; tabindex="-1" lejon fokusin nga lidhja "Kalo te përmbajtja" -->
+  <main class="page" id="main" tabindex="-1">
+    <!-- Koka e faqes -->
+    <div class="page-header">
+      <!-- h1 i vetëm i faqes -->
+      <h1 class="page-header__title">Mësimet</h1>
+      <!-- Shpjegimi i rrugës -->
+      <p class="page-header__lead">Mëso të shkruash me dhjetë gishta, hap pas hapi. Rruga nis nga rreshti bazë i tastierës dhe vështirësohet me çdo kapitull. Mësimi i radhës hapet kur mbaron atë para tij.</p>
+    </div>
+
+    <!-- ========== PËRMBLEDHJA E KURSIT ========== -->
+    <!-- aria-labelledby: seksioni merr emrin nga teksti i përparimit -->
+    <section class="course-summary" aria-labelledby="course-count">
+      <!-- Përparimi i gjithë kursit -->
+      <div class="course-summary__progress">
+        <!-- "12 nga 28 mësime të kryera"; JavaScript e plotëson me numrat realë -->
+        <p class="course-summary__count" id="course-count"></p>
+        <!-- Vija e përparimit; aria-hidden sepse teksti sipër e thotë me fjalë -->
+        <div class="course-bar" aria-hidden="true">
+          <span class="course-bar__fill" id="course-bar"></span>
+        </div>
+      </div>
+
+      <!-- Butonat kryesorë -->
+      <div class="course-summary__actions">
+        <!-- Nis mësimin e radhës; teksti ndryshon: "Fillo mësimin e parë" ose "Vazhdo mësimin e radhës" -->
+        <button class="button button--primary" id="course-continue" type="button">Fillo mësimin e parë</button>
+        <!-- Fshin përparimin e kursit (pyet me <dialog> para se ta fshijë) -->
+        <button class="button" id="course-reset" type="button">Rinis kursin</button>
+      </div>
+
+      <!-- Shënimi kur kursi është kryer i gjithi; hidden derisa të ndodhë -->
+      <p class="course-summary__note" id="course-done-note" hidden>Kursi u krye. Mund të përsëritësh çdo mësim.</p>
+
+      <!-- Zgjedhja e tastierës: ndryshon disa mësime (Z dhe Y, ë dhe ;) dhe tastierën e vogël -->
+      <div class="course-layout" role="group" aria-labelledby="layout-label">
+        <!-- Etiketa e grupit -->
+        <span class="field__label" id="layout-label">Tastiera</span>
+        <!-- data-layout: cila tastierë; aria-pressed: JavaScript shënon atë aktive -->
+        <div class="course-layout__chips">
+          <button class="chip" type="button" data-layout="sq" aria-pressed="true">Shqipe (QWERTZ)</button>
+          <button class="chip" type="button" data-layout="us" aria-pressed="false">Amerikane (QWERTY)</button>
+        </div>
+      </div>
+    </section>
+
+    <!--
+      ========== RRUGA E MËSIMEVE ==========
+      JavaScript krijon këtu një seksion për çdo kapitull: titulli, vështirësia,
+      hyrja dhe lista e mësimeve, të lidhura me një vijë SVG që gjarpëron.
+    -->
+    <div class="path" id="path"></div>
+
+    <!--
+      ========== DRITARJA E MËSIMIT ==========
+      Dritare vendase <dialog>, e hapur nga guide.js me showModal() kur klikohet një mësim.
+      aria-labelledby: emri i dritares merret nga titulli i mësimit.
+    -->
+    <dialog class="dialog guide" id="guide" aria-labelledby="guide-title">
+      <!-- Rreshti i sipërm: numëruesi dhe butoni i mbylljes -->
+      <div class="guide__top">
+        <!-- P.sh. "Kapitulli 1 · Mësimi 3 nga 8 · Pjesa 2 nga 3"; JavaScript e përditëson -->
+        <p class="guide__count" id="guide-count"></p>
+        <!-- Butoni i mbylljes ka vetëm ikonë, prandaj emri vjen nga aria-label -->
+        <button class="icon-button" id="guide-close" type="button" aria-label="Mbyll mësimin">
+          <!-- Ikona X; aria-hidden sepse është zbukurim; stroke="currentColor" merr ngjyrën e tekstit -->
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false">
+            <path d="M6 6l12 12M18 6L6 18"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Përparimi brenda mësimit: vija zgjatet me çdo pjesë (aria-hidden: numëruesi e thotë me fjalë) -->
+      <div class="guide__bar" aria-hidden="true">
+        <span class="guide__bar-fill" id="guide-bar"></span>
+      </div>
+
+      <!-- Titulli i mësimit ose i rezultatit -->
+      <h2 class="dialog__title" id="guide-title"></h2>
+      <!-- Shpjegimi. aria-live="polite": lexuesi i ekranit e lexon kur ndryshon mësimi. -->
+      <p class="guide__text" id="guide-text" aria-live="polite"></p>
+
+      <!-- Pjesa e mësimit: fshihet kur shfaqet rezultati -->
+      <div class="guide__lesson" id="guide-lesson">
+        <!-- Skena: katrorët e tasteve dhe fusha e fshehur ku kapen shtypjet -->
+        <div class="guide__stage" id="guide-stage">
+          <!-- JavaScript krijon këtu një katror për çdo tast të pjesës aktuale -->
+          <div class="guide__keys" id="guide-keys"></div>
+          <!--
+            Fusha e fshehur e shkrimit, me të njëjtën teknikë si te testi: është e padukshme,
+            mbulon skenën dhe lexon shkronjat me ngjarjen "input" (punon me ë dhe në tablet).
+            autocomplete, autocorrect, autocapitalize, spellcheck: fikin ndihmat e shfletuesit.
+          -->
+          <textarea class="guide__input" id="guide-input" rows="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Shtyp tastin e treguar"></textarea>
+        </div>
+
+        <!-- Ndihmat poshtë katrorëve -->
+        <div class="guide__hints">
+          <!-- Paralajmërimi i Caps Lock; bosh kur Caps Lock është fikur. role="status": njoftohet me qetësi. -->
+          <p class="guide__caps" id="guide-caps" role="status"></p>
+          <!-- Cili gisht e shtyp tastin aktual, p.sh. "Tasti F: gishti tregues i majtë." -->
+          <p class="guide__finger" id="guide-finger"></p>
+        </div>
+
+        <!--
+          Tastiera e vogël: tregon ku ndodhet tasti aktual (dhe Shift-in, për shkronjat e mëdha).
+          aria-hidden="true" sepse e njëjta gjë thuhet me fjalë te fjalia e gishtit më lart.
+        -->
+        <div class="mini-keyboard" id="guide-keyboard" aria-hidden="true"></div>
+      </div>
+
+      <!-- Butonat; guide.js shfaq vetëm ata që i përkasin pamjes aktuale -->
+      <div class="dialog__actions">
+        <!-- Gjatë mësimit: mësimi i mëparshëm -->
+        <button class="button" id="guide-prev" type="button">Mësimi i mëparshëm</button>
+        <!-- Gjatë provës, ose kur prova s'kalohet: rinis -->
+        <button class="button" id="guide-retry" type="button">Provo përsëri</button>
+        <!-- Mbyll dritaren dhe kthehet te rruga -->
+        <button class="button" id="guide-back" type="button">Kthehu te rruga</button>
+        <!-- Kur mbaron një kapitull: mësimi i parë i kapitullit tjetër -->
+        <button class="button button--primary" id="guide-next-chapter" type="button">Kapitulli tjetër</button>
+        <!-- Kur mbaron gjithë kursi: lidhje drejt testit -->
+        <a class="button button--primary" id="guide-test" href="index.html">Shko te testi</a>
+      </div>
+    </dialog>
+
+    <!--
+      Dritarja e konfirmimit për "Rinis kursin" (si te "Fshi historikun").
+      method="dialog": butonat e mbyllin dritaren dhe returnValue merr "value" e butonit.
+    -->
+    <dialog class="dialog" id="reset-dialog" aria-labelledby="reset-title" aria-describedby="reset-text">
+      <form class="dialog__form" method="dialog">
+        <!-- Titulli -->
+        <h2 class="dialog__title" id="reset-title">Ta rinis kursin?</h2>
+        <!-- Pasojat, të thëna qartë -->
+        <p class="dialog__text" id="reset-text">Të gjitha mësimet do të shënohen si të pakryera dhe rruga nis nga fillimi. Historiku i testeve nuk preket.</p>
+        <!-- Butonat -->
+        <div class="dialog__actions">
+          <!-- value="cancel": mbyll pa fshirë. autofocus: zgjedhja më e sigurt merr fokusin. -->
+          <button class="button" type="submit" value="cancel" autofocus>Anulo</button>
+          <!-- value="confirm": JavaScript e njeh dhe e rinis kursin -->
+          <button class="button button--primary" type="submit" value="confirm">Po, rinise</button>
+        </div>
+      </form>
+    </dialog>
+  </main>
+
+  <!-- ========== FUNDI I FAQES ========== -->
+  <footer class="site-footer">
+    <p class="site-footer__text">TypeFast, projekt final në kurs, 2026. Punoi: Jon Mjekiqi</p>
+  </footer>
+</body>
+</html>

@@ -188,6 +188,14 @@
 }
 
 /*
+  Mësimi i radhës në rrugë (faqja "Mësimet") "merr frymë", si katrori aktual,
+  që syri ta gjejë menjëherë se ku është.
+*/
+.path-node--current {
+  animation: guide-breathe var(--duration-breathe) ease-in-out infinite; /* frymëmarrje e pafund */
+}
+
+/*
   Tasti i gabuar: dridhet gjithë rreshti i katrorëve. Dridhja vihet te rreshti dhe
   jo te katrori, që animacioni i hyrjes së katrorit të mos rifillojë kur hiqet klasa.
 */

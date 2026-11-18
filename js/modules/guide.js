@@ -245,8 +245,8 @@ export class TypingGuide {
     this.keyIndex = 0;
     // Numëruesi: "Kapitulli 1 · Mësimi 3 nga 8 · Pjesa 2 nga 3" ose për provën
     this.countEl.textContent = this.mode === "checkpoint"
-      ? MESSAGES.guideCheckpointCount(this.chapter.number, this.chunkIndex + 1, this.chunks.length)
-      : MESSAGES.guideCount(this.chapter.number, this.chapter.lessons.indexOf(this.lesson) + 1, this.chapter.lessons.length, this.chunkIndex + 1, this.chunks.length);
+      ? MESSAGES.guideCheckpointCount(this.chapter.number, this.chunkIndex + 1, this.chunks.length) // në provë: "Kapitulli 1 · Prova · Pjesa 2 nga 6"
+      : MESSAGES.guideCount(this.chapter.number, this.chapter.lessons.indexOf(this.lesson) + 1, this.chapter.lessons.length, this.chunkIndex + 1, this.chunks.length); // në mësim: "Kapitulli 1 · Mësimi 3 nga 8 · Pjesa 2 nga 3"
     // Përparimi brenda mësimit: sa pjesë janë mbaruar (nga 0 në 1)
     this.setProgress(this.chunkIndex / this.chunks.length);
     // Krijojmë katrorët
@@ -471,7 +471,7 @@ export class TypingGuide {
         this.chunkIndex += 1;
         // E vizatojmë
         this.renderChunk();
-      }, GUIDE_CHUNK_MS);
+      }, GUIDE_CHUNK_MS); // pas 350ms
       // Dalim
       return;
     }
@@ -548,7 +548,7 @@ export class TypingGuide {
       "result-end": [MESSAGES.guideEndTitle, MESSAGES.guideEndText], // kurs i mbaruar
       "result-pass": [MESSAGES.guideCheckpointPassTitle, MESSAGES.guideCheckpointPass(accuracy)], // prova u kalua
       "result-fail": [MESSAGES.guideCheckpointFailTitle, MESSAGES.guideCheckpointFail(accuracy)], // prova s'u kalua
-    }[view];
+    }[view]; // zgjedhim çiftin [titull, tekst] sipas pamjes
     // Titulli
     this.titleEl.textContent = texts[0];
     // Teksti
