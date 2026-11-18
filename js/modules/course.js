@@ -60,14 +60,14 @@ export class Course {
       number: chapterIndex + 1, // numri (dhe vështirësia) nga 1 në 5
       title: chapter.title, // titulli
       intro: chapter.intro, // hyrja
-      lessons: chapter.lessons
+      lessons: chapter.lessons // mësimet e kapitullit, të përshtatura për tastierën
         // Në tastierën amerikane heqim mësimet që s'ekzistojnë aty (p.sh. Ç)
         .filter((lesson) => layoutId === "sq" || !lesson.onlySq)
         // Çdo mësim merr tekstin e duhur dhe disa fusha ndihmëse
         .map((lesson, lessonIndex) => ({
           id: lesson.id, // id e qëndrueshme, për përparimin
           code: `${chapterIndex + 1}.${lessonIndex + 1}`, // numri që shfaqet, p.sh. "1.3"
-          title: lesson.title, // titulli
+          title: layoutId === "us" && lesson.titleUs ? lesson.titleUs : lesson.title, // titulli; në tastierën amerikane titleUs kur ekziston
           text: lesson.text, // shpjegimi
           keys: Course.keysFor(lesson, layoutId), // teksti që shtypet
           chapterId: chapter.id, // kapitulli ku bën pjesë
