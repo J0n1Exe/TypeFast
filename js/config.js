@@ -17,7 +17,9 @@
  * DEFAULT_LAYOUT, HEAT_THRESHOLDS, PROGRESS_SAMPLE_SIZE, GUIDE_CHAPTERS,
  * GUIDE_US_MAP, GUIDE_FINGERS, GUIDE_THUMB, GUIDE_CHUNK_SIZE, GUIDE_CHUNK_MS,
  * GUIDE_ADVANCE_MS, GUIDE_PASS_ACCURACY, BACKUP_APP, BACKUP_VERSION,
- * BACKUP_FILENAME, BACKUP_MAX_BYTES, MESSAGES, plural, findLabel.
+ * BACKUP_FILENAME, BACKUP_MAX_BYTES, WORD_COUNTS, TEST_MODES, LENGTH_ORDER,
+ * MESSAGES, plural, formatDecimal, lengthKey, lengthLabel, lengthDescription,
+ * findLabel.
  *
  * Kush e përdor: pothuajse të gjithë modulet (texts.js, timer.js, stats.js,
  * storage.js, ui.js, theme.js, chart.js, app.js) dhe faqet te js/pages/.
@@ -30,6 +32,25 @@
  * @type {ReadonlyArray<number>}
  */
 export const DURATIONS = Object.freeze([15, 30, 60, 120]);
+
+/**
+ * Numri i fjalëve në modalitetin me fjalë: testi mbaron kur shkruhen të gjitha.
+ * @type {ReadonlyArray<number>}
+ */
+export const WORD_COUNTS = Object.freeze([10, 25, 50]);
+
+/**
+ * Dy llojet e testit: "time" = mbaron kur mbaron koha, "words" = mbaron kur shkruhen të gjitha fjalët.
+ * @type {ReadonlyArray<string>}
+ */
+export const TEST_MODES = Object.freeze(["time", "words"]);
+
+/**
+ * Rendi i gjatësive në tabelat dhe filtrat: së pari testet me kohë, pastaj ato me fjalë.
+ * Vlerat janë "çelësat e gjatësisë" (shiko lengthKey më poshtë).
+ * @type {ReadonlyArray<string>}
+ */
+export const LENGTH_ORDER = Object.freeze(["15", "30", "60", "120", "w10", "w25", "w50"]);
 
 /**
  * Nivelet e vështirësisë. "id" përputhet me çelësat te data/texts.json,
@@ -98,7 +119,8 @@ export const CHARS_PER_WORD = 5;
  * Cilësimet e parazgjedhura kur përdoruesi hap faqen për herë të parë.
  * lenient: false do të thotë kontroll i rreptë (e NUK pranohet për ë).
  * ghost: false do të thotë pa garë me rekordin (kursori gri nuk shfaqet).
- * @type {Readonly<{duration: number, level: string, lang: string, lenient: boolean, ghost: boolean}>}
+ * mode: "time" (me kohë) ose "words" (me fjalë); words: sa fjalë ka testi me fjalë.
+ * @type {Readonly<{mode: string, duration: number, words: number, level: string, lang: string, lenient: boolean, ghost: boolean}>}
  */
 export const DEFAULT_SETTINGS = Object.freeze({
   duration: 30, // 30 sekonda
@@ -106,6 +128,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
   lang: "sq", // shqip
   lenient: false, // kontroll i rreptë i ë dhe ç
   ghost: false, // gara me rekordin është e fikur
+  mode: "time", // testi me kohë
+  words: 25, // 25 fjalë, kur zgjidhet modaliteti me fjalë
 });
 
 /**
@@ -415,6 +439,9 @@ export const BACKUP_MAX_BYTES = 1000000;
 export const MESSAGES = Object.freeze({
   loading: "Duke ngarkuar tekstet...", // gjatë leximit të data/texts.json
   capsLock: "Caps Lock është aktiv", // paralajmërimi mbi kutinë e tekstit
+  historyFilterEmpty: "Asnjë test i këtij lloji.", // tabela e testeve kur filtri s'gjen asgjë
+  statSeconds: "sekonda", // etiketa e numrit të parë në testin me kohë
+  statWords: "fjalë", // etiketa e numrit të parë në testin me fjalë
   textsError: "Tekstet e testit nuk u ngarkuan. Kontrollo që skedari data/texts.json ekziston dhe që faqja është hapur me Live Server, pastaj rifresko faqen.", // kur fetch dështon
   textsInvalid: "Skedari data/texts.json nuk ka strukturën e duhur.", // kur JSON nuk ka formën e pritur
   space: "Hapësira", // si shfaqet karakteri hapësirë te lista e gabimeve
@@ -708,6 +735,55 @@ export const MESSAGES = Object.freeze({
    */
   historyCount: (count) => (count === 1 ? "1 test i ruajtur, më i riu sipër." : `${count} teste të ruajtura, më i riu sipër. Ruhen deri në ${MAX_HISTORY} testet e fundit.`),
 });
+
+/**
+ * Numër me një shifër pas presjes dhe presje dhjetore (standardi shqip): 41.25 -> "41,3".
+ * @param {number} value - numri
+ * @returns {string} teksti
+ */
+export function formatDecimal(value) {
+  // toFixed(1) jep një shifër pas pikës; pika bëhet presje
+  return Number(value).toFixed(1).replace(".", ",");
+}
+
+/**
+ * ÇELËSI I GJATËSISË së një testi (ose të cilësimeve), që dallon testet me kohë nga ato me fjalë:
+ * testi 30 sekondash jep "30", testi me 25 fjalë jep "w25" ("w" nga "words").
+ * Përdoret për rekordet ("sq-medium-30" ose "sq-medium-w25") dhe për filtrat.
+ * Testet e vjetra s'kanë fushën mode, prandaj çdo gjë që s'është "words" llogaritet me kohë.
+ * @param {{mode?: string, duration?: number, words?: number}} item - testi, rekordi ose cilësimet
+ * @returns {string} çelësi
+ */
+export function lengthKey(item) {
+  // Me fjalë: "w" plus numri i fjalëve; me kohë: sekondat si tekst
+  return item.mode === "words" ? `w${item.words}` : String(item.duration);
+}
+
+/**
+ * Gjatësia e shkurtër për tabela dhe filtra: "30 s" ose "25 fjalë".
+ * Me withTime = true, testet me fjalë tregojnë edhe kohën që zgjatën: "25 fjalë (41,3 s)".
+ * @param {{mode?: string, duration: number, words?: number}} item - testi ose rekordi
+ * @param {boolean} [withTime=false] - shto kohën e kaluar te testet me fjalë
+ * @returns {string} teksti
+ */
+export function lengthLabel(item, withTime = false) {
+  // Testi me kohë: sekondat
+  if (item.mode !== "words") {
+    return `${item.duration} s`; // p.sh. "30 s"
+  }
+  // Testi me fjalë, me ose pa kohën e kaluar
+  return withTime ? `${item.words} fjalë (${formatDecimal(item.duration)} s)` : `${item.words} fjalë`;
+}
+
+/**
+ * Gjatësia e plotë për fjalinë te rezultati: "30 sekonda" ose "25 fjalë në 41,3 sekonda".
+ * @param {{mode?: string, duration: number, words?: number}} item - testi
+ * @returns {string} teksti
+ */
+export function lengthDescription(item) {
+  // Me kohë ose me fjalë
+  return item.mode === "words" ? `${item.words} fjalë në ${formatDecimal(item.duration)} sekonda` : `${item.duration} sekonda`;
+}
 
 /**
  * Numri me fjalën në njëjës ose shumës: 1 test, 2 teste.

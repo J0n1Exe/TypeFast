@@ -116,7 +116,7 @@
       <!-- Formula vetë, në një bllok kodi -->
       <p class="formula"><code>WPM = (karaktere të sakta / 5) / minuta</code></p>
       <!-- Shënim për rrumbullakimin dhe sekondën e parë -->
-      <p>Në fund, "minuta" është gjithmonë kohëzgjatja e plotë e testit (30 sekonda = 0,5 minuta). Rezultati rrumbullakohet në numër të plotë. Gjatë testit, WPM i drejtpërdrejtë tregon 0 në sekondën e parë, sepse me kaq pak kohë numri del i madh pa kuptim.</p>
+      <p>Në testin me kohë, "minuta" në fund është gjithmonë kohëzgjatja e plotë e testit (30 sekonda = 0,5 minuta). Në testin me fjalë është koha që u desh për t'i shkruar të gjitha fjalët (shiko më poshtë). Rezultati rrumbullakohet në numër të plotë. Gjatë testit, WPM i drejtpërdrejtë tregon 0 në sekondën e parë, sepse me kaq pak kohë numri del i madh pa kuptim.</p>
 
       <!-- Formula e saktësisë -->
       <h3 class="subsection__title">Saktësia</h3>
@@ -145,6 +145,15 @@
         <!-- Shënim që ky është shembull, jo statistikë reale -->
         <p class="example__note">Këta numra janë vetëm shembull për të treguar llogaritjen. Rezultatet e tua reale i gjen te Historiku.</p>
       </div>
+
+      <!-- Testi me fjalë -->
+      <h3 class="subsection__title">Testi me fjalë</h3>
+      <!-- Si ndryshon nga testi me kohë -->
+      <p>Përveç testit me kohë (15, 30, 60 ose 120 sekonda), mund të zgjedhësh një test me 10, 25 ose 50 fjalë. Teksti ka saktësisht aq fjalë: fjalitë priten aty ku mbaron numri. Testi nis me shkronjën e parë dhe mbaron kur shkruhet karakteri i fundit; kohëmatësi punon si kronometër. Gjatë testit, në vend të sekondave të mbetura shfaqet "fjalë të shkruara / gjithsej", p.sh. "10 / 25". Një fjalë llogaritet e shkruar sapo kalon hapësirën pas saj.</p>
+      <!-- WPM me kohën e kaluar -->
+      <p>WPM llogaritet me të njëjtën formulë, por "minuta" janë koha e kaluar, e matur me performance.now. Shembull: 25 fjalë me 150 karaktere të sakta, të shkruara në 40 sekonda: (150 / 5) / (40 / 60) = 30 / 0,667 = 45 WPM.</p>
+      <!-- Rekordet e ndara -->
+      <p>Testet me fjalë kanë rekordet e veta, të ndara nga ato me kohë, sepse një test i shkurtër me 10 fjalë s'krahasohet drejt me 60 sekonda shkrim. Çelësi i rekordit dallon të dyja llojet: "sq-medium-30" për 30 sekonda dhe "sq-medium-w25" për 25 fjalë ("w" nga "words"). Te Historiku, tabela e testeve ka filtrin "Shfaq" (të gjitha, vetëm me kohë, vetëm me fjalë) dhe filtri "Gjatësia" i grafikut ka edhe 10, 25 dhe 50 fjalë.</p>
     </section>
 
     <!-- ========== 3. GABIMET ========== -->
@@ -159,7 +168,7 @@
         <li>Backspace nuk numërohet si shtypje.</li>
         <li>Me çelësin "Prano e për ë dhe c për ç" të ndezur, e pranohet për ë dhe c për ç (edhe shkronjat e mëdha). Me çelësin të fikur, kontrolli është i rreptë.</li>
         <li>"Karakteret ku gabove më shumë" tregon 5 karakteret e tekstit ku ke shtypur më shumë gabime. Hapësira shfaqet si "Hapësira".</li>
-        <li>Rekordi personal ruhet veçmas për çdo kombinim gjuhe, niveli dhe kohe, sepse një test 15 sekondash në anglisht nuk krahasohet drejt me një 120 sekondash në shqip.</li>
+        <li>Rekordi personal ruhet veçmas për çdo kombinim gjuhe, niveli dhe gjatësie (kohë ose numër fjalësh), sepse një test 15 sekondash në anglisht nuk krahasohet drejt me një 120 sekondash në shqip.</li>
       </ul>
     </section>
 

@@ -27,7 +27,21 @@ import {
   PRACTICE_LEVEL, // "niveli" i testeve të praktikës, që nuk hyjnë te rekordet
   KEYBOARD_LAYOUTS, // tastierat e lejuara për hartën
   DEFAULT_LAYOUT, // tastiera e parazgjedhur
+  WORD_COUNTS, // numrat e fjalëve të lejuar
+  TEST_MODES, // "time" dhe "words"
+  lengthKey, // çelësi i gjatësisë: "30" ose "w25"
 } from "../config.js"; // skedari nga vijnë të gjitha
+
+/**
+ * Fushat që i shtohen një testi ose rekordi me fjalë: { mode: "words", words: 25 }.
+ * Testet me kohë nuk marrin asnjë fushë shtesë, që të mbeten njësoj si testet e vjetra.
+ * @param {{mode?: string, words?: number}} result - testi
+ * @returns {{mode?: string, words?: number}} fushat shtesë, ose objekt bosh
+ */
+function modeFields(result) {
+  // Me fjalë: dy fushat; me kohë: asgjë
+  return result.mode === "words" ? { mode: "words", words: result.words } : {};
+}
 
 /**
  * Shërbimi i ruajtjes së të dhënave.
@@ -159,7 +173,8 @@ export class StorageService {
       dateISO: new Date().toISOString(), // data dhe ora në formatin standard ISO
       lang: result.lang, // gjuha
       level: result.level, // niveli
-      duration: result.duration, // kohëzgjatja në sekonda
+      ...modeFields(result), // mode dhe words, vetëm për testet me fjalë
+      duration: result.duration, // kohëzgjatja në sekonda (te testet me fjalë: koha që u desh)
       wpm: result.wpm, // shpejtësia
       accuracy: result.accuracy, // saktësia
       errors: result.errors, // gabimet
@@ -239,15 +254,16 @@ export class StorageService {
   // ---------------- REKORDET ----------------
 
   /**
-   * Çelësi i rekordit për një kombinim, p.sh. "sq-medium-30".
+   * Çelësi i rekordit për një kombinim, p.sh. "sq-medium-30" (30 sekonda) ose "sq-medium-w25" (25 fjalë).
+   * Testet me kohë dhe ato me fjalë kanë çelësa të ndryshëm, pra rekordet e tyre janë të ndara.
    * @param {string} lang - gjuha
    * @param {string} level - niveli
-   * @param {number} duration - kohëzgjatja
+   * @param {string|number} length - çelësi i gjatësisë nga lengthKey(), p.sh. "30" ose "w25"
    * @returns {string} çelësi
    */
-  static recordKey(lang, level, duration) {
+  static recordKey(lang, level, length) {
     // Template string bashkon të tri vlerat me vizë të zakonshme
-    return `${lang}-${level}-${duration}`;
+    return `${lang}-${level}-${length}`;
   }
 
   /**
@@ -277,7 +293,7 @@ export class StorageService {
       return false; // kthejmë këtë vlerë dhe dalim nga funksioni
     }
     // Gjejmë rekordin ekzistues për këtë kombinim
-    const current = this.getRecords()[StorageService.recordKey(result.lang, result.level, result.duration)];
+    const current = this.getRecords()[StorageService.recordKey(result.lang, result.level, lengthKey(result))];
     // Rekord i ri nëse s'ka rekord ose nëse WPM është më i madh
     return !current || result.wpm > current.wpm;
   }
@@ -291,10 +307,11 @@ export class StorageService {
     // Lexojmë rekordet ekzistuese
     const records = this.getRecords();
     // Vendosim ose zëvendësojmë rekordin për këtë kombinim
-    records[StorageService.recordKey(result.lang, result.level, result.duration)] = {
+    records[StorageService.recordKey(result.lang, result.level, lengthKey(result))] = {
       lang: result.lang, // gjuha
       level: result.level, // niveli
-      duration: result.duration, // kohëzgjatja
+      ...modeFields(result), // mode dhe words, vetëm për testet me fjalë
+      duration: result.duration, // kohëzgjatja (te testet me fjalë: koha që u desh)
       wpm: result.wpm, // WPM më i mirë
       accuracy: result.accuracy, // saktësia e atij testi
       dateISO: result.dateISO, // kur u arrit
@@ -307,7 +324,7 @@ export class StorageService {
 
   /**
    * Lexon cilësimet dhe kontrollon çdo vlerë. Vlerat e pavlefshme zëvendësohen me parazgjedhjet.
-   * @returns {{duration: number, level: string, lang: string, lenient: boolean, ghost: boolean}} cilësimet
+   * @returns {{duration: number, level: string, lang: string, lenient: boolean, ghost: boolean, mode: string, words: number}} cilësimet
    */
   getSettings() {
     // Lexojmë dhe kontrollojmë me funksionin e pastër më poshtë
@@ -318,7 +335,7 @@ export class StorageService {
    * Kontrollon çdo fushë të cilësimeve (e pastër). Vlerat e pavlefshme zëvendësohen me parazgjedhjet.
    * Përdoret kur lexohen cilësimet nga localStorage dhe kur importohen nga një skedar.
    * @param {any} value - objekti i cilësimeve (mund të jetë edhe null ose diçka e gabuar)
-   * @returns {{duration: number, level: string, lang: string, lenient: boolean, ghost: boolean}} cilësimet e kontrolluara
+   * @returns {{duration: number, level: string, lang: string, lenient: boolean, ghost: boolean, mode: string, words: number}} cilësimet e kontrolluara
    */
   static sanitizeSettings(value) {
     // Nëse s'është objekt, punojmë me një objekt bosh (të gjitha fushat marrin parazgjedhjen)
@@ -335,6 +352,10 @@ export class StorageService {
       lenient: typeof saved.lenient === "boolean" ? saved.lenient : DEFAULT_SETTINGS.lenient,
       // ghost (gara me rekordin) duhet të jetë true/false
       ghost: typeof saved.ghost === "boolean" ? saved.ghost : DEFAULT_SETTINGS.ghost,
+      // Lloji i testit duhet të jetë "time" ose "words"
+      mode: TEST_MODES.includes(saved.mode) ? saved.mode : DEFAULT_SETTINGS.mode,
+      // Numri i fjalëve duhet të jetë një nga 10/25/50
+      words: WORD_COUNTS.includes(saved.words) ? saved.words : DEFAULT_SETTINGS.words,
     };
   }
 

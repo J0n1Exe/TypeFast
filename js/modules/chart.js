@@ -19,7 +19,7 @@
  */
 
 // Sa pika shfaqen dhe mesazhet
-import { CHART_MAX_POINTS, MESSAGES, LEVEL_LABELS, LANGUAGES, findLabel } from "../config.js";
+import { CHART_MAX_POINTS, MESSAGES, LEVEL_LABELS, LANGUAGES, findLabel, lengthKey, lengthLabel } from "../config.js";
 // Formatimi i saktësisë me presje
 import { Stats } from "./stats.js";
 
@@ -134,8 +134,8 @@ export class ProgressChart {
       (lang === "all" || entry.lang === lang)
       // Niveli: "all" ose i njëjti
       && (level === "all" || entry.level === level)
-      // Koha: "all" ose e njëjta (vlera e select është tekst, prandaj String)
-      && (duration === "all" || String(entry.duration) === duration));
+      // Gjatësia: "all" ose e njëjta; lengthKey jep "30" ose "w25", si vlerat e listës te HTML
+      && (duration === "all" || lengthKey(entry) === duration));
     // Historiku është më i riu i pari: marrim 30 të parët dhe i kthejmë mbrapsht (kronologjik)
     return filtered.slice(0, CHART_MAX_POINTS).reverse();
   }
@@ -268,7 +268,7 @@ export class ProgressChart {
                 // Dy rreshta: saktësia dhe gjuha/niveli/koha
                 return [
                   `Saktësia: ${Stats.formatAccuracy(entry.accuracy)}%`, // rreshti i saktësisë, me presje dhjetore
-                  `${findLabel(LANGUAGES, entry.lang)}, ${findLabel(LEVEL_LABELS, entry.level)}, ${entry.duration} s`, // rreshti me gjuhën, nivelin dhe kohën
+                  `${findLabel(LANGUAGES, entry.lang)}, ${findLabel(LEVEL_LABELS, entry.level)}, ${lengthLabel(entry, true)}`, // rreshti me gjuhën, nivelin dhe gjatësinë
                 ];
               },
             },

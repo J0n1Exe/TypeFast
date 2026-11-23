@@ -165,7 +165,7 @@
               <tr>
                 <th scope="col">Gjuha</th>
                 <th scope="col">Niveli</th>
-                <th scope="col">Koha</th>
+                <th scope="col">Gjatësia</th>
                 <th scope="col" class="table__num">WPM më i mirë</th>
                 <th scope="col" class="table__num">Saktësia</th>
                 <th scope="col">Data</th>
@@ -280,13 +280,18 @@
           </div>
           <!-- Filtri i kohës -->
           <div class="field">
-            <label class="field__label" for="filter-duration">Koha</label>
+            <!-- Gjatësia: testet me kohë dhe ato me fjalë; vlerat përputhen me lengthKey() te config.js -->
+            <label class="field__label" for="filter-duration">Gjatësia</label>
             <select class="select" id="filter-duration" data-filter="duration">
               <option value="all">Të gjitha</option>
               <option value="15">15 sekonda</option>
               <option value="30">30 sekonda</option>
               <option value="60">60 sekonda</option>
               <option value="120">120 sekonda</option>
+              <!-- Testet me fjalë: "w" nga "words" -->
+              <option value="w10">10 fjalë</option>
+              <option value="w25">25 fjalë</option>
+              <option value="w50">50 fjalë</option>
             </select>
           </div>
         </div>
@@ -312,6 +317,19 @@
         <h2 class="section__title" id="history-title">Të gjitha testet</h2>
         <!-- Shpjegimi, me numrin real të testeve (JavaScript e plotëson) -->
         <p class="section__lead" id="history-count"></p>
+        <!--
+          Filtri i tabelës: të gjitha testet, vetëm me kohë ose vetëm me fjalë.
+          Nuk ka data-filter, që të mos ngatërrohet me filtrat e grafikut.
+        -->
+        <div class="field history-filter">
+          <!-- for="history-mode": klikimi mbi etiketë fokuson listën -->
+          <label class="field__label" for="history-mode">Shfaq</label>
+          <select class="select" id="history-mode">
+            <option value="all">Të gjitha testet</option>
+            <option value="time">Vetëm me kohë</option>
+            <option value="words">Vetëm me fjalë</option>
+          </select>
+        </div>
         <!-- Mbështjellësi i lëvizshëm i tabelës -->
         <div class="table-wrap" tabindex="0" role="region" aria-labelledby="history-title">
           <table class="table">
@@ -322,7 +340,7 @@
                 <th scope="col">Data dhe ora</th>
                 <th scope="col">Gjuha</th>
                 <th scope="col">Niveli</th>
-                <th scope="col">Koha</th>
+                <th scope="col">Gjatësia</th>
                 <th scope="col" class="table__num">WPM</th>
                 <th scope="col" class="table__num">Saktësia</th>
                 <th scope="col" class="table__num">Gabime</th>

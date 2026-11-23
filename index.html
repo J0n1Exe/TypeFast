@@ -165,6 +165,23 @@
         </div>
       </div>
 
+      <!--
+        Grupi "Fjalë": testi mbaron kur shkruhen të gjitha fjalët, jo kur mbaron koha.
+        Zgjedhja është një e vetme për të dy grupet: kur zgjidhet një numër fjalësh,
+        asnjë kohë nuk mbetet e shënuar, dhe anasjelltas.
+        data-setting="words": cilësimi që ndryshon; data-value: sa fjalë.
+      -->
+      <div class="settings__group" role="group" aria-labelledby="label-words">
+        <!-- Etiketa e grupit -->
+        <span class="settings__label" id="label-words">Fjalë</span>
+        <!-- Zgjedhjet; teksti "fjalë" i fshehur vizualisht lexohet nga lexuesi i ekranit -->
+        <div class="chip-row">
+          <button class="chip" type="button" data-setting="words" data-value="10" aria-pressed="false">10<span class="visually-hidden"> fjalë</span></button>
+          <button class="chip" type="button" data-setting="words" data-value="25" aria-pressed="false">25<span class="visually-hidden"> fjalë</span></button>
+          <button class="chip" type="button" data-setting="words" data-value="50" aria-pressed="false">50<span class="visually-hidden"> fjalë</span></button>
+        </div>
+      </div>
+
       <!-- Grupi "Niveli": sa i vështirë është teksti -->
       <div class="settings__group" role="group" aria-labelledby="label-level">
         <!-- Etiketa e grupit -->
@@ -265,10 +282,10 @@
       <div class="live-stats">
         <!-- Koha e mbetur -->
         <div class="stat">
-          <!-- Numri; JavaScript e përditëson. Para nisjes tregon kohën e plotë. -->
+          <!-- Numri; JavaScript e përditëson. Me kohë: sekondat e mbetura. Me fjalë: "fjalë të shkruara / gjithsej". -->
           <span class="stat__value" id="stat-time">30</span>
-          <!-- Etiketa poshtë numrit -->
-          <span class="stat__label">sekonda</span>
+          <!-- Etiketa poshtë numrit: "sekonda" në testin me kohë, "fjalë" në testin me fjalë (JavaScript e ndryshon) -->
+          <span class="stat__label" id="stat-time-label">sekonda</span>
         </div>
         <!-- Shpejtësia e drejtpërdrejtë -->
         <div class="stat">

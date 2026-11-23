@@ -61,28 +61,36 @@ export class Stats {
     this.keystrokesAtLastSample = 0;
     // Sa gabime kishte në mostrën e fundit
     this.errorsAtLastSample = 0;
+    // Në cilën sekondë (me presje) mbaroi mostra e fundit
+    this.lastSampleEnd = 0;
   }
 
   /**
-   * Merr një mostër në fund të një sekonde. E thërret app.js sa herë mbushet një sekondë e plotë.
-   * - wpm: shpejtësia mesatare nga fillimi deri në këtë sekondë (formula e zakonshme e WPM)
-   * - raw: shpejtësia e çastit, vetëm nga shtypjet e kësaj sekonde: (shtypje / 5) x 60
-   * - errors: gabimet e kësaj sekonde
-   * @param {number} second - numri i sekondës që sapo mbaroi (1, 2, 3, ...)
+   * Merr një mostër në fund të një sekonde. E thërret app.js sa herë mbushet një sekondë e plotë,
+   * dhe një herë të fundit kur mbaron një test me fjalë (atëherë copëza zakonisht s'është sekondë e plotë).
+   * - wpm: shpejtësia mesatare nga fillimi deri në këtë çast (formula e zakonshme e WPM)
+   * - raw: shpejtësia e çastit, vetëm nga shtypjet e kësaj copëze: (shtypje / 5) x (60 / sekondat e copëzës)
+   * - errors: gabimet e kësaj copëze
+   * @param {number} second - numri i sekondës që shfaqet në grafik (1, 2, 3, ...)
+   * @param {number} [endSeconds=second] - çasti i saktë kur mbaron mostra; ndryshon nga second vetëm te mostra e fundit
    * @returns {void}
    */
-  takeSample(second) {
+  takeSample(second, endSeconds = second) {
     // Shtypjet e kësaj sekonde = totali tani minus totali në mostrën e mëparshme
     const keystrokes = this.totalKeystrokes - this.keystrokesAtLastSample;
     // Gabimet e kësaj sekonde, në të njëjtën mënyrë
     const errors = this.errorCount - this.errorsAtLastSample;
+    // Sa sekonda zgjati kjo copëz (zakonisht 1; te mostra e fundit mund të jetë më pak)
+    const span = endSeconds - this.lastSampleEnd;
     // Ruajmë mostrën
     this.samples.push({
       second, // në cilën sekondë
-      wpm: Stats.calculateWpm(this.correctCharsInPlace, second / 60), // mesatarja deri tani
-      raw: Math.round((keystrokes / CHARS_PER_WORD) * 60), // shtypjet e një sekonde, të kthyera në fjalë për minutë
-      errors, // gabimet e sekondës
+      wpm: Stats.calculateWpm(this.correctCharsInPlace, endSeconds / 60), // mesatarja deri tani
+      raw: span > 0 ? Math.round((keystrokes / CHARS_PER_WORD) * (60 / span)) : 0, // shtypjet e copëzës, të kthyera në fjalë për minutë
+      errors, // gabimet e copëzës
     });
+    // Mbajmë mend ku mbaroi kjo mostër
+    this.lastSampleEnd = endSeconds;
     // Mbajmë mend totalin e shtypjeve për mostrën tjetër
     this.keystrokesAtLastSample = this.totalKeystrokes;
     // Mbajmë mend totalin e gabimeve për mostrën tjetër

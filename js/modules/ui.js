@@ -18,7 +18,7 @@
  */
 
 // Importojmë mesazhet, listat për emrat shqip dhe funksionin që i gjen
-import { MESSAGES, LEVEL_LABELS, LANGUAGES, findLabel } from "../config.js";
+import { MESSAGES, LEVEL_LABELS, LANGUAGES, findLabel, lengthDescription } from "../config.js";
 // Importojmë Stats vetëm për funksionin e formatimit të saktësisë
 import { Stats } from "./stats.js";
 // Grafiku i shpejtësisë te rezultati, i vizatuar me Canvas
@@ -54,7 +54,8 @@ export class TestUI {
     this.testArea = byId("test-area"); // statistikat, kutia dhe udhëzimi
     this.practiceBanner = byId("practice-banner"); // shiriti "Praktikë për tastet"
     this.practiceKeys = byId("practice-keys"); // vendi ku shfaqen tastet e praktikës
-    this.statTime = byId("stat-time"); // numri i sekondave
+    this.statTime = byId("stat-time"); // numri i parë: sekondat e mbetura ose fjalët e shkruara
+    this.statTimeLabel = byId("stat-time-label"); // etiketa e tij: "sekonda" ose "fjalë"
     this.statWpm = byId("stat-wpm"); // WPM i drejtpërdrejtë
     this.statAccuracy = byId("stat-accuracy"); // saktësia e drejtpërdrejtë
     this.statGhostWrap = byId("stat-ghost-wrap"); // kutia e statistikës "ndaj rekordit"
@@ -431,12 +432,13 @@ export class TestUI {
 
   /**
    * Përditëson tre numrat sipër kutisë.
-   * @param {{remaining: number, wpm: number, accuracy: number}} values - vlerat
+   * @param {{primary: string, wpm: number, accuracy: number}} values - vlerat; primary është teksti i numrit
+   *   të parë, i përgatitur nga app.js ("30" sekonda të mbetura, ose "3 / 25" fjalë)
    * @returns {void}
    */
-  updateLiveStats({ remaining, wpm, accuracy }) {
-    // Math.ceil: 29.3 sekonda shfaqen si 30, që 0 të dalë vetëm kur koha mbaron
-    this.statTime.textContent = String(Math.ceil(remaining));
+  updateLiveStats({ primary, wpm, accuracy }) {
+    // Numri i parë, ashtu siç e përgatiti app.js
+    this.statTime.textContent = primary;
     // WPM si numër i plotë
     this.statWpm.textContent = String(wpm);
     // Saktësia me presje dhjetore
@@ -444,6 +446,16 @@ export class TestUI {
   }
 
   // ---------------- CILËSIMET ----------------
+
+  /**
+   * Ndryshon etiketën e numrit të parë sipas llojit të testit: "sekonda" ose "fjalë".
+   * @param {string} mode - "time" ose "words"
+   * @returns {void}
+   */
+  setLengthMode(mode) {
+    // Etiketa sipas llojit
+    this.statTimeLabel.textContent = mode === "words" ? MESSAGES.statWords : MESSAGES.statSeconds;
+  }
 
   /**
    * Shënon zgjedhjet aktive sipas cilësimeve.
@@ -457,8 +469,10 @@ export class TestUI {
     this.chips.forEach((chip) => {
       // data-setting tregon cilin cilësim përfaqëson, p.sh. "duration"
       const name = chip.dataset.setting;
+      // Kohët janë aktive vetëm në testin me kohë, numrat e fjalëve vetëm në testin me fjalë
+      const modeMatches = (name !== "duration" || settings.mode === "time") && (name !== "words" || settings.mode === "words");
       // Në praktikë, zgjedhjet e nivelit nuk janë aktive; përndryshe krahasojmë si tekst ("30")
-      const isActive = !(practiceActive && name === "level") && chip.dataset.value === String(settings[name]);
+      const isActive = modeMatches && !(practiceActive && name === "level") && chip.dataset.value === String(settings[name]);
       // aria-pressed="true" për aktiven; CSS e ngjyros me theksin
       chip.setAttribute("aria-pressed", String(isActive));
     });
@@ -607,7 +621,7 @@ export class TestUI {
     // Të sakta / totale
     this.resultChars.textContent = `${result.correctChars} / ${result.totalChars}`;
     // Rreshti me kombinimin, p.sh. "Shqip, Mesatare, 30 sekonda"
-    this.resultsMeta.textContent = `${findLabel(LANGUAGES, result.lang)}, ${findLabel(LEVEL_LABELS, result.level)}, ${result.duration} sekonda`;
+    this.resultsMeta.textContent = `${findLabel(LANGUAGES, result.lang)}, ${findLabel(LEVEL_LABELS, result.level)}, ${lengthDescription(result)}`;
     // Njoftimi i rekordit shfaqet vetëm për rekord të ri
     this.recordNotice.hidden = !isRecord;
     // Shënimi i ruajtjes shfaqet vetëm kur ruajtja dështoi
