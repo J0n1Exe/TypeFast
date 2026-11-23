@@ -23,6 +23,11 @@
  * Mostrat e shpejtësisë: sa herë mbushet një sekondë e plotë, Stats merr një
  * mostër. Prej tyre vizatohet grafiku te rezultati.
  *
+ * Dy lloje testi (this.settings.mode):
+ *   "time"  - testi mbaron kur mbaron koha (15, 30, 60 ose 120 sekonda)
+ *   "words" - teksti ka saktësisht 10, 25 ose 50 fjalë; testi mbaron kur shkruhet
+ *             karakteri i fundit, dhe WPM llogaritet me kohën që u desh
+ *
  * Gjendjet e testit (this.state):
  *   "loading"  - tekstet po lexohen
  *   "error"    - tekstet nuk u lexuan
@@ -48,6 +53,7 @@ import {
   WEAK_KEY_MIN_ATTEMPTS, // sa herë duhet të ketë dalë një tast që të renditet
   WEAK_KEY_MIN_ERRORS, // sa herë duhet të jetë gabuar një tast që të renditet
   LANGUAGES, // gjuhët, për emrin shqip të gjuhës te mesazhet
+  lengthKey, // çelësi i gjatësisë: "30" ose "w25" (për rekordin e garës)
   findLabel, // gjen emrin shqip nga id-ja
 } from "./config.js"; // skedari nga vijnë të gjitha
 // Gjeneratori i tekstit
@@ -228,8 +234,13 @@ export class TypingTest {
     clearTimeout(this.idleTimeoutId);
     // Fillojmë nga pozicioni 0
     this.index = 0;
-    // Gjatësia që mjafton për dikë me 150 WPM: 150 fjalë x 5 karaktere x minutat
-    const minChars = Math.ceil(TEXT_TARGET_WPM * CHARS_PER_WORD * (this.settings.duration / 60));
+    // A është test me fjalë
+    const wordsMode = this.settings.mode === "words";
+    // Me kohë: aq tekst sa mjafton për dikë me 150 WPM (150 fjalë x 5 karaktere x minutat).
+    // Me fjalë: rreth dyfishi i karaktereve që duhen (pastaj teksti pritet saktë te fitWords).
+    const minChars = wordsMode
+      ? this.settings.words * CHARS_PER_WORD * 2 // p.sh. 25 fjalë x 5 x 2 = 250 karaktere
+      : Math.ceil(TEXT_TARGET_WPM * CHARS_PER_WORD * (this.settings.duration / 60)); // p.sh. 30 sekonda jep 375
     // Teksti i testit; në praktikë mund të mbetet bosh nëse tastet s'gjenden në këtë gjuhë
     let text = "";
     // Në praktikë, teksti ndërtohet nga tastet e dobëta
@@ -256,6 +267,13 @@ export class TypingTest {
       // Gjenerojmë tekstin sipas gjuhës dhe nivelit
       text = this.texts.generate(this.settings.lang, this.settings.level, minChars);
     }
+    // Me fjalë: teksti pritet (ose zgjatet) që të ketë saktësisht aq fjalë sa u zgjodhën
+    if (wordsMode) {
+      // P.sh. saktësisht 25 fjalë
+      text = this.fitWords(text, this.settings.words);
+    }
+    // Etiketa e numrit të parë: "sekonda" ose "fjalë"
+    this.ui.setLengthMode(this.settings.mode);
     // Zgjedhjet aktive (në praktikë asnjë nivel nuk shënohet)
     this.ui.applySettings(this.settings, this.practiceMode);
     // Shiriti i praktikës: tastet që po praktikohen, ose i fshehur
@@ -291,8 +309,9 @@ export class TypingTest {
     this.state = "running";
     // Cilësimet bllokohen gjatë testit
     this.ui.setSettingsDisabled(true);
-    // Nisim kohëmatësin me kohëzgjatjen e zgjedhur
-    this.timer.start(this.settings.duration);
+    // Me kohë: kohëmatësi numëron mbrapsht nga kohëzgjatja e zgjedhur.
+    // Me fjalë: Infinity (pafundësi) e bën kronometër që s'mbaron vetë; testi mbaron te typeChar().
+    this.timer.start(this.settings.mode === "words" ? Infinity : this.settings.duration);
     // Nëse gara është aktive, kursori gri nis të lëvizë
     if (this.ghostWpm !== null) {
       // Korniza e parë e ciklit të garës
@@ -361,8 +380,19 @@ export class TypingTest {
     }
     // Gjendja "mbaroi": shkronjat e tjera injorohen
     this.state = "finished";
+    // Koha e kaluar, e lexuar PARA ndalimit (te testi me kohë është gjithmonë kohëzgjatja e plotë)
+    const elapsed = this.timer.getElapsedSeconds();
     // Ndalojmë kohën
     this.timer.stop();
+    // A ishte test me fjalë
+    const wordsMode = this.settings.mode === "words";
+    // Me fjalë, testi zakonisht mbaron në mes të një sekonde: marrim edhe mostrën e asaj copëze,
+    // por vetëm nëse zgjati të paktën gjysmë sekonde (një copëz shumë e shkurtër do të jepte një
+    // shpejtësi të çastit të fryrë, p.sh. 1 shtypje në 0,05 sekonda)
+    if (wordsMode && elapsed - this.sampledSeconds >= 0.5) {
+      // Mostra e fundit, me çastin e saktë të mbarimit
+      this.stats.takeSample(Math.ceil(elapsed), elapsed);
+    }
     // Ndalojmë kohëmatësin e pulsimit
     clearTimeout(this.idleTimeoutId);
     // Ndalojmë ciklin e garës (kursori gri s'lëviz më)
@@ -373,8 +403,9 @@ export class TypingTest {
     const result = {
       lang: this.settings.lang, // gjuha
       level: this.practiceMode ? PRACTICE_LEVEL.id : this.settings.level, // niveli, ose "practice" për praktikën
-      duration: this.settings.duration, // kohëzgjatja
-      ...this.stats.getSummary(this.settings.duration), // spread: shton wpm, accuracy, errors, ...
+      ...(wordsMode ? { mode: "words", words: this.settings.words } : {}), // lloji dhe numri i fjalëve, vetëm te testet me fjalë
+      duration: wordsMode ? Math.round(elapsed * 10) / 10 : this.settings.duration, // me kohë: kohëzgjatja; me fjalë: koha që u desh (1 shifër pas presjes)
+      ...this.stats.getSummary(wordsMode ? elapsed : this.settings.duration), // WPM me kohën e plotë (me kohë) ose me kohën e kaluar (me fjalë)
     };
     // Kontrollojmë rekordin PARA se ta ruajmë (krahasojmë me rekordin e vjetër)
     const isRecord = this.storage.isNewRecord(result);
@@ -476,7 +507,16 @@ export class TypingTest {
     this.ui.setCharState(this.index, isCorrect ? "correct" : "wrong");
     // Kalojmë te pozicioni tjetër
     this.index += 1;
-    // Shtojmë tekst nëse po mbaron
+    // Me fjalë: kur shkruhet karakteri i fundit, testi mbaron
+    if (this.settings.mode === "words" && this.index >= this.chars.length) {
+      // Numrat e fundit ("25 / 25")
+      this.updateLiveStats(0, this.timer.getElapsedSeconds());
+      // Mbarimi
+      this.finish();
+      // Dalim
+      return;
+    }
+    // Shtojmë tekst nëse po mbaron (vetëm te testi me kohë)
     this.ensureEnoughText();
     // Lëvizim kursorin
     this.ui.updateCaret(this.index);
@@ -534,20 +574,65 @@ export class TypingTest {
    * @returns {void}
    */
   ensureEnoughText() {
+    // Te testi me fjalë teksti ka gjatësi të fiksuar: s'shtohet asgjë
+    if (this.settings.mode === "words") {
+      return; // teksti s'zgjatet
+    }
     // Sa karaktere kanë mbetur deri në fund
     const remaining = this.chars.length - this.index;
     // Nëse kanë mbetur më shumë se 30, s'bëjmë asgjë
     if (remaining >= APPEND_THRESHOLD_CHARS) {
       return; // ndalojmë këtu, pjesa tjetër e funksionit nuk ekzekutohet
     }
-    // Gjenerojmë një pjesë të re (të paktën 200 karaktere): nga tastet e dobëta në praktikë, nga niveli përndryshe
-    const more = this.practiceMode
-      ? this.texts.generatePractice(this.settings.lang, this.practiceWeakKeys, APPEND_CHUNK_CHARS).text // në praktikë: vetëm teksti nga tastet e dobëta
-      : this.texts.generate(this.settings.lang, this.settings.level, APPEND_CHUNK_CHARS); // normalisht: tekst sipas nivelit
+    // Gjenerojmë një pjesë të re (të paktën 200 karaktere)
+    const more = this.moreText(APPEND_CHUNK_CHARS);
     // Shtojmë hapësirën ndarëse dhe karakteret e reja te vargu
     this.chars.push(" ", ...Array.from(more));
     // E shtojmë edhe në faqe (UI vendos vetë hapësirën)
     this.ui.appendText(more);
+  }
+
+  /**
+   * Tekst i ri: nga tastet e dobëta në praktikë, nga gjuha dhe niveli përndryshe.
+   * @param {number} minChars - gjatësia minimale
+   * @returns {string} teksti
+   */
+  moreText(minChars) {
+    // Operatori ternar zgjedh burimin e tekstit
+    return this.practiceMode
+      ? this.texts.generatePractice(this.settings.lang, this.practiceWeakKeys, minChars).text // në praktikë: vetëm teksti nga tastet e dobëta
+      : this.texts.generate(this.settings.lang, this.settings.level, minChars); // normalisht: tekst sipas nivelit
+  }
+
+  /**
+   * Teksti me saktësisht `count` fjalë: nëse ka më shumë, pritet; nëse ka më pak, zgjatet.
+   * Fjalitë mund të priten në mes, si te çdo test me numër fjalësh.
+   * @param {string} text - teksti i gjeneruar
+   * @param {number} count - sa fjalë duhen
+   * @returns {string} teksti me aq fjalë
+   */
+  fitWords(text, count) {
+    // Fjalët e tekstit (ndarë me hapësirë)
+    const words = text.split(" ");
+    // Nëse s'mjaftojnë, shtojmë tekst derisa të mjaftojnë
+    while (words.length < count) {
+      // Shtojmë fjalët e një pjese të re
+      words.push(...this.moreText(APPEND_CHUNK_CHARS).split(" "));
+    }
+    // Mbajmë vetëm fjalët e para dhe i bashkojmë sërish me hapësirë
+    return words.slice(0, count).join(" ");
+  }
+
+  /**
+   * Sa fjalë janë shkruar deri tani: çdo hapësirë e kaluar mbyll një fjalë,
+   * dhe fjala e fundit numërohet kur shkruhet karakteri i fundit i tekstit.
+   * @returns {number} fjalët e shkruara
+   */
+  typedWords() {
+    // Hapësirat mes pozicionit 0 dhe atij aktual
+    const spaces = this.chars.slice(0, this.index).filter((char) => char === " ").length;
+    // Plus 1 kur teksti është shkruar i gjithi (fjala e fundit s'ka hapësirë pas saj)
+    return spaces + (this.index >= this.chars.length ? 1 : 0);
   }
 
   /**
@@ -703,6 +788,9 @@ export class TypingTest {
     } else if (name === "lenient") { // çelësi ë/ç: vlera e re është e kundërta e asaj aktuale
       // Çelësi ndërron vlerën aktuale
       value = !this.settings.lenient;
+    } else if (name === "words") { // numri i fjalëve është numër
+      // Number("25") jep 25
+      value = Number(button.dataset.value);
     } else if (name === "ghost") { // çelësi i garës: edhe ky ndërron vlerën aktuale
       // E kundërta e vlerës aktuale
       value = !this.settings.ghost;
@@ -728,8 +816,16 @@ export class TypingTest {
     }
     // Në praktikë, klikimi i çdo niveli (edhe atij që ishte zgjedhur) të kthen te testi normal
     const leavingPractice = name === "level" && this.practiceMode;
-    // Nëse vlera është e njëjtë dhe nuk po dalim nga praktika, s'ka nevojë për test të ri
-    if (!leavingPractice && this.settings[name] === value) {
+    // Cilësimet e reja: kopje e të vjetrave (spread) me vlerën e ndryshuar
+    const next = { ...this.settings, [name]: value };
+    // Zgjedhja e një kohe e bën testin me kohë; zgjedhja e një numri fjalësh e bën me fjalë
+    if (name === "duration" || name === "words") {
+      // "duration" -> "time", "words" -> "words"
+      next.mode = name === "duration" ? "time" : "words";
+    }
+    // Nëse asgjë s'ndryshoi dhe nuk po dalim nga praktika, s'ka nevojë për test të ri
+    // (JSON.stringify i kthen të dy objektet në tekst, që të krahasohen të gjitha fushat njëherësh)
+    if (!leavingPractice && JSON.stringify(next) === JSON.stringify(this.settings)) {
       return; // ndalojmë këtu, pjesa tjetër e funksionit nuk ekzekutohet
     }
     // Zgjedhja e një niveli mbyll praktikën
@@ -737,8 +833,8 @@ export class TypingTest {
       // Kthehemi te testi normal
       this.practiceMode = false;
     }
-    // Objekt i ri me vlerën e ndryshuar (spread kopjon të tjerat)
-    this.settings = { ...this.settings, [name]: value };
+    // Ruajmë cilësimet e reja
+    this.settings = next;
     // Ruajmë në localStorage
     this.storage.saveSettings(this.settings);
     // Shënojmë zgjedhjen aktive
@@ -858,7 +954,7 @@ export class TypingTest {
     // Ndalojmë ciklin e mëparshëm nëse po ecte
     cancelAnimationFrame(this.ghostFrameId);
     // Rekordi i ruajtur për këtë gjuhë, nivel dhe kohë (undefined nëse s'ka)
-    const record = this.storage.getRecords()[StorageService.recordKey(this.settings.lang, this.settings.level, this.settings.duration)];
+    const record = this.storage.getRecords()[StorageService.recordKey(this.settings.lang, this.settings.level, lengthKey(this.settings))];
     // Shënimi poshtë çelësit, sipas rastit
     let hint;
     // Në praktikë s'ka rekord për të garuar
@@ -947,9 +1043,12 @@ export class TypingTest {
    * @returns {void}
    */
   updateLiveStats(remaining, elapsed) {
+    // Numri i parë: me fjalë "3 / 25"; me kohë sekondat e mbetura
+    // (Math.ceil: 29.3 sekonda shfaqen si 30, që 0 të dalë vetëm kur koha mbaron)
+    const primary = this.settings.mode === "words" ? `${this.typedWords()} / ${this.settings.words}` : String(Math.ceil(remaining));
     // I kalojmë vlerat te ndërfaqja
     this.ui.updateLiveStats({
-      remaining, // koha e mbetur
+      primary, // teksti i numrit të parë
       wpm: this.stats.getLiveWpm(elapsed), // WPM deri tani (0 në sekondën e parë)
       accuracy: this.stats.getAccuracy(), // saktësia deri tani
     });

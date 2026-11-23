@@ -42,7 +42,9 @@ import {
   LANGUAGES, // gjuhët
   LEVELS, // nivelet, për renditjen e rekordeve
   LEVEL_LABELS, // emrat e niveleve, përfshirë "Praktikë"
-  DURATIONS, // kohëzgjatjet, për renditjen e rekordeve
+  LENGTH_ORDER, // rendi i gjatësive (kohët, pastaj fjalët), për renditjen e rekordeve
+  lengthKey, // çelësi i gjatësisë: "30" ose "w25"
+  lengthLabel, // gjatësia si tekst: "30 s" ose "25 fjalë"
   MESSAGES, // mesazhet në shqip
   WEAK_KEY_TABLE_LIMIT, // sa taste shfaq tabela
   WEAK_KEY_MIN_ATTEMPTS, // sa herë duhet të ketë dalë një tast
@@ -145,8 +147,8 @@ function renderRecords(body, records) {
     orderOf(LANGUAGES, a.lang) - orderOf(LANGUAGES, b.lang)
     // Pastaj sipas nivelit (|| kalon te krahasimi tjetër kur i pari është 0, pra i barabartë)
     || orderOf(LEVELS, a.level) - orderOf(LEVELS, b.level)
-    // Pastaj sipas kohës
-    || DURATIONS.indexOf(a.duration) - DURATIONS.indexOf(b.duration));
+    // Pastaj sipas gjatësisë: kohët me radhë, pastaj testet me fjalë
+    || LENGTH_ORDER.indexOf(lengthKey(a)) - LENGTH_ORDER.indexOf(lengthKey(b)));
   // Nëse s'ka asnjë rekord (p.sh. të gjitha testet kishin 0 WPM)
   if (list.length === 0) {
     // Një rresht me mesazh
@@ -170,12 +172,27 @@ function renderRecords(body, records) {
     body.append(createRow([
       { text: findLabel(LANGUAGES, record.lang) }, // gjuha
       { text: findLabel(LEVEL_LABELS, record.level) }, // niveli
-      { text: `${record.duration} s` }, // koha
+      { text: lengthLabel(record) }, // gjatësia: "30 s" ose "25 fjalë"
       { text: String(record.wpm), numeric: true }, // WPM
       { text: `${Stats.formatAccuracy(record.accuracy)}%`, numeric: true }, // saktësia
       { text: formatDate(record.dateISO) }, // data
     ]));
   });
+}
+
+/**
+ * Filtron testet sipas llojit (e pastër).
+ * @param {object[]} history - testet
+ * @param {"all"|"time"|"words"} mode - lloji i kërkuar
+ * @returns {object[]} testet që përputhen
+ */
+function filterByMode(history, mode) {
+  // "all": të gjitha
+  if (mode === "all") {
+    return history; // pa filtër
+  }
+  // Testet e vjetra s'kanë fushën mode: ato janë me kohë
+  return history.filter((entry) => (entry.mode === "words" ? "words" : "time") === mode);
 }
 
 /**
@@ -187,6 +204,23 @@ function renderRecords(body, records) {
 function renderHistory(body, history) {
   // Fshijmë rreshtat e vjetër
   body.textContent = "";
+  // Filtri s'la asnjë test: një rresht me shpjegim
+  if (history.length === 0) {
+    // Rreshti
+    const row = document.createElement("tr");
+    // Një qelizë e vetme
+    const cell = document.createElement("td");
+    // colSpan = 7: zë të 7 kolonat
+    cell.colSpan = 7;
+    // Mesazhi
+    cell.textContent = MESSAGES.historyFilterEmpty;
+    // Qeliza te rreshti
+    row.append(cell);
+    // Rreshti te tabela
+    body.append(row);
+    // Dalim
+    return;
+  }
   // Fragment, që ta shtojmë gjithçka në faqe me një veprim
   const fragment = document.createDocumentFragment();
   // Një rresht për çdo test
@@ -196,7 +230,7 @@ function renderHistory(body, history) {
       { text: formatDateTime(entry.dateISO) }, // data dhe ora
       { text: findLabel(LANGUAGES, entry.lang) }, // gjuha
       { text: findLabel(LEVEL_LABELS, entry.level) }, // niveli
-      { text: `${entry.duration} s` }, // koha
+      { text: lengthLabel(entry, true) }, // gjatësia: "30 s" ose "25 fjalë (41,3 s)"
       { text: String(entry.wpm), numeric: true }, // WPM
       { text: `${Stats.formatAccuracy(entry.accuracy)}%`, numeric: true }, // saktësia
       { text: String(entry.errors), numeric: true }, // gabimet
@@ -308,6 +342,7 @@ function initHistoryPage() {
     keysPractice: document.getElementById("keys-practice"), // lidhja "Praktiko tastet e dobëta"
     historyBody: document.getElementById("history-body"), // trupi i tabelës së historikut
     historyCount: document.getElementById("history-count"), // fjalia me numrin e testeve
+    historyMode: document.getElementById("history-mode"), // filtri i tabelës: të gjitha, me kohë, me fjalë
     filters: Array.from(document.querySelectorAll("[data-filter]")), // tre listat e filtrave
     clearButton: document.getElementById("clear-button"), // butoni "Fshi historikun"
     layoutButtons: Array.from(document.querySelectorAll("[data-layout]")), // dy butonat e tastierës
@@ -380,8 +415,8 @@ function initHistoryPage() {
     renderHeatmap();
     // Tabela e tasteve të dobëta
     renderWeakKeys(elements.keysBody, elements.keysPractice, storage.getKeyStats());
-    // Tabela e historikut
-    renderHistory(elements.historyBody, history);
+    // Tabela e historikut, sipas filtrit të saj
+    renderHistory(elements.historyBody, filterByMode(history, elements.historyMode.value));
     // Fjalia me numrin real të testeve
     elements.historyCount.textContent = MESSAGES.historyCount(history.length);
     // Grafiku (pasi përmbajtja është e dukshme, që Chart.js të masë madhësinë saktë)
@@ -402,6 +437,12 @@ function initHistoryPage() {
       // Rivizatojmë hartën
       renderHeatmap();
     });
+  });
+
+  // Filtri i tabelës: rivizaton vetëm tabelën e testeve
+  elements.historyMode.addEventListener("change", () => {
+    // Testet e filtruara sipas zgjedhjes
+    renderHistory(elements.historyBody, filterByMode(storage.getHistory(), elements.historyMode.value));
   });
 
   // Çdo filtër: kur ndryshon vlera, ndryshon grafiku

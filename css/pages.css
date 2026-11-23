@@ -259,6 +259,11 @@
   border-style: dashed; /* vijë me ndërprerje, si tastet pa të dhëna */
 }
 
+/* Filtri i tabelës së testeve: lista nuk zgjerohet në gjithë gjerësinë */
+.history-filter {
+  align-self: flex-start; /* majtas, me gjerësinë e vet */
+}
+
 /* ---------------- EKSPORTI DHE IMPORTI ---------------- */
 
 /*

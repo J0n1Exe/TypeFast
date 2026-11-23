@@ -72,6 +72,7 @@ typefast/
 ## Si punon testi
 
 - Testi nis vetë me shkronjën e parë. Para kësaj, koha tregon kohëzgjatjen e plotë.
+- Dy lloje testi: **me kohë** (15, 30, 60, 120 sekonda) dhe **me fjalë** (10, 25, 50 fjalë). Te testi me fjalë teksti ka saktësisht aq fjalë, testi mbaron me karakterin e fundit dhe gjatë testit shfaqet "fjalë të shkruara / gjithsej".
 - Shkrimi lexohet nga një `<textarea>` e padukshme që mbulon kutinë e tekstit. Përdoret ngjarja `input`, që punon saktë me ë dhe ç (AltGr, taste të vdekura) dhe me tastierat e tabletit. `keydown` përdoret vetëm për Backspace, Tab, Esc dhe për të bllokuar shigjetat.
 - Çdo karakter krahasohet me karakterin në të njëjtin vend në tekst. I sakti bëhet i gjelbër, i gabuari i kuq dhe i nënvizuar (që të dallohet edhe pa ngjyra).
 - Kur kursori arrin rreshtin e tretë, teksti ngjitet lart një rresht, që rreshti aktual të jetë gjithmonë në mes.
@@ -86,7 +87,9 @@ typefast/
 WPM = (karaktere të sakta në tekst / 5) / minuta
 ```
 
-Një "fjalë" llogaritet si 5 karaktere (hapësirat përfshihen). Në fund, minutat janë gjithmonë kohëzgjatja e plotë e testit. Rezultati rrumbullakohet në numër të plotë. Gjatë sekondës së parë WPM i drejtpërdrejtë tregon 0, që të mos dalin numra të mëdhenj pa kuptim.
+Një "fjalë" llogaritet si 5 karaktere (hapësirat përfshihen). Në fund, minutat janë kohëzgjatja e plotë e testit (testi me kohë) ose koha që u desh (testi me fjalë), e matur me `performance.now()`. Rezultati rrumbullakohet në numër të plotë. Gjatë sekondës së parë WPM i drejtpërdrejtë tregon 0, që të mos dalin numra të mëdhenj pa kuptim.
+
+**Testi me fjalë:** p.sh. 25 fjalë me 150 karaktere të sakta në 40 sekonda: (150 / 5) / (40 / 60) = 45 WPM. Rekordet e testeve me fjalë janë të ndara nga ato me kohë: çelësi është `sq-medium-w25` në vend të `sq-medium-30` (`lengthKey()` te `config.js`). Te Historiku, tabela e testeve ka filtrin "Shfaq" (të gjitha, me kohë, me fjalë) dhe filtri i grafikut ka edhe 10, 25, 50 fjalë.
 
 **Saktësia:**
 
@@ -225,10 +228,10 @@ Gjithçka ruhet në `localStorage` të shfletuesit, me çelësa që nisin me `ty
 
 | Çelësi | Përmbajtja |
 | --- | --- |
-| `typefast:history` | deri në 200 testet e fundit: data, gjuha, niveli, koha, WPM, saktësia, gabimet, karakteret, karakteret më të gabuara |
+| `typefast:history` | deri në 200 testet e fundit: data, gjuha, niveli, koha (te testet me fjalë edhe `mode: "words"` dhe numri i fjalëve), WPM, saktësia, gabimet, karakteret, karakteret më të gabuara |
 | `typefast:records` | rekordi më i mirë për çdo kombinim `gjuha-niveli-koha` |
 | `typefast:keys` | për çdo tast: sa herë doli (`attempts`) dhe sa herë u gabua (`errors`), nga të gjitha testet |
-| `typefast:settings` | cilësimet e fundit të testit (koha, niveli, gjuha, ë/ç, gara me rekordin) |
+| `typefast:settings` | cilësimet e fundit të testit (lloji: me kohë ose me fjalë, koha, numri i fjalëve, niveli, gjuha, ë/ç, gara me rekordin) |
 | `typefast:layout` | tastiera e zgjedhur për hartën dhe mësimet (`sq` ose `us`) |
 | `typefast:guide` | id-të e mësimeve të kryera të kursit |
 | `typefast:theme` | tema e zgjedhur |

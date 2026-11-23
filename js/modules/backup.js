@@ -36,6 +36,8 @@ import {
   BACKUP_MAX_BYTES, // madhësia maksimale e importit
   MAX_HISTORY, // sa teste ruhen
   DURATIONS, // kohëzgjatjet e lejuara
+  WORD_COUNTS, // numrat e lejuar të fjalëve
+  lengthKey, // çelësi i gjatësisë: "30" ose "w25"
   LANGUAGES, // gjuhët e lejuara
   LEVELS, // nivelet e rekordeve
   LEVEL_LABELS, // nivelet e testeve (përfshirë praktikën)
@@ -241,7 +243,7 @@ export class BackupService {
       typeof entry.dateISO === "string" && BackupService.isDate(entry.dateISO), // data e vlefshme
       LANGUAGES.some((item) => item.id === entry.lang), // gjuhë e njohur
       LEVEL_LABELS.some((item) => item.id === entry.level), // nivel i njohur (edhe praktika)
-      DURATIONS.includes(entry.duration), // kohëzgjatje e lejuar
+      BackupService.isValidLength(entry), // test me kohë të lejuar, ose me fjalë dhe kohë pozitive
       Number.isFinite(entry.wpm) && entry.wpm >= 0, // WPM numër jo negativ
       Number.isFinite(entry.accuracy) && entry.accuracy >= 0 && entry.accuracy <= 100, // saktësia 0 deri 100
       BackupService.isCount(entry.errors), // gabimet: numër i plotë jo negativ
@@ -259,6 +261,7 @@ export class BackupService {
       dateISO: entry.dateISO, // data
       lang: entry.lang, // gjuha
       level: entry.level, // niveli
+      ...(entry.mode === "words" ? { mode: "words", words: entry.words } : {}), // fushat e testit me fjalë
       duration: entry.duration, // kohëzgjatja
       wpm: entry.wpm, // shpejtësia
       accuracy: entry.accuracy, // saktësia
@@ -284,15 +287,15 @@ export class BackupService {
     const valid = [
       LANGUAGES.some((item) => item.id === record.lang), // gjuhë e njohur
       LEVELS.some((item) => item.id === record.level), // vetëm nivelet e zakonshme (praktika s'ka rekord)
-      DURATIONS.includes(record.duration), // kohëzgjatje e lejuar
-      key === StorageService.recordKey(record.lang, record.level, record.duration), // çelësi përputhet
+      BackupService.isValidLength(record), // gjatësi e lejuar
+      key === StorageService.recordKey(record.lang, record.level, lengthKey(record)), // çelësi përputhet
       Number.isFinite(record.wpm) && record.wpm > 0, // rekordi ka të paktën 1 WPM
       Number.isFinite(record.accuracy) && record.accuracy >= 0 && record.accuracy <= 100, // saktësia
       typeof record.dateISO === "string" && BackupService.isDate(record.dateISO), // data
     ].every(Boolean); // every(Boolean): true vetëm nëse çdo kusht i listës është true
     // Rekordi i pastër vetëm me fushat që njohim, ose null
     return valid
-      ? { lang: record.lang, level: record.level, duration: record.duration, wpm: record.wpm, accuracy: record.accuracy, dateISO: record.dateISO } // i pastër
+      ? { lang: record.lang, level: record.level, ...(record.mode === "words" ? { mode: "words", words: record.words } : {}), duration: record.duration, wpm: record.wpm, accuracy: record.accuracy, dateISO: record.dateISO } // i pastër
       : null; // i pavlefshëm
   }
 
@@ -323,6 +326,22 @@ export class BackupService {
   static isObject(value) {
     // typeof null është "object", prandaj e përjashtojmë veçmas; edhe vargjet janë "object"
     return value !== null && typeof value === "object" && !Array.isArray(value);
+  }
+
+  /**
+   * A është gjatësia e një testi ose rekordi e vlefshme?
+   * - Me kohë (pa fushën mode, ose mode "time"): kohëzgjatja duhet të jetë 15, 30, 60 ose 120.
+   * - Me fjalë (mode "words"): numri i fjalëve 10, 25 ose 50, dhe koha që u desh një numër pozitiv.
+   * @param {object} item - testi ose rekordi
+   * @returns {boolean} true nëse po
+   */
+  static isValidLength(item) {
+    // Test me fjalë
+    if (item.mode === "words") {
+      return WORD_COUNTS.includes(item.words) && Number.isFinite(item.duration) && item.duration > 0; // fjalë të lejuara dhe kohë pozitive
+    }
+    // Përndryshe duhet të jetë test me kohë (ose test i vjetër pa fushën mode)
+    return (item.mode === undefined || item.mode === "time") && DURATIONS.includes(item.duration);
   }
 
   /**
