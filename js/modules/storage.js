@@ -310,8 +310,19 @@ export class StorageService {
    * @returns {{duration: number, level: string, lang: string, lenient: boolean, ghost: boolean}} cilësimet
    */
   getSettings() {
-    // Lexojmë; rezerva është objekt bosh
-    const saved = this.readJSON(STORAGE_KEYS.SETTINGS, {}) || {};
+    // Lexojmë dhe kontrollojmë me funksionin e pastër më poshtë
+    return StorageService.sanitizeSettings(this.readJSON(STORAGE_KEYS.SETTINGS, {}));
+  }
+
+  /**
+   * Kontrollon çdo fushë të cilësimeve (e pastër). Vlerat e pavlefshme zëvendësohen me parazgjedhjet.
+   * Përdoret kur lexohen cilësimet nga localStorage dhe kur importohen nga një skedar.
+   * @param {any} value - objekti i cilësimeve (mund të jetë edhe null ose diçka e gabuar)
+   * @returns {{duration: number, level: string, lang: string, lenient: boolean, ghost: boolean}} cilësimet e kontrolluara
+   */
+  static sanitizeSettings(value) {
+    // Nëse s'është objekt, punojmë me një objekt bosh (të gjitha fushat marrin parazgjedhjen)
+    const saved = value && typeof value === "object" ? value : {};
     // Kthejmë një objekt të ri ku çdo fushë kontrollohet veçmas
     return {
       // Kohëzgjatja duhet të jetë një nga 15/30/60/120
@@ -404,6 +415,79 @@ export class StorageService {
   saveGuideProgress(ids) {
     // Ruajmë si JSON (writeJSON e ka try/catch brenda)
     return this.writeJSON(STORAGE_KEYS.GUIDE, ids);
+  }
+
+  // ---------------- ZËVENDËSIMI I PLOTË (IMPORTI) ----------------
+
+  /**
+   * Zëvendëson historikun, rekordet, statistikat e tasteve dhe (nëse jepen) cilësimet,
+   * "të gjitha ose asnjë": nëse një shkrim dështon në mes (p.sh. kujtesa është plot),
+   * rikthehen vlerat e vjetra, që të mos mbetet gjysmë historik i vjetër dhe gjysmë i ri.
+   * @param {{history: object[], records: object, keys: object, settings: object|null}} data - të dhënat e kontrolluara
+   * @returns {boolean} true nëse u ruajt gjithçka
+   */
+  replaceAll(data) {
+    // Pa localStorage s'mund të ruajmë asgjë
+    if (!this.store) {
+      return false; // ruajtja s'lejohet
+    }
+    // Çiftet [çelësi, vlera e re] që do shkruhen
+    const entries = [
+      [STORAGE_KEYS.HISTORY, data.history], // testet
+      [STORAGE_KEYS.RECORDS, data.records], // rekordet
+      [STORAGE_KEYS.KEYS, data.keys], // statistikat e tasteve
+    ];
+    // Cilësimet shkruhen vetëm kur skedari i ka
+    if (data.settings) {
+      // I shtojmë te lista
+      entries.push([STORAGE_KEYS.SETTINGS, data.settings]);
+    }
+    // Kopja e vlerave të vjetra (tekstet ashtu siç janë në localStorage), për rikthim
+    const backup = new Map();
+    // try: leximi mund të hedhë gabim në raste të rralla
+    try {
+      // Ruajmë tekstin aktual të çdo çelësi (null kur s'ekziston)
+      entries.forEach(([key]) => backup.set(key, this.store.getItem(key)));
+    } catch {
+      // Pa kopje s'rrezikojmë: nuk shkruajmë asgjë
+      return false; // u ndal para çdo ndryshimi
+    }
+    // Shkruajmë një nga një
+    for (const [key, value] of entries) {
+      // writeJSON kthen false nëse shkrimi dështon
+      if (!this.writeJSON(key, value)) {
+        // Rikthejmë gjithçka si ishte
+        this.restore(backup);
+        // Dështoi
+        return false;
+      }
+    }
+    // U ruajt gjithçka
+    return true;
+  }
+
+  /**
+   * Rikthen vlerat e vjetra pas një importi të dështuar.
+   * @param {Map<string, string|null>} backup - çelësi -> teksti i vjetër (null = s'ekzistonte)
+   * @returns {void}
+   */
+  restore(backup) {
+    // Kalojmë çdo çelës të kopjuar
+    backup.forEach((raw, key) => {
+      // try: edhe rikthimi mund të dështojë; atëherë s'kemi çfarë të bëjmë më shumë
+      try {
+        // Çelësi që s'ekzistonte fshihet; të tjerët marrin tekstin e vjetër
+        if (raw === null) {
+          // Fshirja
+          this.store.removeItem(key);
+        } else {
+          // Rikthimi
+          this.store.setItem(key, raw);
+        }
+      } catch {
+        // Injorojmë: faqja vazhdon të punojë
+      }
+    });
   }
 
   // ---------------- NDIHMËS ----------------

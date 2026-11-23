@@ -16,7 +16,8 @@
  * WEAK_KEY_MIN_ERRORS, PRACTICE_TOKENS_PER_KEY, KEYBOARD_LAYOUTS,
  * DEFAULT_LAYOUT, HEAT_THRESHOLDS, PROGRESS_SAMPLE_SIZE, GUIDE_CHAPTERS,
  * GUIDE_US_MAP, GUIDE_FINGERS, GUIDE_THUMB, GUIDE_CHUNK_SIZE, GUIDE_CHUNK_MS,
- * GUIDE_ADVANCE_MS, GUIDE_PASS_ACCURACY, MESSAGES, findLabel.
+ * GUIDE_ADVANCE_MS, GUIDE_PASS_ACCURACY, BACKUP_APP, BACKUP_VERSION,
+ * BACKUP_FILENAME, BACKUP_MAX_BYTES, MESSAGES, plural, findLabel.
  *
  * Kush e përdor: pothuajse të gjithë modulet (texts.js, timer.js, stats.js,
  * storage.js, ui.js, theme.js, chart.js, app.js) dhe faqet te js/pages/.
@@ -384,6 +385,30 @@ export const GUIDE_ADVANCE_MS = 700;
 export const GUIDE_PASS_ACCURACY = 90;
 
 /**
+ * Shenja që shkruhet në çdo skedar eksporti. Importi pranon vetëm skedarë me këtë shenjë,
+ * që të mos ngatërrohet me një skedar JSON tjetër.
+ * @type {string}
+ */
+export const BACKUP_APP = "TypeFast";
+
+/**
+ * Versioni i formatit të skedarit të eksportit. Nëse formati ndryshon një ditë,
+ * rritet ky numër dhe importi i njeh skedarët e vjetër.
+ * @type {number}
+ */
+export const BACKUP_VERSION = 1;
+
+/** @type {string} Emri i skedarit që shkarkohet. */
+export const BACKUP_FILENAME = "typefast-historiku.json";
+
+/**
+ * Madhësia maksimale e skedarit të importit: 1 MB. Një eksport me 200 teste është rreth 100 KB,
+ * pra një skedar shumë më i madh s'është eksport i TypeFast dhe s'ia vlen të lexohet.
+ * @type {number}
+ */
+export const BACKUP_MAX_BYTES = 1000000;
+
+/**
  * Mesazhet në shqip që krijon JavaScript (tekstet e tjera janë te HTML).
  * Funksionet brenda marrin numra realë dhe kthejnë fjalinë e plotë.
  */
@@ -537,6 +562,65 @@ export const MESSAGES = Object.freeze({
    */
   guideFinger: (keyName, finger) => `Tasti ${keyName}: ${finger}.`,
 
+  backupTooBig: "Skedari është shumë i madh (mbi 1 MB) për të qenë eksport i TypeFast. Historiku nuk u prek.", // importi: skedar i madh
+  backupReadError: "Skedari nuk u lexua dot. Provo përsëri ose zgjidh një skedar tjetër. Historiku nuk u prek.", // importi: leximi dështoi
+  backupInvalidJson: "Skedari nuk është JSON i vlefshëm (mund të jetë i prishur ose i ndryshuar me dorë). Historiku nuk u prek.", // importi: JSON i prishur
+  backupWrongApp: "Ky skedar nuk është eksport i TypeFast. Zgjidh skedarin typefast-historiku.json. Historiku nuk u prek.", // importi: shenja mungon
+  backupWrongVersion: "Ky skedar është krijuar nga një version tjetër i TypeFast dhe nuk mund të lexohet. Historiku nuk u prek.", // importi: version i panjohur
+  backupBadStructure: "Skedarit i mungojnë pjesë të detyrueshme (testet, rekordet ose statistikat e tasteve). Historiku nuk u prek.", // importi: struktura e gabuar
+  backupBadSettings: "Cilësimet në skedar nuk janë në formën e duhur. Historiku nuk u prek.", // importi: cilësimet e gabuara
+  backupSaveError: "Të dhënat nuk u ruajtën, sepse shfletuesi nuk lejon ruajtjen (ose kujtesa është plot). Historiku i mëparshëm u rikthye.", // importi: ruajtja dështoi
+  backupCancelled: "Importi u anulua. Historiku nuk u prek.", // importi: përdoruesi tha "Anulo"
+  backupExportEmpty: "Ende s'ka teste për të eksportuar.", // eksporti: historik bosh
+
+  /**
+   * Gabimi kur një test në skedar ka të dhëna të pavlefshme.
+   * @param {number} number - numri rendor i testit në skedar (nga 1)
+   * @returns {string} fjalia
+   */
+  backupBadEntry: (number) => `Testi nr. ${number} në skedar ka të dhëna të pavlefshme. Historiku nuk u prek.`,
+
+  /**
+   * Gabimi kur një rekord në skedar është i pavlefshëm.
+   * @param {string} key - çelësi i rekordit, p.sh. "sq-medium-30"
+   * @returns {string} fjalia
+   */
+  backupBadRecord: (key) => `Rekordi "${key}" në skedar ka të dhëna të pavlefshme. Historiku nuk u prek.`,
+
+  /**
+   * Gabimi kur statistikat e një tasti janë të pavlefshme.
+   * @param {string} key - tasti
+   * @returns {string} fjalia
+   */
+  backupBadKey: (key) => `Statistikat e tastit "${key}" në skedar janë të pavlefshme. Historiku nuk u prek.`,
+
+  /**
+   * Teksti i dritares së konfirmimit të importit, me numrat realë.
+   * @param {object} info - numrat
+   * @param {number} info.tests - testet në skedar (pas shkurtimit në 200)
+   * @param {number} info.records - rekordet në skedar
+   * @param {number} info.keys - tastet me statistika
+   * @param {string} info.date - data e eksportit, e formatuar
+   * @param {number} info.current - testet aktuale në këtë shfletues
+   * @param {number} info.dropped - sa teste të vjetra hiqen sepse kalojnë kufirin 200
+   * @returns {string} teksti
+   */
+  backupConfirm: ({ tests, records, keys, date, current, dropped }) => `Skedari (eksportuar më ${date}) ka ${plural(tests, "test", "teste")}, ${plural(records, "rekord", "rekorde")} dhe statistikat e ${plural(keys, "tasti", "tasteve")}.${dropped > 0 ? ` ${dropped === 1 ? "Testi më i vjetër nuk merret" : `${dropped} testet më të vjetra nuk merren`}, sepse ruhen deri në ${MAX_HISTORY}.` : ""} Historiku aktual (${plural(current, "test", "teste")}) do të zëvendësohet plotësisht.`,
+
+  /**
+   * Mesazhi pas një importi të suksesshëm.
+   * @param {number} tests - testet e importuara
+   * @returns {string} fjalia
+   */
+  backupImported: (tests) => `Historiku u importua: ${plural(tests, "test", "teste")}.`,
+
+  /**
+   * Mesazhi pas eksportit.
+   * @param {number} tests - testet e eksportuara
+   * @returns {string} fjalia
+   */
+  backupExported: (tests) => `U shkarkua ${BACKUP_FILENAME} me ${plural(tests, "test", "teste")}.`,
+
   /**
    * Numër ditësh me fjalë, p.sh. "3 ditë" (në shqip njëjës dhe shumës janë njësoj).
    * @param {number} count - numri i ditëve
@@ -624,6 +708,19 @@ export const MESSAGES = Object.freeze({
    */
   historyCount: (count) => (count === 1 ? "1 test i ruajtur, më i riu sipër." : `${count} teste të ruajtura, më i riu sipër. Ruhen deri në ${MAX_HISTORY} testet e fundit.`),
 });
+
+/**
+ * Numri me fjalën në njëjës ose shumës: 1 test, 2 teste.
+ * Përdoret nga mesazhet më lart (funksionet e tyre thirren më vonë, pra ky funksion ekziston atëherë).
+ * @param {number} count - numri
+ * @param {string} one - fjala për 1, p.sh. "test"
+ * @param {string} many - fjala për shumë, p.sh. "teste"
+ * @returns {string} p.sh. "1 test" ose "5 teste"
+ */
+export function plural(count, one, many) {
+  // Vetëm numri 1 merr njëjësin
+  return `${count} ${count === 1 ? one : many}`;
+}
 
 /**
  * Gjen tekstin shqip (label) për një id, p.sh. "medium" kthen "Mesatare".

@@ -11,6 +11,7 @@
  *   - grafikun e përparimit me filtra (ProgressChart)
  *   - tabelën e plotë të testeve
  *   - butonin "Fshi historikun" me dritaren <dialog>
+ *   - eksportin dhe importin e të dhënave si skedar JSON (BackupService)
  *   - gjendjen bosh kur s'ka asnjë test
  * Rreshtat krijohen me document.createElement dhe textContent, jo me
  * innerHTML, që asnjë e dhënë e ruajtur të mos interpretohet si HTML.
@@ -34,6 +35,8 @@ import { Stats } from "../modules/stats.js";
 import { HistorySummary } from "../modules/summary.js";
 // Harta e tastierës
 import { KeyboardHeatmap } from "../modules/heatmap.js";
+// Eksporti dhe importi i të dhënave
+import { BackupService } from "../modules/backup.js";
 // Listat dhe mesazhet
 import {
   LANGUAGES, // gjuhët
@@ -309,6 +312,13 @@ function initHistoryPage() {
     clearButton: document.getElementById("clear-button"), // butoni "Fshi historikun"
     layoutButtons: Array.from(document.querySelectorAll("[data-layout]")), // dy butonat e tastierës
     dialog: document.getElementById("clear-dialog"), // dritarja e konfirmimit
+    exportButton: document.getElementById("export-button"), // "Eksporto historikun"
+    importButton: document.getElementById("import-button"), // "Importo historikun"
+    importFile: document.getElementById("import-file"), // zgjedhësi i fshehur i skedarëve
+    importDialog: document.getElementById("import-dialog"), // konfirmimi i importit
+    importDialogText: document.getElementById("import-dialog-text"), // teksti me numrat e skedarit
+    transferMessage: document.getElementById("transfer-message"), // mesazhi i suksesit
+    transferError: document.getElementById("transfer-error"), // mesazhi i gabimit
   };
   // Grafiku
   const chart = new ProgressChart({
@@ -349,6 +359,8 @@ function initHistoryPage() {
     const history = storage.getHistory();
     // A ka të paktën një test?
     const hasData = history.length > 0;
+    // Eksporti ka kuptim vetëm kur ka teste
+    elements.exportButton.disabled = !hasData;
     // Gjendja bosh shfaqet vetëm pa të dhëna
     elements.empty.hidden = hasData;
     // Përmbajtja shfaqet vetëm me të dhëna
@@ -418,6 +430,108 @@ function initHistoryPage() {
     render();
     // Fokusi te lidhja e gjendjes bosh, që përdoruesi i tastierës të mos humbasë
     elements.empty.querySelector("a")?.focus();
+  });
+
+  // ---------------- EKSPORTI DHE IMPORTI ----------------
+
+  // Shërbimi i eksportit dhe importit
+  const backup = new BackupService(storage);
+  // Të dhënat e kontrolluara të skedarit që pret konfirmim (null kur s'ka)
+  let pendingImport = null;
+
+  /**
+   * Shfaq një mesazh suksesi ose gabimi dhe fshin tjetrin.
+   * @param {"message"|"error"} type - lloji i mesazhit
+   * @param {string} text - teksti
+   * @returns {void}
+   */
+  function showTransfer(type, text) {
+    // Mesazhi i suksesit: teksti vetëm kur lloji është "message"
+    elements.transferMessage.textContent = type === "message" ? text : "";
+    // Mesazhi i gabimit: teksti vetëm kur lloji është "error"
+    elements.transferError.textContent = type === "error" ? text : "";
+  }
+
+  // "Eksporto historikun": shkarkon skedarin
+  elements.exportButton.addEventListener("click", () => {
+    // Shkarkimi; kthen numrin e testeve
+    const count = backup.download();
+    // Konfirmimi me numrin real
+    showTransfer("message", count > 0 ? MESSAGES.backupExported(count) : MESSAGES.backupExportEmpty);
+  });
+
+  // "Importo historikun": hap zgjedhësin e skedarëve
+  elements.importButton.addEventListener("click", () => {
+    // Fshijmë mesazhet e vjetra
+    showTransfer("message", "");
+    // click() mbi fushën e fshehur hap dritaren e sistemit për zgjedhjen e skedarit
+    elements.importFile.click();
+  });
+
+  // Kur zgjidhet një skedar
+  elements.importFile.addEventListener("change", async () => {
+    // Skedari i parë (dhe i vetëm) i zgjedhur
+    const file = elements.importFile.files[0];
+    // Pastrojmë fushën, që i njëjti skedar të mund të zgjidhet sërish më vonë
+    elements.importFile.value = "";
+    // Nëse përdoruesi e mbylli dritaren pa zgjedhur, s'bëjmë asgjë
+    if (!file) {
+      return; // asnjë skedar
+    }
+    // Leximi dhe kontrolli i plotë (async: presim leximin e skedarit)
+    const result = await backup.readFile(file);
+    // Skedar i gabuar: gabimi i qartë dhe asgjë s'ndryshon
+    if (!result.ok) {
+      // Mesazhi i gabimit (lexohet menjëherë nga lexuesi i ekranit, role="alert")
+      showTransfer("error", result.error);
+      // Dalim
+      return;
+    }
+    // Skedari është i saktë: fshijmë gabimin e mëparshëm, nëse kishte
+    showTransfer("message", "");
+    // Ruajmë të dhënat e kontrolluara derisa përdoruesi të përgjigjet
+    pendingImport = result.data;
+    // Teksti i dritares me numrat realë të skedarit
+    elements.importDialogText.textContent = MESSAGES.backupConfirm({
+      tests: result.data.history.length, // testet që do merren
+      records: Object.keys(result.data.records).length, // rekordet
+      keys: Object.keys(result.data.keys).length, // tastet
+      date: result.data.exportedAt ? formatDateTime(result.data.exportedAt) : "?", // data e eksportit
+      current: storage.getHistory().length, // testet aktuale
+      dropped: result.dropped, // testet e vjetra që s'merren
+    });
+    // Fshijmë përgjigjen e mëparshme (Esc e mbyll pa e ndryshuar këtë vlerë)
+    elements.importDialog.returnValue = "";
+    // Pyetja
+    elements.importDialog.showModal();
+  });
+
+  // Kur mbyllet konfirmimi i importit
+  elements.importDialog.addEventListener("close", () => {
+    // Të dhënat që prisnin
+    const data = pendingImport;
+    // S'presin më
+    pendingImport = null;
+    // "Anulo" ose Esc: asgjë s'ndryshon
+    if (elements.importDialog.returnValue !== "confirm" || !data) {
+      // E themi qartë
+      showTransfer("message", MESSAGES.backupCancelled);
+      // Dalim
+      return;
+    }
+    // Zëvendësimi "të gjitha ose asnjë"
+    if (!backup.apply(data)) {
+      // Ruajtja dështoi; StorageService ka rikthyer të dhënat e vjetra
+      showTransfer("error", MESSAGES.backupSaveError);
+      // Dalim
+      return;
+    }
+    // Rivizatojmë faqen me të dhënat e reja
+    render();
+    // Mesazhi i suksesit
+    showTransfer("message", MESSAGES.backupImported(data.history.length));
+    // Fokusi kthehet te butoni i importit
+    elements.importButton.focus();
   });
 
   // Animacioni i shfaqjes së seksioneve

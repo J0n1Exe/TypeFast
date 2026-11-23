@@ -53,6 +53,7 @@ typefast/
       speed-graph.js      klasa SpeedGraph: grafiku i shpejtësisë, i vizatuar me Canvas 2D
       summary.js          klasa HistorySummary: koha totale, ditët rresht, përparimi
       heatmap.js          klasa KeyboardHeatmap: harta e tastierës me ngjyra sipas gabimeve
+      backup.js           klasa BackupService: eksporti dhe importi i historikut si JSON
       course.js           klasa Course: kapitujt, kyçja, përparimi dhe gishti për çdo tast
       guide.js            klasa TypingGuide: dritarja e mësimit me katrorë të animuar dhe prova e kapitullit
     pages/
@@ -149,6 +150,17 @@ Saktësia e provës = karaktere të sakta / (karaktere të sakta + gabime) x 100
 
 Përmbajtja e kursit është te `config.js` (`GUIDE_CHAPTERS`). Për tastierën amerikane çdo mësim kthehet tast për tast me `GUIDE_US_MAP` (Z dhe Y, ë dhe ;), ose përdor fjalë anglisht kur shqipja s'ka kuptim aty. Përparimi ruhet te `typefast:guide`.
 
+## Eksporti dhe importi i historikut
+
+Te **Historiku**, seksioni "Ruaj ose rikthe të dhënat" (i dukshëm edhe kur historiku është bosh) ka dy butona (`BackupService`, `js/modules/backup.js`):
+
+- **Eksporto historikun** shkarkon `typefast-historiku.json` me testet, rekordet, statistikat e tasteve dhe cilësimet, plus `app: "TypeFast"`, `version: 1` dhe `exportedAt`. Shkarkimi bëhet me `Blob`, `URL.createObjectURL` dhe një `<a download>`.
+- **Importo historikun** hap zgjedhësin e skedarëve, lexon skedarin me `file.text()` dhe e kontrollon të gjithin para se të ndryshojë diçka: madhësia (deri në 1 MB), JSON i vlefshëm, shenja dhe versioni, struktura, pastaj çdo test, rekord dhe tast veç e veç. Gabimi i parë ndalon importin me një mesazh të qartë në shqip (p.sh. "Testi nr. 3 në skedar ka të dhëna të pavlefshme"), dhe historiku mbetet i paprekur.
+- Kur skedari kalon kontrollin, një `<dialog>` tregon numrat realë të tij dhe pyet nëse do ta zëvendësosh historikun aktual. Me më shumë se 200 teste merren 200 më të rejat.
+- `StorageService.replaceAll()` e bën zëvendësimin "të gjitha ose asnjë": ruan një kopje të vlerave aktuale dhe, nëse një shkrim dështon (p.sh. kujtesa është plot), i rikthen.
+
+Skedari nuk përfshin temën, tastierën e zgjedhur dhe përparimin e kursit të mësimeve.
+
 ## Gara me rekordin
 
 Çelësi **Garë me rekordin** shfaq një kursor të dytë gri që lëviz me shpejtësinë e rekordit për kombinimin e zgjedhur (`TypingTest.runGhostFrame()`):
@@ -230,6 +242,7 @@ Nëse `localStorage` është plot ose i bllokuar, testi punon njësoj dhe faqja 
 - **JavaScript ES6+**: klasa dhe module, një klasë për çdo modul.
 - **fetch**: lexon `data/texts.json` një herë dhe e mban në kujtesë.
 - **localStorage**: historiku, rekordet, cilësimet, tema.
+- **Blob, URL.createObjectURL dhe File API**: eksporti dhe importi i historikut si skedar JSON, pa server.
 - **performance.now**: koha e saktë. Koha e mbetur llogaritet gjithmonë nga kjo orë; `setInterval` (100ms) përdoret vetëm për të rifreskuar ekranin.
 - **IntersectionObserver**: shfaq butë seksionet e historikut dhe të faqes "Si funksionon" kur hyjnë në ekran.
 - **Canvas**: grafiku i shpejtësisë te rezultati vizatohet direkt me Canvas 2D; grafiku i përparimit vizatohet nga Chart.js mbi Canvas.

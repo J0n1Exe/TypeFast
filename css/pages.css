@@ -259,6 +259,47 @@
   border-style: dashed; /* vijë me ndërprerje, si tastet pa të dhëna */
 }
 
+/* ---------------- EKSPORTI DHE IMPORTI ---------------- */
+
+/*
+  Seksioni i eksportit/importit. Para tij mund të jetë gjendja bosh ose përmbajtja,
+  që s'janë .section, prandaj rregulli ".section + .section" s'i jep hapësirë: e japim këtu.
+*/
+.transfer {
+  margin-top: var(--space-12); /* 96px nga pjesa sipër */
+}
+
+/* Dy butonat në rresht */
+.transfer__actions {
+  display: flex; /* në rresht */
+  flex-wrap: wrap; /* kalojnë në rresht të ri */
+  gap: var(--space-2); /* 16px mes butonave */
+}
+
+/* Mesazhi i suksesit, p.sh. "Historiku u importua: 12 teste." */
+.transfer__message {
+  color: var(--text-muted); /* i zbehur */
+}
+
+/*
+  Mesazhi i gabimit. Nuk përdor të kuqen, sepse ajo është vetëm për shkronjat e gabuara
+  të testit; e dallojmë me kornizë të hollë dhe tekst të trashë.
+*/
+.transfer__error {
+  max-width: var(--prose-max); /* gjerësi e lexueshme */
+  padding: var(--space-1) var(--space-2); /* 8px lart/poshtë, 16px anash */
+  border: var(--border-width) solid var(--text); /* kornizë me ngjyrën e tekstit */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  font-weight: var(--fw-medium); /* pak i trashë */
+}
+
+/* Kur s'ka mesazh, elementet janë bosh: pa kornizë dhe pa hapësirë, pra të padukshëm */
+.transfer__message:empty,
+.transfer__error:empty {
+  padding: 0; /* pa hapësirë */
+  border: 0; /* pa kornizë */
+}
+
 /* ---------------- GRAFIKU ---------------- */
 
 /* Rreshti me filtrat e grafikut */
