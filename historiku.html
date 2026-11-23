@@ -346,6 +346,57 @@
     </div>
 
     <!--
+      ========== EKSPORTI DHE IMPORTI ==========
+      Ky seksion është JASHTË pjesës #history-content, që të duket edhe kur historiku
+      është bosh: në një shfletues të ri, importi është mënyra për t'i rikthyer të dhënat.
+    -->
+    <section class="section transfer reveal" aria-labelledby="transfer-title">
+      <!-- Titulli i seksionit -->
+      <h2 class="section__title" id="transfer-title">Ruaj ose rikthe të dhënat</h2>
+      <!-- Shpjegimi i dy veprimeve -->
+      <p class="section__lead">Eksporti shkarkon skedarin typefast-historiku.json me testet, rekordet, statistikat e tasteve dhe cilësimet. Me importin i rikthen ato në këtë shfletues ose në një tjetër. Para se të zëvendësohet diçka, skedari kontrollohet i gjithi dhe të pyet për konfirmim.</p>
+      <!-- Butonat -->
+      <div class="transfer__actions">
+        <!-- Shkarkon skedarin; i çaktivizuar kur s'ka teste -->
+        <button class="button" id="export-button" type="button">Eksporto historikun</button>
+        <!-- Hap zgjedhësin e skedarëve (klikon fushën e fshehur më poshtë) -->
+        <button class="button" id="import-button" type="button">Importo historikun</button>
+        <!--
+          Zgjedhësi i skedarëve, i fshehur: butoni "Importo historikun" e hap me JavaScript.
+          accept: zgjedhësi tregon vetëm skedarë .json (përdoruesi mund të zgjedhë edhe të tjerë,
+          prandaj skedari kontrollohet gjithsesi pas leximit).
+          aria-label: emri i fushës për lexuesit e ekranit.
+        -->
+        <input type="file" id="import-file" accept=".json,application/json" aria-label="Zgjidh skedarin e eksportit" hidden>
+      </div>
+      <!-- Mesazhi i suksesit; role="status": lexuesi i ekranit e njofton me qetësi -->
+      <p class="transfer__message" id="transfer-message" role="status"></p>
+      <!-- Mesazhi i gabimit; role="alert": lexuesi i ekranit e njofton menjëherë -->
+      <p class="transfer__error" id="transfer-error" role="alert"></p>
+    </section>
+
+    <!--
+      Dritarja e konfirmimit të importit. Teksti (sa teste, rekorde e taste ka skedari)
+      vendoset nga JavaScript me numrat realë të skedarit të zgjedhur.
+    -->
+    <dialog class="dialog" id="import-dialog" aria-labelledby="import-dialog-title" aria-describedby="import-dialog-text">
+      <!-- method="dialog": butonat e mbyllin dritaren dhe returnValue merr "value" e butonit -->
+      <form class="dialog__form" method="dialog">
+        <!-- Titulli -->
+        <h2 class="dialog__title" id="import-dialog-title">Ta zëvendësoj historikun aktual?</h2>
+        <!-- Numrat e skedarit dhe pasoja; JavaScript e plotëson -->
+        <p class="dialog__text" id="import-dialog-text"></p>
+        <!-- Butonat -->
+        <div class="dialog__actions">
+          <!-- value="cancel": asgjë nuk ndryshon. autofocus: zgjedhja më e sigurt merr fokusin. -->
+          <button class="button" type="submit" value="cancel" autofocus>Anulo</button>
+          <!-- value="confirm": JavaScript e ruan importin -->
+          <button class="button button--primary" type="submit" value="confirm">Po, zëvendësoje</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!--
       Dritarja e konfirmimit (elementi vendas <dialog>).
       JavaScript e hap me showModal(), që bllokon pjesën tjetër të faqes.
       aria-labelledby / aria-describedby: titulli dhe teksti i dritares lexohen nga lexuesi i ekranit.

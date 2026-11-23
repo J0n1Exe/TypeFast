@@ -43,6 +43,20 @@
   transform: translateY(var(--border-width)); /* zbret 1px, si buton i vërtetë */
 }
 
+/* Butoni i çaktivizuar (p.sh. "Eksporto historikun" kur s'ka teste): i zbehur dhe pa reagim */
+.button:disabled {
+  opacity: 0.5; /* i zbehur, që të duket qartë se s'klikohet */
+  cursor: not-allowed; /* miu tregon që s'lejohet */
+}
+
+/* Butoni i çaktivizuar nuk ndryshon në hover dhe nuk "zbret" kur shtypet */
+.button:disabled:hover,
+.button:disabled:active {
+  background-color: var(--surface); /* sfondi mbetet i njëjtë */
+  border-color: var(--border); /* korniza mbetet e njëjtë */
+  transform: none; /* pa lëvizje */
+}
+
 /*
   Butoni kryesor: sfond me ngjyrën e tekstit dhe tekst me ngjyrën e sfondit.
   Kontrasti më i lartë i mundshëm, pa përdorur theksin.
@@ -58,6 +72,13 @@
   background-color: var(--text-muted); /* zbehet pak */
   border-color: var(--text-muted); /* korniza ndjek sfondin */
   color: var(--on-text); /* teksti mbetet i kundërt */
+}
+
+/* Butoni kryesor i çaktivizuar mban ngjyrat e veta edhe në hover */
+.button--primary:disabled:hover,
+.button--primary:disabled:active {
+  background-color: var(--text); /* sfondi i kundërt mbetet */
+  border-color: var(--text); /* korniza mbetet */
 }
 
 /* ---------------- BUTONI ME IKONË (tema) ---------------- */

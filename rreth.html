@@ -218,7 +218,33 @@
       <p>Kursi punon me tastierën shqipe (QWERTZ) dhe atë amerikane (QWERTY). Në atë amerikane disa mësime ndryshojnë (Z dhe Y ndërrojnë vend, në vend të Ë është pikëpresja, dhe mësimi i Ç-së hiqet). Përparimi ruhet në localStorage dhe mund të fshihet me "Rinis kursin"; historiku i testeve nuk preket.</p>
     </section>
 
-    <!-- ========== 6. GARA ME REKORDIN ========== -->
+    <!-- ========== 6. EKSPORTI DHE IMPORTI ========== -->
+    <section class="section reveal" aria-labelledby="backup-title">
+      <!-- Titulli -->
+      <h2 class="section__title" id="backup-title">Eksporti dhe importi i historikut</h2>
+      <!-- Pse ekziston -->
+      <p>Të dhënat ruhen vetëm në shfletues, prandaj humbin nëse pastron shfletuesin ose kalon në një kompjuter tjetër. Te Historiku, "Eksporto historikun" i ruan në një skedar dhe "Importo historikun" i rikthen.</p>
+      <!-- Eksporti -->
+      <h3 class="subsection__title">Eksporti</h3>
+      <p>Shkarkohet skedari typefast-historiku.json me testet, rekordet, statistikat e tasteve dhe cilësimet. Skedari ka edhe shenjën "TypeFast", versionin e formatit (1) dhe datën e eksportit. Shkarkimi bëhet pa server: teksti JSON futet në një Blob (një skedar në kujtesën e shfletuesit), URL.createObjectURL i jep një adresë të përkohshme, dhe një lidhje me atributin download e ruan si skedar.</p>
+      <!-- Importi -->
+      <h3 class="subsection__title">Importi dhe kontrolli</h3>
+      <p>Skedari lexohet me File API (file.text()) dhe kontrollohet i gjithi para se të ndryshojë diçka. Rregulli është "të gjitha ose asnjë": gabimi i parë e ndalon importin dhe historiku mbetet i paprekur.</p>
+      <!-- Kontrollet, me radhë -->
+      <ol class="rule-list">
+        <li>Madhësia: jo më shumë se 1 MB.</li>
+        <li>Teksti duhet të jetë JSON i vlefshëm.</li>
+        <li>Duhet të ketë shenjën "TypeFast" dhe versionin 1.</li>
+        <li>Duhet të ketë testet (listë), rekordet dhe statistikat e tasteve.</li>
+        <li>Çdo test kontrollohet veç e veç: data, gjuha, niveli, koha, WPM, saktësia (0 deri 100) dhe numrat e gabimeve. Gabimi tregon numrin e testit, p.sh. "Testi nr. 3".</li>
+        <li>Çdo rekord: çelësi duhet të përputhet me gjuhën, nivelin dhe kohën e tij.</li>
+        <li>Çdo tast: një karakter i vetëm, dhe gabimet jo më shumë se herët që doli.</li>
+      </ol>
+      <!-- Konfirmimi dhe ruajtja -->
+      <p>Kur skedari kalon kontrollin, një dritare tregon sa teste, rekorde dhe taste ka, dhe pyet nëse do ta zëvendësosh historikun aktual. Nëse skedari ka më shumë se 200 teste, merren 200 më të rejat. Ruajtja bëhet me kujdes: para se të shkruhet diçka ruhet një kopje e të dhënave aktuale, dhe nëse shkrimi dështon në mes (p.sh. kujtesa është plot), kopja rikthehet, që të mos mbetet gjysmë historik i vjetër dhe gjysmë i ri.</p>
+    </section>
+
+    <!-- ========== 7. GARA ME REKORDIN ========== -->
     <section class="section reveal" aria-labelledby="ghost-title">
       <!-- Titulli -->
       <h2 class="section__title" id="ghost-title">Gara me rekordin</h2>
@@ -232,7 +258,7 @@
       <p>Pozicioni llogaritet para çdo vizatimi të ekranit me requestAnimationFrame (rreth 60 herë në sekondë), gjithmonë nga ora e saktë performance.now. Gara nuk punon në praktikë dhe as kur ende s'ka rekord për kombinimin e zgjedhur.</p>
     </section>
 
-    <!-- ========== 7. GRAFIKU I SHPEJTËSISË ========== -->
+    <!-- ========== 8. GRAFIKU I SHPEJTËSISË ========== -->
     <section class="section reveal" aria-labelledby="speed-title">
       <!-- Titulli -->
       <h2 class="section__title" id="speed-title">Grafiku i shpejtësisë dhe qëndrueshmëria</h2>
@@ -254,7 +280,7 @@
       <p>Grafiku vizatohet direkt me Canvas, pa librari: çdo sekondë kthehet në koordinatë x dhe çdo shpejtësi në koordinatë y, pastaj pikat lidhen me vija.</p>
     </section>
 
-    <!-- ========== 8. PËRMBLEDHJA DHE HARTA ========== -->
+    <!-- ========== 9. PËRMBLEDHJA DHE HARTA ========== -->
     <section class="section reveal" aria-labelledby="overview-title">
       <!-- Titulli -->
       <h2 class="section__title" id="overview-title">Përmbledhja dhe harta e tastierës</h2>
@@ -269,7 +295,7 @@
       <p>Harta e tastierës vizaton çdo tast dhe e ngjyros sipas shkallës së gabimit: pa ngjyrë për 0%, pastaj gjithnjë e më e kuqe nën 2%, 2 deri 5%, 5 deri 10% dhe 10% e lart. Tastet që kanë dalë më pak se 5 herë mbeten pa ngjyrë, me vijë të ndërprerë. Mund të zgjedhësh tastierën shqipe (QWERTZ) ose amerikane (QWERTY).</p>
     </section>
 
-    <!-- ========== 9. SHKURTORET ========== -->
+    <!-- ========== 10. SHKURTORET ========== -->
     <section class="section reveal" aria-labelledby="keys-title">
       <!-- Titulli -->
       <h2 class="section__title" id="keys-title">Shkurtoret e tastierës</h2>
@@ -321,7 +347,7 @@
       <p>Caps Lock zbulohet me funksionin e shfletuesit getModifierState("CapsLock"), që lexohet në çdo shtypje dhe lëshim tasti. Shfletuesi nuk e tregon gjendjen e Caps Lock pa shtypur një tast, prandaj paralajmërimi del me shtypjen e parë.</p>
     </section>
 
-    <!-- ========== 10. TEKNOLOGJITË ========== -->
+    <!-- ========== 11. TEKNOLOGJITË ========== -->
     <section class="section reveal" aria-labelledby="tech-title">
       <!-- Titulli -->
       <h2 class="section__title" id="tech-title">Teknologjitë e përdorura</h2>
@@ -348,6 +374,14 @@
         <div class="tech-list__item">
           <dt>localStorage</dt>
           <dd>Ruan historikun (deri në 200 testet e fundit), rekordet, gabimet për çdo tast, cilësimet dhe temën. Të dhënat mbeten në shfletues edhe pasi e mbyll.</dd>
+        </div>
+        <div class="tech-list__item">
+          <dt>Blob dhe URL.createObjectURL</dt>
+          <dd>Krijojnë skedarin e eksportit në kujtesën e shfletuesit dhe i japin një adresë të përkohshme, që të shkarkohet pa server.</dd>
+        </div>
+        <div class="tech-list__item">
+          <dt>File API</dt>
+          <dd>Lexon skedarin që zgjedh përdoruesi te importi (input type="file" dhe file.text()).</dd>
         </div>
         <div class="tech-list__item">
           <dt>performance.now</dt>
