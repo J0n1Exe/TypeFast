@@ -183,7 +183,7 @@ function renderRecords(body, records) {
 /**
  * Filtron testet sipas llojit (e pastër).
  * @param {object[]} history - testet
- * @param {"all"|"time"|"words"} mode - lloji i kërkuar
+ * @param {"all"|"time"|"words"|"custom"} mode - lloji i kërkuar
  * @returns {object[]} testet që përputhen
  */
 function filterByMode(history, mode) {
@@ -191,8 +191,8 @@ function filterByMode(history, mode) {
   if (mode === "all") {
     return history; // pa filtër
   }
-  // Testet e vjetra s'kanë fushën mode: ato janë me kohë
-  return history.filter((entry) => (entry.mode === "words" ? "words" : "time") === mode);
+  // Lloji i çdo testi: "words", "custom", ose "time" (testet e vjetra s'kanë fushën mode: janë me kohë)
+  return history.filter((entry) => (entry.mode === "words" || entry.mode === "custom" ? entry.mode : "time") === mode);
 }
 
 /**

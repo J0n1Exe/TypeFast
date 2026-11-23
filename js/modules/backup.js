@@ -38,6 +38,7 @@ import {
   DURATIONS, // kohëzgjatjet e lejuara
   WORD_COUNTS, // numrat e lejuar të fjalëve
   lengthKey, // çelësi i gjatësisë: "30" ose "w25"
+  isTextLength, // a është test me fjalë ose me tekstin tënd
   LANGUAGES, // gjuhët e lejuara
   LEVELS, // nivelet e rekordeve
   LEVEL_LABELS, // nivelet e testeve (përfshirë praktikën)
@@ -261,7 +262,7 @@ export class BackupService {
       dateISO: entry.dateISO, // data
       lang: entry.lang, // gjuha
       level: entry.level, // niveli
-      ...(entry.mode === "words" ? { mode: "words", words: entry.words } : {}), // fushat e testit me fjalë
+      ...(isTextLength(entry) ? { mode: entry.mode, words: entry.words } : {}), // fushat e testit me fjalë ose me tekstin tënd
       duration: entry.duration, // kohëzgjatja
       wpm: entry.wpm, // shpejtësia
       accuracy: entry.accuracy, // saktësia
@@ -332,10 +333,15 @@ export class BackupService {
    * A është gjatësia e një testi ose rekordi e vlefshme?
    * - Me kohë (pa fushën mode, ose mode "time"): kohëzgjatja duhet të jetë 15, 30, 60 ose 120.
    * - Me fjalë (mode "words"): numri i fjalëve 10, 25 ose 50, dhe koha që u desh një numër pozitiv.
+   * - Me tekstin tënd (mode "custom"): çdo numër fjalësh, dhe kohë pozitive.
    * @param {object} item - testi ose rekordi
    * @returns {boolean} true nëse po
    */
   static isValidLength(item) {
+    // Test me tekstin tënd: çdo numër i plotë pozitiv fjalësh dhe kohë pozitive
+    if (item.mode === "custom") {
+      return Number.isInteger(item.words) && item.words > 0 && Number.isFinite(item.duration) && item.duration > 0; // numra të vlefshëm
+    }
     // Test me fjalë
     if (item.mode === "words") {
       return WORD_COUNTS.includes(item.words) && Number.isFinite(item.duration) && item.duration > 0; // fjalë të lejuara dhe kohë pozitive

@@ -227,6 +227,19 @@
       <p>Kursi punon me tastierën shqipe (QWERTZ) dhe atë amerikane (QWERTY). Në atë amerikane disa mësime ndryshojnë (Z dhe Y ndërrojnë vend, në vend të Ë është pikëpresja, dhe mësimi i Ç-së hiqet). Përparimi ruhet në localStorage dhe mund të fshihet me "Rinis kursin"; historiku i testeve nuk preket.</p>
     </section>
 
+    <!-- ========== TEKSTI YT DHE FOTOJA E REZULTATIT ========== -->
+    <section class="section reveal" aria-labelledby="custom-title">
+      <!-- Titulli -->
+      <h2 class="section__title" id="custom-title">Teksti yt dhe fotoja e rezultatit</h2>
+      <!-- Teksti yt -->
+      <h3 class="subsection__title">Teksti yt</h3>
+      <p>Butoni "Teksti yt" hap një dritare ku shkruan ose ngjit tekstin tënd. Ngjitja lejohet vetëm këtu; gjatë testit mbetet e bllokuar. Teksti pastrohet: rreshtat e rinj, tabulatorët dhe hapësirat e tepërta kthehen në një hapësirë të vetme, dhe ë e përbërë bëhet një karakter. Pas pastrimit duhet të ketë nga 20 deri në 2000 karaktere; përndryshe dritarja mbetet e hapur me një mesazh të qartë.</p>
+      <p>Testi me tekstin tënd sillet si testi me fjalë: gjatë testit shfaqen "fjalë të shkruara / gjithsej", mbaron kur shkruan karakterin e fundit dhe WPM llogaritet me kohën që u desh. Ruhet në historik me nivelin "Teksti yt", por nuk hyn te rekordet, sepse çdo tekst është i ndryshëm dhe s'krahasohet drejt me të tjerët. Tab e rinis me të njëjtin tekst; zgjedhja e një kohe, numri fjalësh ose niveli të kthen te tekstet e TypeFast.</p>
+      <!-- Fotoja e rezultatit -->
+      <h3 class="subsection__title">Shkarko rezultatin</h3>
+      <p>Pas çdo testi, "Shkarko rezultatin" krijon një foto PNG 1200 x 630 piksela me WPM, saktësinë, gabimet, gjuhën, nivelin, gjatësinë e testit, datën dhe emrin TypeFast, në ngjyrat e temës aktuale. Fotoja vizatohet me Canvas 2D në një canvas që nuk shfaqet në faqe; ngjyrat dhe madhësitë lexohen nga variablat CSS. Pastaj canvas.toDataURL("image/png") e kthen vizatimin në një adresë që e mban foton brenda vetes, dhe një lidhje me atributin download e ruan si skedar.</p>
+    </section>
+
     <!-- ========== 6. EKSPORTI DHE IMPORTI ========== -->
     <section class="section reveal" aria-labelledby="backup-title">
       <!-- Titulli -->
@@ -387,6 +400,10 @@
         <div class="tech-list__item">
           <dt>Blob dhe URL.createObjectURL</dt>
           <dd>Krijojnë skedarin e eksportit në kujtesën e shfletuesit dhe i japin një adresë të përkohshme, që të shkarkohet pa server.</dd>
+        </div>
+        <div class="tech-list__item">
+          <dt>canvas.toDataURL</dt>
+          <dd>Kthen fotonë e rezultatit, të vizatuar me Canvas 2D, në një skedar PNG që shkarkohet.</dd>
         </div>
         <div class="tech-list__item">
           <dt>File API</dt>

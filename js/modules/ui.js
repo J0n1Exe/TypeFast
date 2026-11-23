@@ -49,6 +49,8 @@ export class TestUI {
     this.practiceToggle = byId("practice-toggle"); // butoni "Praktiko tastet e dobëta"
     this.practiceHint = byId("practice-hint"); // shënimi poshtë butonit të praktikës
     this.practiceAvailable = false; // a ka të dhëna të mjaftueshme për praktikë (vendoset nga app.js)
+    this.customOpen = byId("custom-open"); // butoni "Teksti yt"
+    this.customHint = byId("custom-hint"); // shënimi pranë tij
 
     // ---- Zona e testit ----
     this.testArea = byId("test-area"); // statistikat, kutia dhe udhëzimi
@@ -87,6 +89,7 @@ export class TestUI {
     this.speedSummary = byId("speed-summary"); // fjalia me qëndrueshmërinë
     this.speedGraph = new SpeedGraph(this.speedCanvas); // objekti që vizaton grafikun
     this.retryButton = byId("retry-button"); // butoni "Provo përsëri"
+    this.downloadButton = byId("download-result"); // butoni "Shkarko rezultatin"
     this.resultsPractice = byId("results-practice"); // butoni i praktikës te rezultati
     this.announcer = byId("results-announcer"); // njoftuesi për lexuesit e ekranit
 
@@ -449,12 +452,22 @@ export class TestUI {
 
   /**
    * Ndryshon etiketën e numrit të parë sipas llojit të testit: "sekonda" ose "fjalë".
-   * @param {string} mode - "time" ose "words"
+   * @param {string} mode - "time", "words" ose "custom"
    * @returns {void}
    */
   setLengthMode(mode) {
-    // Etiketa sipas llojit
-    this.statTimeLabel.textContent = mode === "words" ? MESSAGES.statWords : MESSAGES.statSeconds;
+    // Etiketa sipas llojit: me fjalë dhe me tekstin tënd numërohen fjalët, me kohë sekondat
+    this.statTimeLabel.textContent = mode === "words" || mode === "custom" ? MESSAGES.statWords : MESSAGES.statSeconds;
+  }
+
+  /**
+   * Vendos shënimin pranë butonit "Teksti yt".
+   * @param {string} text - shënimi
+   * @returns {void}
+   */
+  setCustomHint(text) {
+    // Teksti i shënimit
+    this.customHint.textContent = text;
   }
 
   /**
@@ -462,17 +475,20 @@ export class TestUI {
    * Në praktikë asnjë nivel nuk shënohet si aktiv, sepse teksti nuk vjen nga një nivel.
    * @param {{duration: number, level: string, lang: string, lenient: boolean}} settings - cilësimet
    * @param {boolean} [practiceActive=false] - true kur praktika e tasteve të dobëta është aktive
+   * @param {boolean} [customActive=false] - true kur testi bëhet me tekstin e përdoruesit
    * @returns {void}
    */
-  applySettings(settings, practiceActive = false) {
+  applySettings(settings, practiceActive = false, customActive = false) {
     // Kalojmë çdo zgjedhje
     this.chips.forEach((chip) => {
       // data-setting tregon cilin cilësim përfaqëson, p.sh. "duration"
       const name = chip.dataset.setting;
       // Kohët janë aktive vetëm në testin me kohë, numrat e fjalëve vetëm në testin me fjalë
       const modeMatches = (name !== "duration" || settings.mode === "time") && (name !== "words" || settings.mode === "words");
+      // Me tekstin tënd, koha, fjalët dhe niveli s'përdoren, prandaj asnjë s'është aktiv
+      const customBlocks = customActive && ["duration", "words", "level"].includes(name);
       // Në praktikë, zgjedhjet e nivelit nuk janë aktive; përndryshe krahasojmë si tekst ("30")
-      const isActive = modeMatches && !(practiceActive && name === "level") && chip.dataset.value === String(settings[name]);
+      const isActive = modeMatches && !customBlocks && !(practiceActive && name === "level") && chip.dataset.value === String(settings[name]);
       // aria-pressed="true" për aktiven; CSS e ngjyros me theksin
       chip.setAttribute("aria-pressed", String(isActive));
     });
@@ -482,6 +498,8 @@ export class TestUI {
     this.ghostToggle.setAttribute("aria-checked", String(settings.ghost));
     // Butoni i praktikës është "i shtypur" kur praktika është aktive
     this.practiceToggle.setAttribute("aria-pressed", String(practiceActive));
+    // Butoni "Teksti yt" është "i shtypur" kur testi bëhet me tekstin tënd
+    this.customOpen.setAttribute("aria-pressed", String(customActive));
   }
 
   /**
@@ -499,6 +517,8 @@ export class TestUI {
     this.lenientToggle.disabled = disabled;
     // Edhe çelësi i garës
     this.ghostToggle.disabled = disabled;
+    // Edhe butoni "Teksti yt"
+    this.customOpen.disabled = disabled;
     // Butoni i praktikës: i bllokuar gjatë testit OSE kur s'ka ende të dhëna
     this.practiceToggle.disabled = disabled || !this.practiceAvailable;
   }

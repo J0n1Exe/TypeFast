@@ -30,17 +30,19 @@ import {
   WORD_COUNTS, // numrat e fjalëve të lejuar
   TEST_MODES, // "time" dhe "words"
   lengthKey, // çelësi i gjatësisë: "30" ose "w25"
+  CUSTOM_LEVEL, // "niveli" i testeve me tekstin tënd, që s'hyjnë te rekordet
+  isTextLength, // a është test me fjalë ose me tekstin tënd
 } from "../config.js"; // skedari nga vijnë të gjitha
 
 /**
- * Fushat që i shtohen një testi ose rekordi me fjalë: { mode: "words", words: 25 }.
+ * Fushat që i shtohen një testi ose rekordi me fjalë ose me tekstin tënd: { mode: "words", words: 25 }.
  * Testet me kohë nuk marrin asnjë fushë shtesë, që të mbeten njësoj si testet e vjetra.
  * @param {{mode?: string, words?: number}} result - testi
  * @returns {{mode?: string, words?: number}} fushat shtesë, ose objekt bosh
  */
 function modeFields(result) {
-  // Me fjalë: dy fushat; me kohë: asgjë
-  return result.mode === "words" ? { mode: "words", words: result.words } : {};
+  // Me fjalë ose me tekstin tënd: dy fushat (mode është "words" ose "custom"); me kohë: asgjë
+  return isTextLength(result) ? { mode: result.mode, words: result.words } : {};
 }
 
 /**
@@ -284,8 +286,8 @@ export class StorageService {
    * @returns {boolean} true nëse e kalon rekordin ekzistues (ose s'ka rekord)
    */
   isNewRecord(result) {
-    // Testet e praktikës nuk hyjnë te rekordet (teksti i tyre s'krahasohet me nivelet)
-    if (result.level === PRACTICE_LEVEL.id) {
+    // Testet e praktikës dhe me tekstin tënd nuk hyjnë te rekordet (teksti i tyre s'krahasohet me nivelet)
+    if (result.level === PRACTICE_LEVEL.id || result.level === CUSTOM_LEVEL.id) {
       return false; // praktika nuk është kurrë rekord
     }
     // 0 WPM nuk është arritje
