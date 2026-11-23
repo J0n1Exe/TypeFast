@@ -224,6 +224,19 @@
         </button>
       </div>
 
+      <!-- Grupi "Teksti yt": testi bëhet me tekstin që shkruan ose ngjit përdoruesi -->
+      <div class="settings__group settings__group--practice">
+        <!--
+          class="chip": i njëjti stil si zgjedhjet e tjera, sepse edhe ky është një "modalitet".
+          aria-pressed: "true" kur testi po bëhet me tekstin tënd.
+          aria-haspopup="dialog": lexuesi i ekranit njofton që butoni hap një dritare.
+          aria-describedby: lexohet edhe shënimi pranë butonit.
+        -->
+        <button class="chip" id="custom-open" type="button" aria-pressed="false" aria-haspopup="dialog" aria-describedby="custom-hint">Teksti yt</button>
+        <!-- Shënimi: çfarë bën butoni, ose sa fjalë ka teksti aktiv -->
+        <p class="settings__hint" id="custom-hint">Shkruaj ose ngjit tekstin tënd dhe bëj testin me të.</p>
+      </div>
+
       <!-- Grupi i garës me rekordin: çelësi dhe shënimi i tij -->
       <div class="settings__group settings__group--practice">
         <!--
@@ -468,6 +481,8 @@
       <div class="results__actions">
         <!-- Nis një test të ri me tekst të ri -->
         <button class="button button--primary" id="retry-button" type="button">Provo përsëri</button>
+        <!-- Vizaton rezultatin si foto PNG me Canvas dhe e shkarkon -->
+        <button class="button" id="download-result" type="button">Shkarko rezultatin</button>
         <!-- Nis praktikën e tasteve të dobëta; hidden derisa të ketë të dhëna të mjaftueshme -->
         <button class="button" id="results-practice" type="button" hidden>Praktiko tastet e dobëta</button>
         <!-- Lidhje drejt historikut, me pamje butoni -->
@@ -481,6 +496,40 @@
       Është jashtë panelit të fshehur, që të jetë gjithmonë "i gjallë".
     -->
     <p class="visually-hidden" id="results-announcer" aria-live="polite"></p>
+
+    <!--
+      ========== DRITARJA "TEKSTI YT" ==========
+      Këtu përdoruesi shkruan ose ngjit tekstin e vet. Ngjitja (paste) lejohet VETËM këtu;
+      gjatë testit mbetet e bllokuar. JavaScript e kontrollon gjatësinë (20 deri 2000 karaktere)
+      para se të nisë testi.
+    -->
+    <dialog class="dialog custom-dialog" id="custom-dialog" aria-labelledby="custom-title" aria-describedby="custom-help">
+      <!-- method="dialog": butonat e mbyllin dritaren; JavaScript e ndalon mbylljen kur teksti s'është i vlefshëm -->
+      <form class="dialog__form" id="custom-form" method="dialog">
+        <!-- Titulli -->
+        <h2 class="dialog__title" id="custom-title">Teksti yt</h2>
+        <!-- Shpjegimi -->
+        <p class="dialog__text" id="custom-help">Shkruaj ose ngjit një tekst nga 20 deri në 2000 karaktere. Rreshtat e rinj dhe hapësirat e tepërta kthehen në një hapësirë të vetme. Testi mbaron kur shkruan gjithë tekstin dhe nuk hyn te rekordet.</p>
+        <!-- Etiketa e fushës; for lidh klikimin me fushën -->
+        <label class="field__label" for="custom-input">Teksti</label>
+        <!--
+          Fusha e tekstit. spellcheck="false": pa vija të kuqe drejtshkrimi.
+          aria-describedby: lexohen edhe numëruesi dhe gabimi.
+        -->
+        <textarea class="custom-dialog__input" id="custom-input" rows="8" spellcheck="false" aria-describedby="custom-count custom-error"></textarea>
+        <!-- "120 / 2000 karaktere"; përditësohet gjatë shkrimit -->
+        <p class="custom-dialog__count" id="custom-count">0 / 2000 karaktere</p>
+        <!-- Gabimi (shumë i shkurtër ose shumë i gjatë); role="alert": lexohet menjëherë -->
+        <p class="custom-dialog__error" id="custom-error" role="alert"></p>
+        <!-- Butonat -->
+        <div class="dialog__actions">
+          <!-- value="cancel": mbyll pa ndryshuar asgjë -->
+          <button class="button" type="submit" value="cancel">Anulo</button>
+          <!-- value="confirm": kontrollon tekstin dhe nis testin -->
+          <button class="button button--primary" type="submit" value="confirm">Fillo me këtë tekst</button>
+        </div>
+      </form>
+    </dialog>
   </main>
 
   <!-- ========== FUNDI I FAQES (i njëjtë në të tri faqet) ========== -->

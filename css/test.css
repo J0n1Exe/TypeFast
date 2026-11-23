@@ -56,6 +56,46 @@
   letter-spacing: var(--ls-small); /* shkronjat pak më larg */
 }
 
+/* ---------------- DRITARJA "TEKSTI YT" ---------------- */
+
+/* Fusha e madhe ku shkruhet ose ngjitet teksti */
+.custom-dialog__input {
+  width: 100%; /* gjithë gjerësia e dritares */
+  min-height: calc(var(--space-12) + var(--space-8)); /* 160px e lartë */
+  padding: var(--space-1) var(--space-2); /* 8px lart/poshtë, 16px anash */
+  border: var(--border-width) solid var(--border); /* kornizë e hollë */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  background-color: var(--bg); /* sfondi i faqes, që të dallohet nga dritarja */
+  color: var(--text); /* tekst i qartë */
+  font-family: var(--font-mono); /* si teksti i testit */
+  font-size: var(--fs-body); /* 16px: iPad nuk e zmadhon faqen kur fokusohet */
+  line-height: var(--lh-body); /* rresht i lirshëm */
+  resize: vertical; /* lartësia mund të ndryshohet me dorezën, gjerësia jo */
+}
+
+/* Numëruesi "120 / 2000 karaktere" */
+.custom-dialog__count {
+  color: var(--text-muted); /* i zbehur */
+  font-size: var(--fs-small); /* tekst i vogël */
+  line-height: var(--lh-small); /* rresht i lirshëm */
+  letter-spacing: var(--ls-small); /* shkronjat pak më larg */
+  font-variant-numeric: tabular-nums; /* numrat nuk lëvizin */
+}
+
+/* Gabimi; jo i kuq (e kuqja është vetëm për shkronjat e gabuara), por me kornizë dhe tekst të trashë */
+.custom-dialog__error {
+  padding: var(--space-1) var(--space-2); /* 8px lart/poshtë, 16px anash */
+  border: var(--border-width) solid var(--text); /* kornizë me ngjyrën e tekstit */
+  border-radius: var(--radius-sm); /* qoshe 4px */
+  font-weight: var(--fw-medium); /* pak i trashë */
+}
+
+/* Pa gabim, elementi është bosh: pa kornizë dhe pa hapësirë */
+.custom-dialog__error:empty {
+  padding: 0; /* pa hapësirë */
+  border: 0; /* pa kornizë */
+}
+
 /* ---------------- SHIRITI I PRAKTIKËS ---------------- */
 
 /* Kutia mbi statistikat që tregon cilat taste po praktikohen */

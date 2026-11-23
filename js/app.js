@@ -27,6 +27,10 @@
  *   "time"  - testi mbaron kur mbaron koha (15, 30, 60 ose 120 sekonda)
  *   "words" - teksti ka saktësisht 10, 25 ose 50 fjalë; testi mbaron kur shkruhet
  *             karakteri i fundit, dhe WPM llogaritet me kohën që u desh
+ * Teksti yt (this.customText): përdoruesi shkruan ose ngjit tekstin e vet në një
+ * <dialog>. Testi sillet si ai me fjalë (mbaron kur shkruhet i gjithë teksti),
+ * ruhet me nivelin "Teksti yt" dhe nuk hyn te rekordet.
+ * Pas çdo testi, "Shkarko rezultatin" vizaton rezultatin si foto PNG (ResultImage).
  *
  * Gjendjet e testit (this.state):
  *   "loading"  - tekstet po lexohen
@@ -49,6 +53,10 @@ import {
   CARET_IDLE_MS, // pas sa ms kursori pulson sërish
   MESSAGES, // mesazhet në shqip
   PRACTICE_LEVEL, // "niveli" me të cilin ruhen testet e praktikës
+  CUSTOM_LEVEL, // "niveli" me të cilin ruhen testet me tekstin tënd
+  CUSTOM_MIN_CHARS, // teksti yt: të paktën 20 karaktere
+  CUSTOM_MAX_CHARS, // teksti yt: më së shumti 2000 karaktere
+  isTextLength, // a mbaron testi kur mbaron teksti
   WEAK_KEY_LIMIT, // sa taste të dobëta praktikohen njëherësh
   WEAK_KEY_MIN_ATTEMPTS, // sa herë duhet të ketë dalë një tast që të renditet
   WEAK_KEY_MIN_ERRORS, // sa herë duhet të jetë gabuar një tast që të renditet
@@ -66,6 +74,8 @@ import { Stats } from "./modules/stats.js";
 import { TestUI } from "./modules/ui.js";
 // Vetëm për funksionin statik recordKey (çelësi i rekordit për një kombinim)
 import { StorageService } from "./modules/storage.js";
+// Fotoja e rezultatit (Canvas + toDataURL)
+import { ResultImage } from "./modules/result-image.js";
 
 /**
  * Tastet që bllokohen gjatë testit, që përdoruesi të mos lëvizë kursorin e fshehur.
@@ -130,6 +140,12 @@ export class TypingTest {
     this.ghostFrameId = null;
     // Sa sekonda të plota kanë marrë mostër deri tani në këtë test
     this.sampledSeconds = 0;
+    // Teksti yt aktiv, ose null kur testi bëhet me tekstet e TypeFast
+    this.customText = null;
+    // Teksti i pastruar që pret mbylljen e dritares "Teksti yt" me "Fillo me këtë tekst"
+    this.pendingCustom = null;
+    // Rezultati i fundit dhe nëse ishte rekord (për "Shkarko rezultatin")
+    this.lastResult = null;
   }
 
   /**
@@ -209,6 +225,27 @@ export class TypingTest {
     // Butoni "Provo përsëri"
     this.ui.retryButton.addEventListener("click", () => this.restart());
 
+    // "Shkarko rezultatin": fotoja PNG e rezultatit të fundit
+    this.ui.downloadButton.addEventListener("click", () => this.downloadResult());
+
+    // ---- Teksti yt ----
+    // Dritarja, formulari, fusha, numëruesi dhe gabimi
+    this.custom = {
+      dialog: document.getElementById("custom-dialog"), // dritarja
+      form: document.getElementById("custom-form"), // formulari brenda saj
+      input: document.getElementById("custom-input"), // fusha e tekstit
+      count: document.getElementById("custom-count"), // "120 / 2000 karaktere"
+      error: document.getElementById("custom-error"), // mesazhi i gabimit
+    };
+    // Butoni "Teksti yt" hap dritaren
+    this.ui.customOpen.addEventListener("click", () => this.openCustomDialog());
+    // Gjatë shkrimit përditësohet numëruesi dhe fshihet gabimi i vjetër
+    this.custom.input.addEventListener("input", () => this.updateCustomCount());
+    // "submit" ndodh kur klikohet "Anulo" ose "Fillo me këtë tekst"; këtu kontrollohet teksti
+    this.custom.form.addEventListener("submit", (event) => this.handleCustomSubmit(event));
+    // Kur mbyllet dritarja: nëse u konfirmua, nis testi me tekstin
+    this.custom.dialog.addEventListener("close", () => this.handleCustomClose());
+
     // Butoni "Praktiko tastet e dobëta" te paneli i rezultatit
     this.ui.resultsPractice.addEventListener("click", () => this.startPractice());
 
@@ -234,17 +271,17 @@ export class TypingTest {
     clearTimeout(this.idleTimeoutId);
     // Fillojmë nga pozicioni 0
     this.index = 0;
-    // A është test me fjalë
-    const wordsMode = this.settings.mode === "words";
+    // A është test me fjalë (teksti yt s'përdor numrin e fjalëve të cilësimeve)
+    const wordsMode = !this.customText && this.settings.mode === "words";
     // Me kohë: aq tekst sa mjafton për dikë me 150 WPM (150 fjalë x 5 karaktere x minutat).
     // Me fjalë: rreth dyfishi i karaktereve që duhen (pastaj teksti pritet saktë te fitWords).
     const minChars = wordsMode
       ? this.settings.words * CHARS_PER_WORD * 2 // p.sh. 25 fjalë x 5 x 2 = 250 karaktere
       : Math.ceil(TEXT_TARGET_WPM * CHARS_PER_WORD * (this.settings.duration / 60)); // p.sh. 30 sekonda jep 375
-    // Teksti i testit; në praktikë mund të mbetet bosh nëse tastet s'gjenden në këtë gjuhë
-    let text = "";
-    // Në praktikë, teksti ndërtohet nga tastet e dobëta
-    if (this.practiceMode) {
+    // Teksti i testit; me tekstin tënd është ai vetë, ndryshe gjenerohet më poshtë
+    let text = this.customText || "";
+    // Në praktikë (dhe pa tekstin tënd), teksti ndërtohet nga tastet e dobëta
+    if (!this.customText && this.practiceMode) {
       // Tastet e dobëta, të rillogaritura nga të gjitha testet deri tani
       this.practiceWeakKeys = this.getWeakKeys();
       // Gjenerojmë tekstin e praktikës
@@ -263,7 +300,7 @@ export class TypingTest {
       }
     }
     // Testi normal (ose praktika që s'u realizua): tekst sipas gjuhës dhe nivelit
-    if (!this.practiceMode) {
+    if (!this.customText && !this.practiceMode) {
       // Gjenerojmë tekstin sipas gjuhës dhe nivelit
       text = this.texts.generate(this.settings.lang, this.settings.level, minChars);
     }
@@ -273,9 +310,11 @@ export class TypingTest {
       text = this.fitWords(text, this.settings.words);
     }
     // Etiketa e numrit të parë: "sekonda" ose "fjalë"
-    this.ui.setLengthMode(this.settings.mode);
-    // Zgjedhjet aktive (në praktikë asnjë nivel nuk shënohet)
-    this.ui.applySettings(this.settings, this.practiceMode);
+    this.ui.setLengthMode(this.activeMode());
+    // Zgjedhjet aktive (në praktikë asnjë nivel nuk shënohet; me tekstin tënd as koha, fjalët dhe niveli)
+    this.ui.applySettings(this.settings, this.practiceMode, Boolean(this.customText));
+    // Shënimi pranë "Teksti yt": sa fjalë ka teksti aktiv, ose çfarë bën butoni
+    this.ui.setCustomHint(this.customText ? MESSAGES.customActive(this.totalWords()) : MESSAGES.customHint);
     // Shiriti i praktikës: tastet që po praktikohen, ose i fshehur
     this.ui.showPracticeBanner(this.practiceMode ? this.practiceWeakKeys.map((item) => item.key) : null);
     // Array.from ndan tekstin në karaktere të plota (ë është një karakter)
@@ -311,7 +350,7 @@ export class TypingTest {
     this.ui.setSettingsDisabled(true);
     // Me kohë: kohëmatësi numëron mbrapsht nga kohëzgjatja e zgjedhur.
     // Me fjalë: Infinity (pafundësi) e bën kronometër që s'mbaron vetë; testi mbaron te typeChar().
-    this.timer.start(this.settings.mode === "words" ? Infinity : this.settings.duration);
+    this.timer.start(this.endsAtText() ? Infinity : this.settings.duration);
     // Nëse gara është aktive, kursori gri nis të lëvizë
     if (this.ghostWpm !== null) {
       // Korniza e parë e ciklit të garës
@@ -384,8 +423,8 @@ export class TypingTest {
     const elapsed = this.timer.getElapsedSeconds();
     // Ndalojmë kohën
     this.timer.stop();
-    // A ishte test me fjalë
-    const wordsMode = this.settings.mode === "words";
+    // A mbaroi testi kur mbaroi teksti (me fjalë ose me tekstin tënd)
+    const wordsMode = this.endsAtText();
     // Me fjalë, testi zakonisht mbaron në mes të një sekonde: marrim edhe mostrën e asaj copëze,
     // por vetëm nëse zgjati të paktën gjysmë sekonde (një copëz shumë e shkurtër do të jepte një
     // shpejtësi të çastit të fryrë, p.sh. 1 shtypje në 0,05 sekonda)
@@ -402,8 +441,8 @@ export class TypingTest {
     // Rezultati: cilësimet plus numrat nga Stats (WPM me kohëzgjatjen e plotë)
     const result = {
       lang: this.settings.lang, // gjuha
-      level: this.practiceMode ? PRACTICE_LEVEL.id : this.settings.level, // niveli, ose "practice" për praktikën
-      ...(wordsMode ? { mode: "words", words: this.settings.words } : {}), // lloji dhe numri i fjalëve, vetëm te testet me fjalë
+      level: this.customText ? CUSTOM_LEVEL.id : this.practiceMode ? PRACTICE_LEVEL.id : this.settings.level, // niveli, "custom" ose "practice"
+      ...(wordsMode ? { mode: this.activeMode(), words: this.totalWords() } : {}), // lloji ("words" ose "custom") dhe numri i fjalëve
       duration: wordsMode ? Math.round(elapsed * 10) / 10 : this.settings.duration, // me kohë: kohëzgjatja; me fjalë: koha që u desh (1 shifër pas presjes)
       ...this.stats.getSummary(wordsMode ? elapsed : this.settings.duration), // WPM me kohën e plotë (me kohë) ose me kohën e kaluar (me fjalë)
     };
@@ -422,6 +461,8 @@ export class TypingTest {
     this.refreshPracticeAvailability();
     // Shfaqim panelin e rezultatit
     this.ui.showResults(entry, { isRecord, saved, speed: this.stats.getSpeedData() });
+    // Ruajmë rezultatin për butonin "Shkarko rezultatin"
+    this.lastResult = { entry, isRecord };
     // Cilësimet lejohen sërish
     this.ui.setSettingsDisabled(false);
     // Njoftojmë lexuesin e ekranit
@@ -508,7 +549,7 @@ export class TypingTest {
     // Kalojmë te pozicioni tjetër
     this.index += 1;
     // Me fjalë: kur shkruhet karakteri i fundit, testi mbaron
-    if (this.settings.mode === "words" && this.index >= this.chars.length) {
+    if (this.endsAtText() && this.index >= this.chars.length) {
       // Numrat e fundit ("25 / 25")
       this.updateLiveStats(0, this.timer.getElapsedSeconds());
       // Mbarimi
@@ -574,8 +615,8 @@ export class TypingTest {
    * @returns {void}
    */
   ensureEnoughText() {
-    // Te testi me fjalë teksti ka gjatësi të fiksuar: s'shtohet asgjë
-    if (this.settings.mode === "words") {
+    // Te testi me fjalë dhe me tekstin tënd teksti ka gjatësi të fiksuar: s'shtohet asgjë
+    if (this.endsAtText()) {
       return; // teksti s'zgjatet
     }
     // Sa karaktere kanë mbetur deri në fund
@@ -816,6 +857,8 @@ export class TypingTest {
     }
     // Në praktikë, klikimi i çdo niveli (edhe atij që ishte zgjedhur) të kthen te testi normal
     const leavingPractice = name === "level" && this.practiceMode;
+    // Me tekstin tënd, zgjedhja e një kohe, numri fjalësh ose niveli të kthen te tekstet e TypeFast
+    const leavingCustom = Boolean(this.customText) && ["duration", "words", "level"].includes(name);
     // Cilësimet e reja: kopje e të vjetrave (spread) me vlerën e ndryshuar
     const next = { ...this.settings, [name]: value };
     // Zgjedhja e një kohe e bën testin me kohë; zgjedhja e një numri fjalësh e bën me fjalë
@@ -825,7 +868,7 @@ export class TypingTest {
     }
     // Nëse asgjë s'ndryshoi dhe nuk po dalim nga praktika, s'ka nevojë për test të ri
     // (JSON.stringify i kthen të dy objektet në tekst, që të krahasohen të gjitha fushat njëherësh)
-    if (!leavingPractice && JSON.stringify(next) === JSON.stringify(this.settings)) {
+    if (!leavingPractice && !leavingCustom && JSON.stringify(next) === JSON.stringify(this.settings)) {
       return; // ndalojmë këtu, pjesa tjetër e funksionit nuk ekzekutohet
     }
     // Zgjedhja e një niveli mbyll praktikën
@@ -833,12 +876,17 @@ export class TypingTest {
       // Kthehemi te testi normal
       this.practiceMode = false;
     }
+    // Zgjedhja e kohës, fjalëve ose nivelit mbyll tekstin tënd
+    if (leavingCustom) {
+      // Kthehemi te tekstet e TypeFast
+      this.customText = null;
+    }
     // Ruajmë cilësimet e reja
     this.settings = next;
     // Ruajmë në localStorage
     this.storage.saveSettings(this.settings);
     // Shënojmë zgjedhjen aktive
-    this.ui.applySettings(this.settings, this.practiceMode);
+    this.ui.applySettings(this.settings, this.practiceMode, Boolean(this.customText));
     // Pa tekste s'mund të krijojmë test
     if (this.state === "loading" || this.state === "error") {
       return; // ndalojmë këtu, pjesa tjetër e funksionit nuk ekzekutohet
@@ -916,6 +964,8 @@ export class TypingTest {
     this.refreshPracticeAvailability();
     // Ndërrojmë modalitetin
     this.practiceMode = !this.practiceMode;
+    // Praktika dhe teksti yt s'bashkohen: praktika e mbyll tekstin tënd
+    this.customText = null;
     // Test i ri me tekstin e duhur
     this.newTest();
     // Me miun: fokusi te testi. Me tastierë: fokusi mbetet te butoni.
@@ -936,10 +986,169 @@ export class TypingTest {
     }
     // Ndezim praktikën
     this.practiceMode = true;
+    // Praktika e mbyll tekstin tënd
+    this.customText = null;
     // Test i ri me tekstin e praktikës
     this.newTest();
     // Fokusi te fusha, që të shkruash menjëherë
     this.ui.focusInput();
+  }
+
+  // ---------------- LLOJI I TESTIT ----------------
+
+  /**
+   * Lloji aktual i testit: "custom" me tekstin tënd, përndryshe ai i cilësimeve ("time" ose "words").
+   * @returns {string} lloji
+   */
+  activeMode() {
+    // Teksti yt ka përparësi mbi cilësimet
+    return this.customText ? "custom" : this.settings.mode;
+  }
+
+  /**
+   * A mbaron testi aktual kur mbaron teksti (me fjalë ose me tekstin tënd)?
+   * @returns {boolean} true nëse po
+   */
+  endsAtText() {
+    // isTextLength kontrollon llojin
+    return isTextLength({ mode: this.activeMode() });
+  }
+
+  /**
+   * Sa fjalë ka teksti i testit: me tekstin tënd numërohen fjalët e tij, me fjalë është numri i zgjedhur.
+   * @returns {number} fjalët gjithsej
+   */
+  totalWords() {
+    // Teksti yt ndahet sipas hapësirës (hapësirat e tepërta janë hequr më parë)
+    return this.customText ? this.customText.split(" ").length : this.settings.words;
+  }
+
+  // ---------------- TEKSTI YT ----------------
+
+  /**
+   * Pastron tekstin e përdoruesit (e pastër): ë e përbërë bëhet një karakter (NFC), çdo grup
+   * hapësirash, rreshtash të rinj dhe tabulatorësh bëhet një hapësirë, dhe hiqen hapësirat në skaje.
+   * @param {string} text - teksti ashtu siç u shkrua ose u ngjit
+   * @returns {string} teksti i pastër
+   */
+  static normalizeCustom(text) {
+    // \s+ = një ose më shumë karaktere bosh (hapësirë, rresht i ri, tabulator)
+    return text.normalize("NFC").replace(/\s+/g, " ").trim();
+  }
+
+  /**
+   * Hap dritaren "Teksti yt", me tekstin e fundit të shkruar aty.
+   * @returns {void}
+   */
+  openCustomDialog() {
+    // Gjatë testit ose pa tekste s'hapet
+    if (this.state === "running" || this.state === "loading" || this.state === "error") {
+      return; // s'lejohet tani
+    }
+    // Nëse teksti yt është aktiv, e vendosim në fushë që të ndryshohet lehtë
+    if (this.customText) {
+      // Teksti aktual
+      this.custom.input.value = this.customText;
+    }
+    // Fshijmë gabimin e vjetër
+    this.custom.error.textContent = "";
+    // Numëruesi sipas tekstit në fushë
+    this.updateCustomCount();
+    // Fshijmë përgjigjen e mëparshme (Esc e mbyll pa e ndryshuar këtë vlerë)
+    this.custom.dialog.returnValue = "";
+    // Dritare modale
+    this.custom.dialog.showModal();
+    // Fokusi te fusha, që të shkruash ose ngjitësh menjëherë
+    this.custom.input.focus();
+  }
+
+  /**
+   * Përditëson numëruesin "120 / 2000 karaktere" dhe fsheh gabimin gjatë shkrimit.
+   * @returns {void}
+   */
+  updateCustomCount() {
+    // Karakteret pas pastrimit (Array.from numëron ë si një karakter)
+    const count = Array.from(TypingTest.normalizeCustom(this.custom.input.value)).length;
+    // Teksti i numëruesit
+    this.custom.count.textContent = MESSAGES.customCount(count);
+    // Gabimi i vjetër s'vlen më pasi teksti ndryshoi
+    this.custom.error.textContent = "";
+  }
+
+  /**
+   * Kontrolli kur klikohet një buton i formularit. "Anulo" mbyll pa kontroll; "Fillo me këtë tekst"
+   * mbyll vetëm nëse teksti ka 20 deri në 2000 karaktere.
+   * @param {SubmitEvent} event - ngjarja
+   * @returns {void}
+   */
+  handleCustomSubmit(event) {
+    // event.submitter është butoni që u klikua; "Anulo" s'ka nevojë për kontroll
+    if (!event.submitter || event.submitter.value !== "confirm") {
+      return; // mbyllet normalisht
+    }
+    // Teksti i pastër
+    const text = TypingTest.normalizeCustom(this.custom.input.value);
+    // Gjatësia në karaktere
+    const length = Array.from(text).length;
+    // Gabimi, nëse ka
+    let error = "";
+    // Shumë i shkurtër
+    if (length < CUSTOM_MIN_CHARS) {
+      // Mesazhi
+      error = MESSAGES.customTooShort;
+    } else if (length > CUSTOM_MAX_CHARS) { // shumë i gjatë
+      // Mesazhi
+      error = MESSAGES.customTooLong;
+    }
+    // Me gabim: dritarja mbetet e hapur dhe gabimi shfaqet
+    if (error) {
+      // preventDefault ndalon mbylljen e dritares
+      event.preventDefault();
+      // Mesazhi (role="alert" e lexon menjëherë)
+      this.custom.error.textContent = error;
+      // Fokusi kthehet te fusha, që të ndreqet teksti
+      this.custom.input.focus();
+      // Dalim
+      return;
+    }
+    // Teksti është i vlefshëm: e ruajmë derisa dritarja të mbyllet
+    this.pendingCustom = text;
+  }
+
+  /**
+   * Pas mbylljes së dritares: nëse u konfirmua, nis testi me tekstin tënd.
+   * @returns {void}
+   */
+  handleCustomClose() {
+    // Teksti që priste
+    const text = this.pendingCustom;
+    // S'pret më
+    this.pendingCustom = null;
+    // "Anulo" ose Esc: asgjë s'ndryshon
+    if (this.custom.dialog.returnValue !== "confirm" || !text) {
+      return; // u anulua
+    }
+    // Teksti yt aktiv
+    this.customText = text;
+    // Praktika mbyllet, s'bashkohen
+    this.practiceMode = false;
+    // Test i ri me këtë tekst
+    this.newTest();
+    // Fokusi te fusha e testit
+    this.ui.focusInput();
+  }
+
+  /**
+   * "Shkarko rezultatin": vizaton dhe shkarkon foton e rezultatit të fundit.
+   * @returns {void}
+   */
+  downloadResult() {
+    // Pa rezultat s'ka çfarë të shkarkohet
+    if (!this.lastResult) {
+      return; // asnjë test i mbaruar
+    }
+    // Fotoja PNG me ngjyrat e temës aktuale
+    ResultImage.download(this.lastResult.entry, { isRecord: this.lastResult.isRecord });
   }
 
   // ---------------- GARA ME REKORDIN ----------------
@@ -957,8 +1166,11 @@ export class TypingTest {
     const record = this.storage.getRecords()[StorageService.recordKey(this.settings.lang, this.settings.level, lengthKey(this.settings))];
     // Shënimi poshtë çelësit, sipas rastit
     let hint;
-    // Në praktikë s'ka rekord për të garuar
-    if (this.practiceMode) {
+    // Me tekstin tënd s'ka rekord për të garuar
+    if (this.customText) {
+      // Shpjegojmë pse
+      hint = MESSAGES.ghostCustom;
+    } else if (this.practiceMode) { // në praktikë s'ka rekord për të garuar
       // Shpjegojmë pse
       hint = MESSAGES.ghostPractice;
     } else if (!record) { // pa rekord për këtë kombinim
@@ -969,7 +1181,7 @@ export class TypingTest {
       hint = MESSAGES.ghostHint(record.wpm);
     }
     // Gara është aktive vetëm kur plotësohen të tri kushtet
-    const active = this.settings.ghost && !this.practiceMode && Boolean(record);
+    const active = this.settings.ghost && !this.practiceMode && !this.customText && Boolean(record);
     // Ruajmë shpejtësinë e rekordit, ose null kur gara s'është aktive
     this.ghostWpm = active ? record.wpm : null;
     // Shfaqim ose fshehim kursorin gri dhe statistikën, me shënimin
@@ -1045,7 +1257,7 @@ export class TypingTest {
   updateLiveStats(remaining, elapsed) {
     // Numri i parë: me fjalë "3 / 25"; me kohë sekondat e mbetura
     // (Math.ceil: 29.3 sekonda shfaqen si 30, që 0 të dalë vetëm kur koha mbaron)
-    const primary = this.settings.mode === "words" ? `${this.typedWords()} / ${this.settings.words}` : String(Math.ceil(remaining));
+    const primary = this.endsAtText() ? `${this.typedWords()} / ${this.totalWords()}` : String(Math.ceil(remaining));
     // I kalojmë vlerat te ndërfaqja
     this.ui.updateLiveStats({
       primary, // teksti i numrit të parë

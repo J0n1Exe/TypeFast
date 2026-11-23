@@ -18,8 +18,9 @@
  * GUIDE_US_MAP, GUIDE_FINGERS, GUIDE_THUMB, GUIDE_CHUNK_SIZE, GUIDE_CHUNK_MS,
  * GUIDE_ADVANCE_MS, GUIDE_PASS_ACCURACY, BACKUP_APP, BACKUP_VERSION,
  * BACKUP_FILENAME, BACKUP_MAX_BYTES, WORD_COUNTS, TEST_MODES, LENGTH_ORDER,
- * MESSAGES, plural, formatDecimal, lengthKey, lengthLabel, lengthDescription,
- * findLabel.
+ * CUSTOM_LEVEL, CUSTOM_MIN_CHARS, CUSTOM_MAX_CHARS, RESULT_IMAGE_WIDTH,
+ * RESULT_IMAGE_HEIGHT, MESSAGES, plural, formatDecimal, isTextLength,
+ * lengthKey, lengthLabel, lengthDescription, findLabel.
  *
  * Kush e përdor: pothuajse të gjithë modulet (texts.js, timer.js, stats.js,
  * storage.js, ui.js, theme.js, chart.js, app.js) dhe faqet te js/pages/.
@@ -72,11 +73,30 @@ export const LEVELS = Object.freeze([
 export const PRACTICE_LEVEL = Object.freeze({ id: "practice", label: "Praktikë" });
 
 /**
+ * "Niveli" i testeve me tekstin e përdoruesit. Si praktika, nuk hyn te rekordet,
+ * sepse çdo tekst është i ndryshëm dhe s'krahasohet me të tjerët.
+ * @type {Readonly<{id: string, label: string}>}
+ */
+export const CUSTOM_LEVEL = Object.freeze({ id: "custom", label: "Teksti yt" });
+
+/**
  * Të gjitha emrat e niveleve që mund të shfaqen te rezultati dhe historiku
- * (tre nivelet e zakonshme plus praktika). Përdoret vetëm për të gjetur tekstin shqip.
+ * (tre nivelet e zakonshme, praktika dhe teksti yt). Përdoret vetëm për të gjetur tekstin shqip.
  * @type {ReadonlyArray<{id: string, label: string}>}
  */
-export const LEVEL_LABELS = Object.freeze([...LEVELS, PRACTICE_LEVEL]);
+export const LEVEL_LABELS = Object.freeze([...LEVELS, PRACTICE_LEVEL, CUSTOM_LEVEL]);
+
+/** @type {number} Teksti yt duhet të ketë të paktën kaq karaktere (pas pastrimit të hapësirave). */
+export const CUSTOM_MIN_CHARS = 20;
+
+/** @type {number} Teksti yt mund të ketë më së shumti kaq karaktere. */
+export const CUSTOM_MAX_CHARS = 2000;
+
+/** @type {number} Gjerësia e fotos së rezultatit në piksela (madhësia e zakonshme e kartave që ndahen). */
+export const RESULT_IMAGE_WIDTH = 1200;
+
+/** @type {number} Lartësia e fotos së rezultatit në piksela. */
+export const RESULT_IMAGE_HEIGHT = 630;
 
 /**
  * Gjuhët e tekstit. "id" është kodi i gjuhës te data/texts.json.
@@ -440,6 +460,7 @@ export const MESSAGES = Object.freeze({
   loading: "Duke ngarkuar tekstet...", // gjatë leximit të data/texts.json
   capsLock: "Caps Lock është aktiv", // paralajmërimi mbi kutinë e tekstit
   historyFilterEmpty: "Asnjë test i këtij lloji.", // tabela e testeve kur filtri s'gjen asgjë
+  customHint: "Shkruaj ose ngjit tekstin tënd dhe bëj testin me të.", // shënimi pranë butonit "Teksti yt"
   statSeconds: "sekonda", // etiketa e numrit të parë në testin me kohë
   statWords: "fjalë", // etiketa e numrit të parë në testin me fjalë
   textsError: "Tekstet e testit nuk u ngarkuan. Kontrollo që skedari data/texts.json ekziston dhe që faqja është hapur me Live Server, pastaj rifresko faqen.", // kur fetch dështon
@@ -469,6 +490,24 @@ export const MESSAGES = Object.freeze({
 
   ghostNoRecord: "Ende s'ka rekord për këtë kombinim. Mbaro një test dhe gara fillon.", // çelësi i garës pa rekord
   ghostPractice: "Gara nuk punon në praktikë, sepse praktika s'ka rekord.", // çelësi i garës gjatë praktikës
+  ghostCustom: "Gara nuk punon me tekstin tënd, sepse ai s'ka rekord.", // çelësi i garës me tekstin tënd
+  customTooShort: "Teksti është shumë i shkurtër: duhen të paktën 20 karaktere.", // teksti yt: më pak se 20
+  customTooLong: "Teksti është shumë i gjatë: lejohen më së shumti 2000 karaktere.", // teksti yt: më shumë se 2000
+  resultImageRecord: "Rekord i ri personal", // shënimi në foto kur testi është rekord
+
+  /**
+   * Numëruesi i karaktereve te dritarja e tekstit tënd.
+   * @param {number} count - karakteret pas pastrimit
+   * @returns {string} p.sh. "120 / 2000 karaktere"
+   */
+  customCount: (count) => `${count} / ${CUSTOM_MAX_CHARS} karaktere`,
+
+  /**
+   * Shënimi pranë butonit "Teksti yt" kur ky tekst është aktiv.
+   * @param {number} words - fjalët e tekstit
+   * @returns {string} fjalia
+   */
+  customActive: (words) => `Po shkruan tekstin tënd (${plural(words, "fjalë", "fjalë")}). Zgjidh një kohë, numër fjalësh ose nivel për t'u kthyer.`,
   ghostOff: "Kursori gri lëviz me shpejtësinë e rekordit tënd.", // çelësi i garës i fikur
   heatNoData: "pak të dhëna", // tast që ka dalë më pak se 5 herë
   summaryNoProgress: "Duhen të paktën 2 teste (pa praktikën) për të krahasuar.", // karta e përparimit pa të dhëna
@@ -747,6 +786,16 @@ export function formatDecimal(value) {
 }
 
 /**
+ * A mbaron testi kur mbaron teksti (me fjalë ose me tekstin tënd), në vend që të mbarojë koha?
+ * @param {{mode?: string}} item - testi ose cilësimet
+ * @returns {boolean} true për "words" dhe "custom"
+ */
+export function isTextLength(item) {
+  // Të dy llojet kanë tekst me gjatësi të fiksuar
+  return item.mode === "words" || item.mode === "custom";
+}
+
+/**
  * ÇELËSI I GJATËSISË së një testi (ose të cilësimeve), që dallon testet me kohë nga ato me fjalë:
  * testi 30 sekondash jep "30", testi me 25 fjalë jep "w25" ("w" nga "words").
  * Përdoret për rekordet ("sq-medium-30" ose "sq-medium-w25") dhe për filtrat.
@@ -755,6 +804,10 @@ export function formatDecimal(value) {
  * @returns {string} çelësi
  */
 export function lengthKey(item) {
+  // Teksti yt: "c" plus numri i fjalëve (s'përdoret për rekorde, vetëm për dallim)
+  if (item.mode === "custom") {
+    return `c${item.words}`; // p.sh. "c40"
+  }
   // Me fjalë: "w" plus numri i fjalëve; me kohë: sekondat si tekst
   return item.mode === "words" ? `w${item.words}` : String(item.duration);
 }
@@ -768,7 +821,7 @@ export function lengthKey(item) {
  */
 export function lengthLabel(item, withTime = false) {
   // Testi me kohë: sekondat
-  if (item.mode !== "words") {
+  if (!isTextLength(item)) {
     return `${item.duration} s`; // p.sh. "30 s"
   }
   // Testi me fjalë, me ose pa kohën e kaluar
@@ -781,8 +834,8 @@ export function lengthLabel(item, withTime = false) {
  * @returns {string} teksti
  */
 export function lengthDescription(item) {
-  // Me kohë ose me fjalë
-  return item.mode === "words" ? `${item.words} fjalë në ${formatDecimal(item.duration)} sekonda` : `${item.duration} sekonda`;
+  // Me kohë, ose me fjalë / me tekstin tënd
+  return isTextLength(item) ? `${item.words} fjalë në ${formatDecimal(item.duration)} sekonda` : `${item.duration} sekonda`;
 }
 
 /**

@@ -54,6 +54,7 @@ typefast/
       summary.js          klasa HistorySummary: koha totale, ditët rresht, përparimi
       heatmap.js          klasa KeyboardHeatmap: harta e tastierës me ngjyra sipas gabimeve
       backup.js           klasa BackupService: eksporti dhe importi i historikut si JSON
+      result-image.js     klasa ResultImage: fotoja PNG e rezultatit, e vizatuar me Canvas
       course.js           klasa Course: kapitujt, kyçja, përparimi dhe gishti për çdo tast
       guide.js            klasa TypingGuide: dritarja e mësimit me katrorë të animuar dhe prova e kapitullit
     pages/
@@ -153,6 +154,11 @@ Saktësia e provës = karaktere të sakta / (karaktere të sakta + gabime) x 100
 
 Përmbajtja e kursit është te `config.js` (`GUIDE_CHAPTERS`). Për tastierën amerikane çdo mësim kthehet tast për tast me `GUIDE_US_MAP` (Z dhe Y, ë dhe ;), ose përdor fjalë anglisht kur shqipja s'ka kuptim aty. Përparimi ruhet te `typefast:guide`.
 
+## Teksti yt dhe fotoja e rezultatit
+
+- **Teksti yt:** butoni "Teksti yt" hap një `<dialog>` ku shkruan ose ngjit tekstin tënd (ngjitja lejohet vetëm këtu). Teksti pastrohet (`TypingTest.normalizeCustom()`: NFC dhe çdo grup hapësirash/rreshtash bëhet një hapësirë) dhe duhet të ketë 20 deri në 2000 karaktere. Testi sillet si ai me fjalë (mbaron me karakterin e fundit, WPM me kohën e kaluar), ruhet me nivelin "Teksti yt" dhe nuk hyn te rekordet.
+- **Shkarko rezultatin:** `ResultImage` (`js/modules/result-image.js`) vizaton me Canvas 2D një kartë PNG 1200 x 630 me WPM, saktësinë, gabimet, gjuhën, nivelin, gjatësinë, datën dhe emrin TypeFast, në ngjyrat e temës aktuale, dhe e shkarkon me `canvas.toDataURL("image/png")`.
+
 ## Eksporti dhe importi i historikut
 
 Te **Historiku**, seksioni "Ruaj ose rikthe të dhënat" (i dukshëm edhe kur historiku është bosh) ka dy butona (`BackupService`, `js/modules/backup.js`):
@@ -246,6 +252,7 @@ Nëse `localStorage` është plot ose i bllokuar, testi punon njësoj dhe faqja 
 - **fetch**: lexon `data/texts.json` një herë dhe e mban në kujtesë.
 - **localStorage**: historiku, rekordet, cilësimet, tema.
 - **Blob, URL.createObjectURL dhe File API**: eksporti dhe importi i historikut si skedar JSON, pa server.
+- **canvas.toDataURL**: fotoja PNG e rezultatit.
 - **performance.now**: koha e saktë. Koha e mbetur llogaritet gjithmonë nga kjo orë; `setInterval` (100ms) përdoret vetëm për të rifreskuar ekranin.
 - **IntersectionObserver**: shfaq butë seksionet e historikut dhe të faqes "Si funksionon" kur hyjnë në ekran.
 - **Canvas**: grafiku i shpejtësisë te rezultati vizatohet direkt me Canvas 2D; grafiku i përparimit vizatohet nga Chart.js mbi Canvas.
